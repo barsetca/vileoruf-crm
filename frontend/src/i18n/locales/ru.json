@@ -1,0 +1,25 @@
+{
+  "product": {
+    "name": "VILEORUF CRM",
+    "kind": "Система управления продажами",
+    "subtitle": "Техническая основа клиентского приложения готова к развитию."
+  },
+  "status": {
+    "frontend": {
+      "label": "Статус frontend",
+      "ready": "Работает"
+    },
+    "backend": {
+      "label": "Статус backend",
+      "checking": "Проверка соединения",
+      "available": "Доступен",
+      "unavailable": "Недоступен"
+    }
+  },
+  "language": {
+    "label": "Язык",
+    "ru": "Русский",
+    "en": "English",
+    "es": "Español"
+  }
+}

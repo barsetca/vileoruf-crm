@@ -1,0 +1,25 @@
+{
+  "product": {
+    "name": "VILEORUF CRM",
+    "kind": "Sales management system",
+    "subtitle": "The frontend foundation is ready for further development."
+  },
+  "status": {
+    "frontend": {
+      "label": "Frontend status",
+      "ready": "Running"
+    },
+    "backend": {
+      "label": "Backend status",
+      "checking": "Checking connection",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    }
+  },
+  "language": {
+    "label": "Language",
+    "ru": "Русский",
+    "en": "English",
+    "es": "Español"
+  }
+}

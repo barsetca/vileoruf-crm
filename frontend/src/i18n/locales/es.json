@@ -1,0 +1,25 @@
+{
+  "product": {
+    "name": "VILEORUF CRM",
+    "kind": "Sistema de gestión de ventas",
+    "subtitle": "La base del frontend está lista para seguir desarrollándose."
+  },
+  "status": {
+    "frontend": {
+      "label": "Estado del frontend",
+      "ready": "En funcionamiento"
+    },
+    "backend": {
+      "label": "Estado del backend",
+      "checking": "Comprobando la conexión",
+      "available": "Disponible",
+      "unavailable": "No disponible"
+    }
+  },
+  "language": {
+    "label": "Idioma",
+    "ru": "Русский",
+    "en": "English",
+    "es": "Español"
+  }
+}
