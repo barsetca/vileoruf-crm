@@ -15,6 +15,7 @@ No seed executable or domain records are created during Day 1 because the CRM do
 5. Seed execution must be repeatable and idempotent, using deterministic identifiers or stable lookup keys where appropriate.
 6. Seed content must include only entities and fields approved by the current project requirements.
 7. Seed implementation is added incrementally after the relevant models and migrations are verified.
+8. Development seed data must not be used to bootstrap the first production `ADMIN`; that requires the separately approved secure CLI/bootstrap mechanism.
 
 ## Verification criteria
 

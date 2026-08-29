@@ -35,12 +35,18 @@ Client records should support the CRM workflow. Proposed MVP fields:
 - contact person;
 - email;
 - phone;
-- Telegram;
-- WhatsApp;
+- Telegram identifier/username (optional);
+- WhatsApp identifier/phone/contact (optional);
 - company;
 - lead source;
 - notes;
 - created/updated timestamps.
+
+Each Client has a business lifecycle status, distinct from authentication roles:
+- `CUSTOMER` (`Заказчик` in Russian UI): a person/company in the CRM with no successfully completed deal;
+- `CLIENT` (`Клиент` in Russian UI): a person/company with at least one deal completed as `Won`.
+
+The first successful `Won` transition changes `CUSTOMER` to `CLIENT`. Later lost deals do not automatically reverse `CLIENT` to `CUSTOMER`.
 
 ### 3.3 Deals
 A deal belongs to a client. Proposed MVP fields:
@@ -141,7 +147,50 @@ Because the source specification does not define concrete encryption/GDPR accept
 
 ### 8.1 Authentication / authorization
 
-Authentication and authorization are required architectural concerns but their acceptance criteria and mechanism are not yet defined. The architecture must be decided before Day 2 CRM Core implementation. Do not assume JWT, cookie sessions, roles or a password policy without an explicit requirements decision.
+Authentication and authorization are required for the internal CRM interface. The architecture is approved and documented, but no authentication/authorization code is implemented yet. Its implementation is a controlled stage before Day 2 CRM Core.
+
+#### Users and roles
+
+An authenticated `User` is only a VILEORUF Studio employee. MVP roles are:
+- `ADMIN`;
+- `MANAGER`.
+
+External customers are `Client` records, not `User` accounts or authentication roles. They receive no CRM login or customer portal in the current scope.
+
+The target minimum `User` model contains `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. Exact SQLAlchemy types and constraints are deferred to implementation. Employee offboarding uses `is_active = false`; physical deletion is not the primary mechanism because historical CRM records may reference the user.
+
+#### Authentication mechanism
+
+Login uses email and password. Passwords must never be stored in plaintext and must be hashed with Argon2id. The MVP password policy is 12–128 characters, with no mandatory character-class combination and no periodic forced password change.
+
+Authentication uses JWT without server-side session storage:
+- access JWT: approximately 30 minutes, stored only in React memory, never in `localStorage` or `sessionStorage`, and sent as `Authorization: Bearer <access-jwt>`;
+- refresh JWT: approximately 7 days, stored/transmitted through an `HttpOnly` cookie inaccessible to frontend JavaScript; `Secure=true` is required in production and cookie attributes must match the deployment environment securely;
+- refresh issues a new access JWT, which remains only in React memory.
+
+MVP refresh is stateless until token `exp`: no refresh-token table, blacklist, server-side refresh session store, or complex rotation/reuse-detection infrastructure. Refresh and authenticated API requests must validate the current user, including `is_active`; authenticated requests must also enforce the current role and ownership rules. Logout removes the in-memory access token and clears the refresh cookie. A previously issued stateless JWT cannot be centrally revoked without server-side state, so the access JWT remains short-lived.
+
+The MVP does not include OAuth/Google login, SSO, LDAP, magic links, 2FA, email verification, or password reset by email without a separate requirements decision.
+
+#### First ADMIN bootstrap
+
+There is no public employee registration. The first `ADMIN` is created through a separate secure CLI/bootstrap mechanism requiring at least email, display name, and an interactively supplied password that is hashed. Hard-coded/default/master credentials, credentials in Git or `.env.example`, and development seed data as a production ADMIN bootstrap are forbidden.
+
+#### Authorization
+
+Backend authorization is authoritative; frontend hiding/disabling controls is only a UX measure.
+
+`ADMIN` may view, create, and edit all Clients and Deals; change the pipeline stage of any Deal; assign/change the responsible user; and has full CRM Core access within the approved MVP scope.
+
+`MANAGER` may view all Clients and Deals, create Clients and Deals, and edit the common card of any Client. A manager may edit or move only their own Deals and may not modify other managers' Deals. Deal ownership is determined by `Deal.responsible_user_id` or an equivalent foreign-key relationship to `User`.
+
+#### Public requests
+
+Unauthenticated public lead/request submission is permitted without creating a customer login. The preferred architectural mapping reuses approved entities: create `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. The detailed public form/API contract is deferred to a separate controlled iteration; no new `Lead`, `Inquiry`, or `Request` entity is approved by this principle alone.
+
+#### Authentication internationalization
+
+Future login, authentication errors, logout, access-denied messages, user-management and role labels, and Client lifecycle status labels must follow the mandatory `ru` default/fallback plus `en` and `es` i18n rules.
 
 ## 9. Explicitly out of current scope
 Unless requirements are changed explicitly:
@@ -153,6 +202,10 @@ Unless requirements are changed explicitly:
 - ERP modules;
 - mobile native application;
 - microservice decomposition.
+- customer portal/personal account;
+- multi-tenancy or multiple organizations;
+- custom dynamic roles or an enterprise permission matrix;
+- OAuth/SSO, 2FA, or Redis-backed authentication state.
 
 ## 10. Delivery artifacts
 Required:

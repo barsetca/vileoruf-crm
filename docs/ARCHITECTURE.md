@@ -57,7 +57,7 @@ Day 1 currently implements:
 - Alembic with shared application configuration and revision `20260827_0001`;
 - restricted development CORS for the configured `FRONTEND_ORIGIN`.
 
-No CRM domain models, repositories, business services or authentication/authorization are implemented yet.
+No CRM domain models, repositories, business services or authentication/authorization are implemented yet. Authentication/authorization architecture is approved below, but remains unimplemented.
 
 ## 4. Frontend responsibilities
 The target React frontend contains:
@@ -185,6 +185,8 @@ Deal
  └── AIAnalysis
 ```
 
+`Deal` ownership uses `responsible_user_id` (or an equivalent foreign key) to `User`. `Client` has the lifecycle states `CUSTOMER` and `CLIENT`; the first Deal moved successfully to `Won` promotes `CUSTOMER` to `CLIENT`, with no automatic reverse transition.
+
 Do not introduce Payment, Invoice, Subscription or similar financial-processing entities unless requirements change.
 
 These entities are planned; none is implemented at the end of Day 1.
@@ -282,9 +284,51 @@ Any change that introduces a new major dependency, new infrastructure component,
 - Application and Alembic read the same `DATABASE_URL`; credentials are not stored in `alembic.ini`.
 - `.env.example` contains public placeholders; the local `.env` is ignored.
 - Development seed rules are defined in `docs/DEVELOPMENT_SEED_STRATEGY.md`; no executable seed or seed records exist yet.
+- Development Compose includes PostgreSQL, FastAPI backend, and React/Vite frontend services. `docker compose up --build` starts the complete verified foundation.
+- Backend waits for healthy PostgreSQL, uses `postgres:5432` through the Compose network, applies `alembic upgrade head`, and runs Uvicorn on `0.0.0.0:8000` with reload.
+- Frontend uses Node.js 24, installs from `package-lock.json` with `npm ci`, and runs Vite on `0.0.0.0:5173`. A separate container volume preserves `node_modules` beneath the source bind mount.
+- Browser-side API requests use the host-published `VITE_API_BASE_URL` (`http://localhost:8000` by default); the Docker-only backend hostname is not exposed to React browser code.
+- Host bindings remain restricted to loopback: backend `8000`, frontend `5173`, and PostgreSQL `55432`. CORS remains restricted to the configured frontend origin.
 
-## 14. Planned components and architecture gates
+## 14. Authentication and authorization architecture
+
+Authentication is for VILEORUF Studio employees using the internal CRM. External customers remain unauthenticated `Client` records; there is no customer portal in the MVP. Internal roles are `ADMIN` and `MANAGER`.
+
+### 14.1 Target User model
+
+The minimum target fields are `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. Exact SQLAlchemy types/constraints are deferred to implementation. Deactivation through `is_active = false` preserves historical ownership references.
+
+### 14.2 JWT flow
+
+```text
+email + password (Argon2id verification)
+              |
+              v
+Access JWT (~30 min) ----> React memory ----> Authorization: Bearer
+              +
+Refresh JWT (~7 days) ---> HttpOnly cookie --> refresh --> new access JWT
+```
+
+The backend does not use PostgreSQL/Redis session storage or server-side HTTP sessions. The access JWT is never persisted in `localStorage` or `sessionStorage`. The refresh cookie is inaccessible to JavaScript, uses `Secure=true` in production, and receives security attributes appropriate to the deployment environment.
+
+MVP refresh is stateless until `exp`, without a refresh-token table, blacklist, server-side refresh store, or complex rotation/reuse detection. Refresh validates that the current user exists and is active. Every authenticated API request resolves the current user and enforces `is_active`, role, and ownership rules. Logout clears React memory and the refresh cookie. Because issued JWTs cannot be centrally revoked in this design, access tokens remain short-lived.
+
+Passwords use Argon2id and a 12–128 character policy. Public employee registration is absent. A secure CLI/bootstrap mechanism creates the first `ADMIN` from email, display name, and an interactively entered password; default/hard-coded/master credentials, credentials in Git or `.env.example`, and production ADMIN creation through development seed data are prohibited.
+
+### 14.3 Authorization enforcement
+
+`ADMIN` has full access to all Clients and Deals in CRM Core, can move any Deal, and can assign/change its responsible user. `MANAGER` sees all Clients and Deals and may create them and edit any Client's common card, but may edit or move only Deals they own. Backend enforcement is authoritative; frontend controls are only a UX reflection.
+
+### 14.4 Public request boundary
+
+Unauthenticated public request submission is architecturally allowed and should reuse `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. Its endpoint/form contract is deferred to a separate iteration. This does not introduce an authenticated external user or a new lead-like domain entity.
+
+All future authentication, authorization, user-management, role, access-denied, and Client lifecycle UI follows the established `ru`/`en`/`es` localization architecture.
+
+OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, multi-tenancy, dynamic roles, enterprise permission infrastructure, and Redis authentication state are outside the current MVP scope.
+
+## 15. Planned components and architecture gates
 
 The following remain planned and are not implemented: CRM domain modules, AI Service/OpenAI calls, integration adapters, Celery, Redis and authentication/authorization.
 
-Authentication/authorization architecture is TBD and must be decided before Day 2 CRM Core implementation. No JWT/session mechanism, user model, role model or password policy is selected by the current contract.
+Authentication/authorization architecture is `ARCHITECTURE DECIDED / DOCUMENTED`. Implementation has not started and must occur as a separate controlled stage before Day 2 CRM Core.

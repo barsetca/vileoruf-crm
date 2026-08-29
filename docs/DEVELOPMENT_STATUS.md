@@ -5,7 +5,7 @@
 ## Current phase
 Day 1 — Foundation: COMPLETE.
 
-Day 2 — CRM Core: NOT STARTED. Awaiting explicit authorization and an authentication/authorization architecture decision.
+Day 2 — CRM Core: NOT STARTED. Awaiting explicit authorization and completion of the separate controlled authentication/authorization implementation stage.
 
 ## Overall deadline
 7-day MVP implementation plan.
@@ -36,6 +36,8 @@ Day 2 — CRM Core: NOT STARTED. Awaiting explicit authorization and an authenti
 - [x] Foundation repository structure established without premature empty feature directories.
 - [x] Development seed strategy documented without creating domain models or seed data.
 - [x] Codex architectural/context contract prepared and applied through the five project source-of-truth documents.
+- [x] Authentication/authorization architecture gate: ARCHITECTURE DECIDED / DOCUMENTED. No auth implementation exists yet.
+- [x] PostgreSQL + FastAPI + React/Vite development environment starts through one verified `docker compose up --build` flow, including automatic migrations and development reload.
 
 ## IN PROGRESS
 None.
@@ -98,22 +100,27 @@ None.
 ## KNOWN ISSUES / BLOCKERS
 None currently. The project PostgreSQL container uses host port `55432` because ports `5432` and `5433` were already occupied.
 
-## NEXT ARCHITECTURAL DECISION
+## AUTHENTICATION / AUTHORIZATION ARCHITECTURE GATE
 
-Authentication / authorization must be designed before implementing Day 2 CRM Core. The mechanism, user model, roles/permissions and security acceptance criteria are TBD. This is not a Day 1 blocker and no authentication implementation currently exists.
+Status: **ARCHITECTURE DECIDED / DOCUMENTED**.
+
+The approved design uses internal employee `User` accounts with `ADMIN` and `MANAGER` roles; email/password login with Argon2id; short-lived access JWTs held only in React memory; and stateless refresh JWTs in secure `HttpOnly` cookies. Backend authorization enforces role and Deal ownership through `responsible_user_id`. External customers remain unauthenticated `Client` records, with `CUSTOMER`/`CLIENT` lifecycle status separate from auth roles.
+
+No User model, password hashing, JWT code, bootstrap CLI, auth endpoint, migration, or frontend auth UI is implemented. The next stage is a controlled authentication/authorization implementation after review of this documentation gate; Day 2 CRM Core remains not started.
 
 ## VERIFIED DAY 1 BASELINE
 
 - Python 3.10.12; FastAPI 0.115.12; Uvicorn 0.34.3.
 - SQLAlchemy 2.0.41; Psycopg 3.2.9; Alembic 1.16.1; pydantic-settings 2.9.1.
 - PostgreSQL 16 via Docker Compose; database `vileoruf_crm`; development user `vileoruf_app`; host port `55432`; persistent volume and healthcheck.
+- Compose development services for PostgreSQL, FastAPI, and React/Vite; healthy dependency ordering, automatic Alembic upgrade, loopback host publishing, and source bind mounts verified from a clean volume.
 - Alembic revision `20260827_0001` applied; no CRM domain tables exist.
 - Node.js 24.20.0 LTS; npm 11.19.0; React/React DOM 19.2.8; Vite 8.2.2; `@vitejs/plugin-react` 6.1.1; i18next 26.4.0; react-i18next 17.0.12.
 - Frontend languages `ru`/`en`/`es`; Russian default/fallback; localStorage persistence; synchronized `<html lang>`.
 - Restricted development CORS and frontend-to-backend `/health` connectivity verified.
 - Backend pytest, frontend build, npm audit and browser runtime checks passed; npm audit reported 0 vulnerabilities.
 - Development seed strategy documented; executable seed and domain seed data do not exist yet.
-- Authentication/authorization, CRM Core, Celery/Redis, OpenAI and external integrations are not implemented.
+- Authentication/authorization (architecture documented, code not implemented), CRM Core, Celery/Redis, OpenAI and external integrations are not implemented.
 
 ## DECISIONS / CHANGES LOG
 - Initial architecture: modular monolith.
@@ -125,18 +132,24 @@ Authentication / authorization must be designed before implementing Day 2 CRM Co
 - Development CORS is restricted to the configured `FRONTEND_ORIGIN`, defaulting to `http://localhost:5173`.
 - Frontend development uses project-pinned Node.js 24.20.0 (LTS), npm 11.19.0 and Vite 8.2.2.
 - Development seed data will use the documented opt-in, development-only, idempotent strategy after domain models exist.
+- The complete application foundation starts with `docker compose up --build`; backend uses `postgres:5432` internally while browser-side frontend requests use the host-published backend URL.
+- Internal authenticated users are employees with fixed MVP roles `ADMIN` and `MANAGER`; external customers are not authenticated users.
+- Authentication uses in-memory short-lived access JWTs and stateless refresh JWTs in secure `HttpOnly` cookies, without server-side session storage.
+- Login uses unique email plus an Argon2id-hashed password; the first production `ADMIN` requires a secure CLI/bootstrap mechanism, not seed/default credentials.
+- Backend authorization is authoritative; managers may modify only Deals they own, while admins may manage all CRM Core records and responsible-user assignments.
+- Client lifecycle status is `CUSTOMER` until the first won Deal promotes it to `CLIENT`; this status is separate from authentication roles and is not automatically reversed.
 
 ## LAST CODEX RESULT
-Task: Synchronize source-of-truth documentation with the verified Day 1 implementation.
-Result: Documentation audit completed; Day 1 is explicitly COMPLETE and Day 2 is explicitly NOT STARTED.
-Files created: None in project documentation; `history/ANSWER_7.md` is a local ignored report.
-Files modified: `docs/PROJECT_CONTEXT.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT_STATUS.md`, `docs/CODEX_RULES.md`.
+Task: Add and verify one-command Docker Compose startup for the existing application foundation.
+Result: PostgreSQL, FastAPI, and React/Vite now start through `docker compose up --build`; clean database startup automatically applies Alembic revision `20260827_0001`. Day 1 remains COMPLETE, Day 2 remains NOT STARTED, and authentication implementation remains NOT STARTED.
+Files created: `.dockerignore`, `backend/Dockerfile.dev`, `frontend/Dockerfile.dev`, `frontend/.dockerignore`; local ignored report `history/ANSWER_10.md`.
+Files modified: `docker-compose.yml`, `.env.example`, `README.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT_STATUS.md`.
 Database/migrations: None.
 API endpoints: None.
 Dependencies: None.
-Tests/checks: Repository/config/version audit completed; application/config checksums confirmed unchanged; Markdown/source-of-truth consistency checked. Application tests were not rerun because application code did not change.
-Known issues: Authentication/authorization architecture remains TBD and must be decided before Day 2; it is not a Day 1 blocker.
-Next recommended step: Stop. Do not begin Day 2 without explicit authorization and the required architecture decision.
+Tests/checks: Clean Compose down/build/up passed; all three services ran, PostgreSQL/backend were healthy, `/health` returned 200, Alembic was at `20260827_0001 (head)`, Vite returned 200, headless Chrome rendered backend as available, backend pytest passed, and the Node.js 24 container frontend build passed.
+Known issues: Development-only Dockerfiles are not production deployment images. Authentication remains entirely unimplemented.
+Next recommended step: Stop for user/architect review of `history/ANSWER_10.md`; do not begin authentication or Day 2 CRM Core automatically.
 
 ## UPDATE TEMPLATE
 

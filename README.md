@@ -7,7 +7,7 @@ VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The planned 
 - **Day 1 — Foundation: COMPLETE**
 - **Day 2 — CRM Core: NOT STARTED**
 
-The current repository provides a runnable backend, database infrastructure, migrations, and a technical frontend. CRM domain models and workflows are not implemented yet. Authentication and authorization are also not implemented; their architecture must be defined before Day 2 begins.
+The current repository provides a runnable backend, database infrastructure, migrations, and a technical frontend. CRM domain models and workflows are not implemented yet. Authentication and authorization are also not implemented; their architecture is approved and documented for a separate controlled implementation stage before Day 2 begins.
 
 ## Planned MVP capabilities
 
@@ -34,6 +34,7 @@ Payment processing is not part of the approved scope.
 - SQLAlchemy 2.x engine and session infrastructure using Psycopg 3;
 - Alembic configuration and applied initial revision;
 - PostgreSQL 16 service through Docker Compose, with persistent storage and a healthcheck;
+- one-command Docker Compose development environment for PostgreSQL, FastAPI, and React/Vite;
 - React/Vite technical frontend;
 - frontend-to-backend health status check;
 - restricted development CORS;
@@ -88,7 +89,7 @@ vileoruf-crm/
 ├── backend/              # FastAPI, database infrastructure, Alembic, tests
 ├── frontend/             # React/Vite technical frontend
 ├── docs/                 # Project contract and technical documentation
-├── docker-compose.yml    # PostgreSQL 16 service
+├── docker-compose.yml    # PostgreSQL, FastAPI, and Vite development services
 ├── .env.example          # Public environment template
 ├── .gitignore
 ├── .nvmrc                # Project Node.js version
@@ -99,9 +100,9 @@ vileoruf-crm/
 
 ### Prerequisites
 
-- Python 3.10.x
-- Node.js 24 LTS (NVM is recommended)
 - Docker with Docker Compose
+
+Python 3.10.x and Node.js 24 LTS are required only for the optional manual workflow below.
 
 Run the commands below from the repository root unless a different directory is shown.
 
@@ -117,46 +118,62 @@ Review `.env` before starting the services. Replace template placeholders with l
 
 Do not commit `.env`.
 
-### PostgreSQL
+### Start the complete development environment
 
-Start the project PostgreSQL service and wait for its healthcheck:
+Build and start PostgreSQL, FastAPI, and React/Vite from the repository root:
+
+```bash
+docker compose up --build
+```
+
+Detached startup is also supported:
+
+```bash
+docker compose up -d --build
+```
+
+Compose waits for PostgreSQL to become healthy, applies `alembic upgrade head`, starts FastAPI with reload, and then starts the Vite development server. Backend and frontend source directories are bind-mounted for development reload; frontend dependencies remain in a container volume so the bind mount does not hide `node_modules`.
+
+Stop all services while preserving PostgreSQL data:
+
+```bash
+docker compose down
+```
+
+Remove the development database and frontend dependency volumes for a clean start:
+
+```bash
+docker compose down -v
+```
+
+Inspect individual service logs with:
+
+```bash
+docker compose logs backend
+docker compose logs frontend
+docker compose logs postgres
+```
+
+Inside the Compose network, backend connects to PostgreSQL at `postgres:5432`. Browser-side React requests use `VITE_API_BASE_URL` and therefore target the host-published backend URL, not the Docker-only `backend` hostname.
+
+### Optional manual workflow
+
+The services can still be run independently for troubleshooting. Start PostgreSQL first:
 
 ```bash
 docker compose up -d --wait postgres
 ```
 
-The default local binding is `127.0.0.1:55432`; PostgreSQL still uses port `5432` inside the Docker network.
-
-To stop the service without deleting its persistent volume:
-
-```bash
-docker compose stop postgres
-```
-
-### Backend
-
-Create the Python virtual environment and install dependencies:
+Create the backend environment, install dependencies, apply migrations, and start FastAPI:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r backend/requirements.txt
-```
-
-Apply the current Alembic migrations to the configured PostgreSQL database:
-
-```bash
 .venv/bin/python -m alembic -c backend/alembic.ini upgrade head
-```
-
-Start FastAPI:
-
-```bash
 .venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
 
-### Frontend
-
-In another terminal, activate the project Node.js version and install frontend dependencies:
+In another terminal, start the frontend:
 
 ```bash
 nvm use
@@ -170,8 +187,8 @@ The frontend reads its backend URL from `VITE_API_BASE_URL` in the root environm
 ### Development URLs
 
 - Frontend: `http://localhost:5173`
-- Backend: `http://127.0.0.1:8000`
-- Backend health: `http://127.0.0.1:8000/health`
+- Backend: `http://localhost:8000`
+- Backend health: `http://localhost:8000/health`
 - PostgreSQL host connection: `127.0.0.1:55432`
 
 The frontend development origin is intentionally restricted to `http://localhost:5173` by the backend CORS configuration.
@@ -207,7 +224,7 @@ The project contract and detailed status are maintained in [`docs/`](docs/):
 
 ## Authentication status
 
-Authentication and authorization are not implemented. No authentication mechanism, user model, role model, or permission model has been selected. These decisions must be made before implementing Day 2 CRM Core.
+Authentication and authorization are not implemented. The approved architecture uses internal employee users with `ADMIN` and `MANAGER` roles, short-lived access JWTs kept only in React memory, stateless refresh JWTs in secure `HttpOnly` cookies, email/password login with Argon2id, and backend-enforced role/Deal-ownership rules. External customers are not authenticated users. Full requirements and boundaries are documented in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Security and secrets
 

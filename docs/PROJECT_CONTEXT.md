@@ -8,7 +8,7 @@ Day 1 foundation is complete. Day 2 CRM Core has not started.
 
 The verified foundation currently includes a FastAPI health endpoint, PostgreSQL/SQLAlchemy/Alembic infrastructure, a Docker Compose PostgreSQL service, and a React/Vite technical frontend with mandatory `ru`/`en`/`es` localization.
 
-CRM domain models, CRM workflows, authentication/authorization, Celery/Redis, OpenAI functionality and external integrations are not implemented yet.
+CRM domain models, CRM workflows, authentication/authorization, Celery/Redis, OpenAI functionality and external integrations are not implemented yet. The authentication/authorization architecture is approved and documented; implementation must be a separate controlled stage before Day 2 CRM Core begins.
 
 ## Business context
 VILEORUF Studio creates turnkey video content: scripting, professional editing from client materials or stock footage, AI-generated visuals/video, color correction, transitions, sound effects, music, text, and adaptation for social networks.
@@ -34,6 +34,8 @@ Target implementation period: 7 days. Development follows an MVP-first approach.
 - Frontend i18n uses i18next/react-i18next.
 - Architecture style: modular monolith.
 - External channels are isolated behind integration adapters.
+- Internal CRM users are VILEORUF Studio employees with `ADMIN` or `MANAGER` roles. Authentication uses short-lived access JWTs held only in React memory and stateless refresh JWTs in secure `HttpOnly` cookies.
+- External customers are CRM `Client` records, not authenticated `User` accounts; the MVP has no customer portal.
 
 ## Product principles
 1. Build a real working CRM, not only a UI prototype.
