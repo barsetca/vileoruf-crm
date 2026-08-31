@@ -1,64 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
-import { getBackendHealth } from "./services/api.js";
+import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
+import AuthenticatedApp from "./components/AuthenticatedApp.jsx";
+import AuthLoading from "./components/AuthLoading.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 
 
-function App() {
+function AuthBoundary() {
   const { t, i18n } = useTranslation();
-  const [backendStatus, setBackendStatus] = useState("checking");
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     document.documentElement.lang = i18n.resolvedLanguage ?? "ru";
     document.title = t("product.name");
   }, [i18n.resolvedLanguage, t]);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  if (isLoading) return <AuthLoading />;
+  if (!isAuthenticated) return <LoginPage />;
+  return <AuthenticatedApp />;
+}
 
-    getBackendHealth(controller.signal)
-      .then((data) => {
-        setBackendStatus(data.status === "ok" ? "available" : "unavailable");
-      })
-      .catch((error) => {
-        if (error.name !== "AbortError") {
-          setBackendStatus("unavailable");
-        }
-      });
 
-    return () => controller.abort();
-  }, []);
-
+function App() {
   return (
-    <main className="foundation-shell">
-      <section className="foundation-card" aria-labelledby="product-title">
-        <div className="brand-mark" aria-hidden="true">V</div>
-        <p className="eyebrow">{t("product.kind")}</p>
-        <h1 id="product-title">{t("product.name")}</h1>
-        <p className="subtitle">{t("product.subtitle")}</p>
-
-        <div className="status-grid">
-          <article className="status-item">
-            <span>{t("status.frontend.label")}</span>
-            <strong className="status status--available">
-              <span className="status-dot" aria-hidden="true" />
-              {t("status.frontend.ready")}
-            </strong>
-          </article>
-
-          <article className="status-item">
-            <span>{t("status.backend.label")}</span>
-            <strong className={`status status--${backendStatus}`}>
-              <span className="status-dot" aria-hidden="true" />
-              {t(`status.backend.${backendStatus}`)}
-            </strong>
-          </article>
-        </div>
-
-        <LanguageSwitcher />
-      </section>
-    </main>
+    <AuthProvider>
+      <AuthBoundary />
+    </AuthProvider>
   );
 }
 

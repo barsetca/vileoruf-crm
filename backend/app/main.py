@@ -1,6 +1,8 @@
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.api.auth.router import router as auth_router
+from backend.app.api.users.router import router as users_router
 from backend.app.core.config import get_frontend_settings
 
 
@@ -9,9 +11,12 @@ frontend_settings = get_frontend_settings()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[frontend_settings.frontend_origin],
-    allow_methods=["GET"],
-    allow_headers=[],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+app.include_router(auth_router)
+app.include_router(users_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)

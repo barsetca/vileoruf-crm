@@ -8,7 +8,9 @@ Day 1 foundation is complete. Day 2 CRM Core has not started.
 
 The verified foundation currently includes a FastAPI health endpoint, PostgreSQL/SQLAlchemy/Alembic infrastructure, a Docker Compose PostgreSQL service, and a React/Vite technical frontend with mandatory `ru`/`en`/`es` localization.
 
-CRM domain models, CRM workflows, authentication/authorization, Celery/Redis, OpenAI functionality and external integrations are not implemented yet. The authentication/authorization architecture is approved and documented; implementation must be a separate controlled stage before Day 2 CRM Core begins.
+CRM domain models and workflows, CRM authorization, Celery/Redis, OpenAI functionality and external integrations are not implemented yet. Verified employee authentication works end to end, and ADMIN employee management supports listing, creating, editing role/name, deactivation and reactivation with backend-authoritative access and last-admin safety. CRM role/ownership enforcement remains a separate controlled stage before Day 2 CRM Core begins.
+
+The current React frontend opens directly into the employee authentication/protected foundation flow. The approved target adds a separate unauthenticated public entry/request area for prospective customers while keeping the employee CRM protected. That public boundary is documented but not implemented; it is not a customer portal and creates no customer account, password, JWT, or `User` role.
 
 ## Business context
 VILEORUF Studio creates turnkey video content: scripting, professional editing from client materials or stock footage, AI-generated visuals/video, color correction, transitions, sound effects, music, text, and adaptation for social networks.

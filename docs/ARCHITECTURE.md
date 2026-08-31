@@ -54,10 +54,10 @@ Day 1 currently implements:
 - `GET /health`, independent of database availability;
 - centralized environment settings using `pydantic-settings`;
 - PostgreSQL-only SQLAlchemy 2.x engine/session infrastructure using Psycopg 3;
-- Alembic with shared application configuration and revision `20260827_0001`;
+- Alembic with shared application configuration, initial revision `20260827_0001`, and current auth-foundation head `20260829_0002`;
 - restricted development CORS for the configured `FRONTEND_ORIGIN`.
 
-No CRM domain models, repositories, business services or authentication/authorization are implemented yet. Authentication/authorization architecture is approved below, but remains unimplemented.
+No CRM Core domain models, repositories or business services are implemented yet. Verified authentication and ADMIN employee management are implemented; CRM role/ownership authorization remains unimplemented.
 
 ## 4. Frontend responsibilities
 The target React frontend contains:
@@ -74,7 +74,19 @@ The target React frontend contains:
 - API client layer;
 - i18n resources (`ru`, `en`, `es`).
 
-Day 1 currently implements a JavaScript React foundation using project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes a responsive technical start screen, an API service for backend health, and i18next/react-i18next resources. CRM pages and navigation are not implemented yet.
+Day 1 currently implements a JavaScript React foundation using project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes a responsive protected technical screen, API services for health/auth, `AuthProvider`/`useAuth`, and i18next/react-i18next resources. On mount, the provider attempts cookie-based refresh before rendering login or authenticated content. Access JWT exists only in React memory; login stores token/user in provider state, and logout clears local state even if its backend request fails. Login/loading/errors/logout/current-user UI is translated in ru/en/es. CRM pages and navigation are not implemented yet.
+
+Target application boundary:
+
+```text
+React application
+├── Public area
+│   └── unauthenticated information/request entry
+└── Employee CRM
+    └── ADMIN/MANAGER authentication required
+```
+
+Preferred future route semantics are `/` for the public entry/request area and `/crm` for the protected employee CRM. This is a target contract, not the current route structure. The public area and routing are not implemented, and React Router is neither installed nor required by this readiness decision. Public area does not mean customer portal.
 
 ## 5. Target repository structure
 
@@ -135,6 +147,8 @@ vileoruf-crm/
 │   ├── app/
 │   │   ├── core/
 │   │   ├── db/
+│   │   ├── models/
+│   │   ├── scripts/
 │   │   └── main.py
 │   ├── migrations/
 │   ├── tests/
@@ -189,7 +203,7 @@ Deal
 
 Do not introduce Payment, Invoice, Subscription or similar financial-processing entities unless requirements change.
 
-These entities are planned; none is implemented at the end of Day 1.
+`User` is implemented only as the authentication backend foundation. The remaining entities are planned and not implemented; CRM Core has not started.
 
 ## 7. AI architecture
 AI calls must be isolated behind an AI service layer.
@@ -296,7 +310,7 @@ Authentication is for VILEORUF Studio employees using the internal CRM. External
 
 ### 14.1 Target User model
 
-The minimum target fields are `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. Exact SQLAlchemy types/constraints are deferred to implementation. Deactivation through `is_active = false` preserves historical ownership references.
+The implemented model contains `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. It uses a UUID primary key, a native PostgreSQL `user_role` enum restricted to `ADMIN`/`MANAGER` with no default role, `is_active=true`, and timezone-aware timestamps; ORM updates refresh `updated_at`. Email is not canonicalized in the persistence model; the shared controlled input boundary normalizes it with trim/lowercase for bootstrap and login. Deactivation through `is_active = false` preserves historical ownership references.
 
 ### 14.2 JWT flow
 
@@ -311,9 +325,17 @@ Refresh JWT (~7 days) ---> HttpOnly cookie --> refresh --> new access JWT
 
 The backend does not use PostgreSQL/Redis session storage or server-side HTTP sessions. The access JWT is never persisted in `localStorage` or `sessionStorage`. The refresh cookie is inaccessible to JavaScript, uses `Secure=true` in production, and receives security attributes appropriate to the deployment environment.
 
-MVP refresh is stateless until `exp`, without a refresh-token table, blacklist, server-side refresh store, or complex rotation/reuse detection. Refresh validates that the current user exists and is active. Every authenticated API request resolves the current user and enforces `is_active`, role, and ownership rules. Logout clears React memory and the refresh cookie. Because issued JWTs cannot be centrally revoked in this design, access tokens remain short-lived.
+MVP refresh is stateless until `exp`, without a refresh-token table, blacklist, server-side refresh store, or complex rotation/reuse detection. Refresh validates that the current user exists and is active. Every authenticated API request resolves the current user and enforces `is_active`; future CRM endpoints must additionally enforce the current database role and ownership rules. Logout clears React memory and the refresh cookie. Because issued JWTs cannot be centrally revoked in this design, access tokens remain short-lived.
 
 Passwords use Argon2id and a 12–128 character policy. Public employee registration is absent. A secure CLI/bootstrap mechanism creates the first `ADMIN` from email, display name, and an interactively entered password; default/hard-coded/master credentials, credentials in Git or `.env.example`, and production ADMIN creation through development seed data are prohibited.
+
+Implemented security primitives use `argon2-cffi` for salted Argon2id hashing/verification and `PyJWT` with HS256. JWT configuration is environment-backed and requires `JWT_SECRET_KEY`; token lifetime defaults are 30 minutes for access and 7 days for refresh. Tokens contain only `sub`, `type`, `iat`, and `exp`; role and other PII are intentionally absent. Reusable decoding requires an expected token type and normalizes expired, invalid-signature, malformed and wrong-type failures behind the internal security interface.
+
+The implemented `backend.app.scripts.create_admin` module is the controlled first-ADMIN input boundary. It reads and confirms the password through hidden `getpass` input, reuses the shared password policy/hash helpers, normalizes email with trim/lowercase plus conservative validation, trims/validates display name, and explicitly creates an active `ADMIN`. Creation is transactional; a PostgreSQL transaction-level table lock serializes concurrent bootstrap attempts. Duplicate email or any existing active/inactive ADMIN causes rollback/refusal with exit code 1. There is no force path, default credential, seed or automatic Compose bootstrap.
+
+The implemented HTTP flow exposes `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, and `GET /auth/me`. Login reuses the shared trim/lowercase email normalization and Argon2id verification, returns an access JWT plus a safe user schema, and stores the refresh JWT only in the `refresh_token` cookie. The cookie is `HttpOnly`, `SameSite=Lax`, scoped to `/auth`, aligned to the configured refresh lifetime, and uses environment-backed `AUTH_COOKIE_SECURE` (`false` for local HTTP, required `true` for production HTTPS). Refresh accepts only that cookie and issues a new access token without rotation or server-side state. Logout idempotently clears the same cookie path/attributes.
+
+`backend.app.api.dependencies.get_current_user` uses standard Bearer credentials, requires an access token, safely parses its UUID subject, and loads the current `User` from PostgreSQL for every authenticated request. Both Bearer authentication and refresh reject missing or inactive users. Role and user profile data come from the current database row; JWT claims remain only `sub`, `type`, `iat`, and `exp`. Development CORS remains origin-restricted and now permits credentials for the configured frontend origin.
 
 ### 14.3 Authorization enforcement
 
@@ -321,7 +343,7 @@ Passwords use Argon2id and a 12–128 character policy. Public employee registra
 
 ### 14.4 Public request boundary
 
-Unauthenticated public request submission is architecturally allowed and should reuse `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. Its endpoint/form contract is deferred to a separate iteration. This does not introduce an authenticated external user or a new lead-like domain entity.
+Unauthenticated public request submission is architecturally allowed and should reuse `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. Its endpoint/form/route contract is deferred to a controlled Day 2 iteration and is not implemented. This introduces neither an authenticated external user nor a customer portal or new lead-like domain entity. Employee CRM access remains protected.
 
 All future authentication, authorization, user-management, role, access-denied, and Client lifecycle UI follows the established `ru`/`en`/`es` localization architecture.
 
@@ -329,6 +351,6 @@ OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, 
 
 ## 15. Planned components and architecture gates
 
-The following remain planned and are not implemented: CRM domain modules, AI Service/OpenAI calls, integration adapters, Celery, Redis and authentication/authorization.
+The following remain planned and are not implemented: CRM domain modules, AI Service/OpenAI calls, integration adapters, Celery and Redis. Employee management uses `/users`, typed schemas, `services/users.py`, and reusable `require_admin`; role comes from the current DB User. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative. CRM role/ownership enforcement remains pending.
 
-Authentication/authorization architecture is `ARCHITECTURE DECIDED / DOCUMENTED`. Implementation has not started and must occur as a separate controlled stage before Day 2 CRM Core.
+Authentication backend/frontend and employee management are `IMPLEMENTED / VERIFIED`; CRM role/ownership authorization is `NOT IMPLEMENTED`. Day 2 remains not started.

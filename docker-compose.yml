@@ -23,9 +23,15 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vileoruf_app}:${POSTGRES_PASSWORD:-vileoruf_dev_password}@postgres:5432/${POSTGRES_DB:-vileoruf_crm}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
     command: >-
       sh -c "python -m alembic -c backend/alembic.ini upgrade head &&
-      python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload"
+      python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+      --reload --reload-dir backend"
     ports:
       - "127.0.0.1:8000:8000"
     volumes:

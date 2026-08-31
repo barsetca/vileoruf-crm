@@ -5,7 +5,7 @@
 ## Current phase
 Day 1 — Foundation: COMPLETE.
 
-Day 2 — CRM Core: NOT STARTED. Awaiting explicit authorization and completion of the separate controlled authentication/authorization implementation stage.
+Day 2 — CRM Core: NOT STARTED. Readiness gate passed; pending explicit authorization in a new controlled iteration.
 
 ## Overall deadline
 7-day MVP implementation plan.
@@ -36,8 +36,14 @@ Day 2 — CRM Core: NOT STARTED. Awaiting explicit authorization and completion 
 - [x] Foundation repository structure established without premature empty feature directories.
 - [x] Development seed strategy documented without creating domain models or seed data.
 - [x] Codex architectural/context contract prepared and applied through the five project source-of-truth documents.
-- [x] Authentication/authorization architecture gate: ARCHITECTURE DECIDED / DOCUMENTED. No auth implementation exists yet.
+- [x] Authentication/authorization architecture gate: ARCHITECTURE DECIDED / DOCUMENTED.
 - [x] PostgreSQL + FastAPI + React/Vite development environment starts through one verified `docker compose up --build` flow, including automatic migrations and development reload.
+- [x] Authentication backend foundation implemented and verified: `User`, `ADMIN`/`MANAGER`, Argon2id password primitives/policy, HS256 access/refresh JWT primitives/configuration, and users migration.
+- [x] Secure first-ADMIN bootstrap CLI implemented and verified with hidden password confirmation, controlled normalization/validation, repeated-bootstrap protection and transactional rollback.
+- [x] Backend authentication HTTP flow implemented and verified: login, stateless cookie refresh, idempotent logout, and current-user response.
+- [x] Reusable Bearer current-user authentication implemented and verified with per-request database existence/active-state checks.
+- [x] Frontend employee authentication implemented and browser-verified: localized login, memory-only access token, refresh-cookie reload restoration, protected screen, identity display and logout.
+- [x] ADMIN-only employee management implemented and verified: list/create/update, deactivate/reactivate, MANAGER 403, self/last-active-admin protection and localized UI.
 
 ## IN PROGRESS
 None.
@@ -104,9 +110,29 @@ None currently. The project PostgreSQL container uses host port `55432` because 
 
 Status: **ARCHITECTURE DECIDED / DOCUMENTED**.
 
+Authentication + employee management gate: **COMPLETE**.
+
+CRM authorization contract: **DECIDED / DOCUMENTED**.
+
+CRM authorization implementation: **NOT IMPLEMENTED**; it will be implemented together with the relevant CRM Core entities/endpoints before those endpoints are complete.
+
+Authentication backend foundation: **IMPLEMENTED / VERIFIED**.
+
+First ADMIN bootstrap CLI: **IMPLEMENTED / VERIFIED**.
+
+Backend authentication HTTP flow: **IMPLEMENTED / VERIFIED**.
+
+Current-user Bearer authentication: **IMPLEMENTED / VERIFIED**.
+
+Frontend authentication: **IMPLEMENTED / VERIFIED**.
+
+Employee management: **IMPLEMENTED / VERIFIED**.
+
 The approved design uses internal employee `User` accounts with `ADMIN` and `MANAGER` roles; email/password login with Argon2id; short-lived access JWTs held only in React memory; and stateless refresh JWTs in secure `HttpOnly` cookies. Backend authorization enforces role and Deal ownership through `responsible_user_id`. External customers remain unauthenticated `Client` records, with `CUSTOMER`/`CLIENT` lifecycle status separate from auth roles.
 
-No User model, password hashing, JWT code, bootstrap CLI, auth endpoint, migration, or frontend auth UI is implemented. The next stage is a controlled authentication/authorization implementation after review of this documentation gate; Day 2 CRM Core remains not started.
+Implemented foundation: UUID `User` model, native `ADMIN`/`MANAGER` role enum, Argon2id password validation/hashing/verification, environment-backed HS256 access/refresh JWT creation/typed decoding, Alembic revision `20260829_0002` for `users`, and interactive first-ADMIN bootstrap CLI.
+
+Authentication and ADMIN employee management are implemented through the protected frontend and backend `/auth/*` plus `/users` APIs. The current frontend opens at the employee login/protected foundation; the target unauthenticated public area (`/`) and separate employee CRM route (`/crm`) are documented but not implemented. CRM role/ownership authorization remains not implemented and is not a prerequisite for creating its dependent Day 2 entities; it must accompany the relevant CRM endpoints. Day 2 CRM Core remains not started.
 
 ## VERIFIED DAY 1 BASELINE
 
@@ -114,13 +140,14 @@ No User model, password hashing, JWT code, bootstrap CLI, auth endpoint, migrati
 - SQLAlchemy 2.0.41; Psycopg 3.2.9; Alembic 1.16.1; pydantic-settings 2.9.1.
 - PostgreSQL 16 via Docker Compose; database `vileoruf_crm`; development user `vileoruf_app`; host port `55432`; persistent volume and healthcheck.
 - Compose development services for PostgreSQL, FastAPI, and React/Vite; healthy dependency ordering, automatic Alembic upgrade, loopback host publishing, and source bind mounts verified from a clean volume.
-- Alembic revision `20260827_0001` applied; no CRM domain tables exist.
+- Alembic revision `20260829_0002` applied; `users` exists and no CRM Core domain tables exist.
+- Authentication dependencies: argon2-cffi 25.1.0 and PyJWT 2.13.0.
 - Node.js 24.20.0 LTS; npm 11.19.0; React/React DOM 19.2.8; Vite 8.2.2; `@vitejs/plugin-react` 6.1.1; i18next 26.4.0; react-i18next 17.0.12.
 - Frontend languages `ru`/`en`/`es`; Russian default/fallback; localStorage persistence; synchronized `<html lang>`.
 - Restricted development CORS and frontend-to-backend `/health` connectivity verified.
 - Backend pytest, frontend build, npm audit and browser runtime checks passed; npm audit reported 0 vulnerabilities.
 - Development seed strategy documented; executable seed and domain seed data do not exist yet.
-- Authentication/authorization (architecture documented, code not implemented), CRM Core, Celery/Redis, OpenAI and external integrations are not implemented.
+- Employee management and end-to-end authentication are verified; CRM authorization, CRM Core, Celery/Redis, OpenAI and external integrations are not implemented.
 
 ## DECISIONS / CHANGES LOG
 - Initial architecture: modular monolith.
@@ -138,18 +165,24 @@ No User model, password hashing, JWT code, bootstrap CLI, auth endpoint, migrati
 - Login uses unique email plus an Argon2id-hashed password; the first production `ADMIN` requires a secure CLI/bootstrap mechanism, not seed/default credentials.
 - Backend authorization is authoritative; managers may modify only Deals they own, while admins may manage all CRM Core records and responsible-user assignments.
 - Client lifecycle status is `CUSTOMER` until the first won Deal promotes it to `CLIENT`; this status is separate from authentication roles and is not automatically reversed.
+- User IDs use UUID; roles use a native PostgreSQL enum with no default; email remains unchanged in the persistence model pending a future input/service normalization boundary.
+- Password primitives use argon2-cffi 25.1.0 Argon2id with the approved 12–128 character policy.
+- JWT primitives use PyJWT 2.13.0 and HS256 with required environment signing secret, `sub`/`type`/`iat`/`exp` claims, and no role/PII claims.
+- First ADMIN is created only by `python -m backend.app.scripts.create_admin`; the CLI uses hidden password confirmation, trim/lowercase email normalization, shared Argon2id helpers, explicit `ADMIN`, transactional locking/rollback and refuses any repeated bootstrap.
+- Backend auth exposes only login/refresh/logout/me; refresh uses the `refresh_token` HttpOnly, SameSite=Lax, `/auth` cookie with environment-controlled Secure behavior and no server-side refresh state.
+- Every Bearer/refresh identity resolution reloads the User and enforces existence/is_active; roles and PII are never trusted from JWT claims.
 
 ## LAST CODEX RESULT
-Task: Add and verify one-command Docker Compose startup for the existing application foundation.
-Result: PostgreSQL, FastAPI, and React/Vite now start through `docker compose up --build`; clean database startup automatically applies Alembic revision `20260827_0001`. Day 1 remains COMPLETE, Day 2 remains NOT STARTED, and authentication implementation remains NOT STARTED.
-Files created: `.dockerignore`, `backend/Dockerfile.dev`, `frontend/Dockerfile.dev`, `frontend/.dockerignore`; local ignored report `history/ANSWER_10.md`.
-Files modified: `docker-compose.yml`, `.env.example`, `README.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT_STATUS.md`.
-Database/migrations: None.
+Task: Isolate the first-ADMIN PostgreSQL integration scenario and re-run the Day 2 readiness blocker criterion.
+Result: Bootstrap success/repeated-refusal tests now use a dedicated temporary PostgreSQL database; the persistent ADMIN remains unchanged and the full PostgreSQL suite passes. Day 2 readiness is READY, but Day 2 remains NOT STARTED pending explicit authorization.
+Files created: local ignored report `history/ANSWER_17.md`.
+Files modified: `backend/tests/test_create_admin_database.py`, `docs/DEVELOPMENT_STATUS.md`.
+Database/migrations: None; head remains `20260829_0002`.
 API endpoints: None.
 Dependencies: None.
-Tests/checks: Clean Compose down/build/up passed; all three services ran, PostgreSQL/backend were healthy, `/health` returned 200, Alembic was at `20260827_0001 (head)`, Vite returned 200, headless Chrome rendered backend as available, backend pytest passed, and the Node.js 24 container frontend build passed.
-Known issues: Development-only Dockerfiles are not production deployment images. Authentication remains entirely unimplemented.
-Next recommended step: Stop for user/architect review of `history/ANSWER_10.md`; do not begin authentication or Day 2 CRM Core automatically.
+Tests/checks: focused PostgreSQL 2 passed; full PostgreSQL 63 passed; ordinary 58 passed with five intentional DB skips; persistent ADMIN integrity, Compose, health, Alembic and frontend build passed.
+Known issues: No generic mid-session access-token expiry retry; stateless refresh JWTs cannot be centrally revoked before expiration. CRM authorization remains unimplemented by design until relevant CRM endpoints.
+Next recommended step: Start Day 2 only in a new explicitly authorized controlled iteration.
 
 ## UPDATE TEMPLATE
 

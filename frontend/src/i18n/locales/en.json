@@ -2,7 +2,8 @@
   "product": {
     "name": "VILEORUF CRM",
     "kind": "Sales management system",
-    "subtitle": "The frontend foundation is ready for further development."
+    "subtitle": "The frontend foundation is ready for further development.",
+    "subtitleAuthenticated": "The protected workspace is ready. CRM modules will be added in the next stage."
   },
   "status": {
     "frontend": {
@@ -21,5 +22,23 @@
     "ru": "Русский",
     "en": "English",
     "es": "Español"
+  },
+  "employees": {"title":"Employees","name":"Name","email":"Email","password":"Temporary password","role":"Role","active":"Active","inactive":"Inactive","create":"Create employee","edit":"Edit name","activate":"Activate","deactivate":"Deactivate","loading":"Loading employees...","empty":"No employees","created":"Employee created.","updated":"Employee updated.","roles":{"ADMIN":"Administrator","MANAGER":"Manager"},"errors":{"duplicate":"An employee with this email already exists.","adminSafety":"At least one active administrator must remain. You cannot remove your own access.","generic":"Could not complete the employee operation."}},
+  "auth": {
+    "internalAccess": "Staff access",
+    "title": "Sign in to VILEORUF CRM",
+    "subtitle": "Use your studio employee account.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "loading": "Checking your session...",
+    "logout": "Sign out",
+    "signingOut": "Signing out...",
+    "currentUser": "Current employee",
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "unavailable": "Could not reach the server. Please try again."
+    }
   }
 }

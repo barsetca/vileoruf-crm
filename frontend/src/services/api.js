@@ -1,12 +1,17 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
 
 
-export async function getBackendHealth(signal) {
+export function requireApiBaseUrl() {
   if (!apiBaseUrl) {
     throw new Error("VITE_API_BASE_URL is not configured");
   }
 
-  const response = await fetch(`${apiBaseUrl.replace(/\/$/, "")}/health`, {
+  return apiBaseUrl;
+}
+
+
+export async function getBackendHealth(signal) {
+  const response = await fetch(`${requireApiBaseUrl()}/health`, {
     signal,
   });
 

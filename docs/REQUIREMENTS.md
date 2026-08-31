@@ -147,7 +147,7 @@ Because the source specification does not define concrete encryption/GDPR accept
 
 ### 8.1 Authentication / authorization
 
-Authentication and authorization are required for the internal CRM interface. The architecture is approved and documented, but no authentication/authorization code is implemented yet. Its implementation is a controlled stage before Day 2 CRM Core.
+Authentication and authorization are required for the internal CRM interface. Backend/frontend authentication and ADMIN-only employee management are implemented. ADMIN can list/create/update employees, including role, name and active state; MANAGER is forbidden. Email/password changes and physical deletion are absent. Self-deactivation/self-downgrade and removal of the last active ADMIN are rejected. CRM role/ownership authorization remains pending.
 
 #### Users and roles
 
@@ -157,7 +157,7 @@ An authenticated `User` is only a VILEORUF Studio employee. MVP roles are:
 
 External customers are `Client` records, not `User` accounts or authentication roles. They receive no CRM login or customer portal in the current scope.
 
-The target minimum `User` model contains `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. Exact SQLAlchemy types and constraints are deferred to implementation. Employee offboarding uses `is_active = false`; physical deletion is not the primary mechanism because historical CRM records may reference the user.
+The minimum `User` model contains `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. The implemented backend foundation uses a UUID primary key, a native PostgreSQL role enum, and timezone-aware timestamps. Employee offboarding uses `is_active = false`; physical deletion is not the primary mechanism because historical CRM records may reference the user.
 
 #### Authentication mechanism
 
@@ -174,7 +174,7 @@ The MVP does not include OAuth/Google login, SSO, LDAP, magic links, 2FA, email 
 
 #### First ADMIN bootstrap
 
-There is no public employee registration. The first `ADMIN` is created through a separate secure CLI/bootstrap mechanism requiring at least email, display name, and an interactively supplied password that is hashed. Hard-coded/default/master credentials, credentials in Git or `.env.example`, and development seed data as a production ADMIN bootstrap are forbidden.
+There is no public employee registration. The implemented secure CLI/bootstrap mechanism creates the first `ADMIN` from email, display name, and an interactively supplied/confirmed password that is hashed. It is creation-only and refuses repeated bootstrap when any active or inactive ADMIN exists. Hard-coded/default/master credentials, credentials in Git or `.env.example`, and development seed data as a production ADMIN bootstrap are forbidden.
 
 #### Authorization
 
@@ -186,7 +186,9 @@ Backend authorization is authoritative; frontend hiding/disabling controls is on
 
 #### Public requests
 
-Unauthenticated public lead/request submission is permitted without creating a customer login. The preferred architectural mapping reuses approved entities: create `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. The detailed public form/API contract is deferred to a separate controlled iteration; no new `Lead`, `Inquiry`, or `Request` entity is approved by this principle alone.
+Public visitors do not authenticate and may submit a future public request without an employee login. The internal CRM remains protected for `ADMIN`/`MANAGER`. External customers remain `Client` records, never `User` accounts: the public area is not a customer portal and provides no password, personal cabinet, order-history login, customer JWT, or customer role.
+
+Once implemented during Day 2, a public request maps to `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. The exact API/form contract remains deferred to a separate controlled Day 2 iteration; neither the public route/form nor request endpoint exists yet, and no new `Lead`, `Inquiry`, or `Request` entity is approved by this principle alone.
 
 #### Authentication internationalization
 
