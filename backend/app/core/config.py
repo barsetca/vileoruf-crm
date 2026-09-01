@@ -8,9 +8,11 @@ from sqlalchemy.engine import make_url
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+AppEnvironment = Literal["development", "test", "production"]
 
 
 class Settings(BaseSettings):
+    app_env: AppEnvironment
     database_url: str
 
     model_config = SettingsConfigDict(

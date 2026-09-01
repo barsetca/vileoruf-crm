@@ -5,18 +5,16 @@ VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The planned 
 ## Current status
 
 - **Day 1 — Foundation: COMPLETE**
-- **Day 2 — CRM Core: NOT STARTED**
+- **Day 2 — CRM Core: COMPLETE**
 
-The current repository provides a runnable backend, database infrastructure, migrations, and a technical frontend. Internal authentication and ADMIN-only employee management are implemented end to end. CRM domain workflows and CRM authorization remain separate controlled stages before Day 2 begins.
+The repository provides the verified Day 2 CRM Core: Clients, Deals, system PipelineStages, employee ownership authorization, Deals UI, Pipeline Kanban and a public request boundary. `/` is public; `/login` and `/crm/*` are employee-only. A public request creates a `CUSTOMER` Client and unassigned Deal in `New Lead`; it does not create a customer account.
 
-Currently, opening the frontend leads to the employee login and protected technical foundation. This is not the final public UX. The Day 2 target separates an unauthenticated public information/request area for prospective customers from the protected employee CRM. Preferred future routes are `/` (public) and `/crm` (employees), but this routing and the public request form/API are not implemented yet. The public area is not a customer portal and creates no customer login.
+Current routes are `/` (public request page), `/login` (employee login), `/crm/clients`, `/crm/deals` and `/crm/pipeline` (protected employee CRM). A public visitor is never a User and receives no customer account, password, JWT or personal cabinet.
 
 ## Planned MVP capabilities
 
 The following capabilities are planned and are **not implemented yet**:
 
-- clients and deals;
-- a persistent sales pipeline and Kanban workflow;
 - communication history;
 - manager tasks;
 - AI lead scoring;
@@ -46,8 +44,8 @@ Payment processing is not part of the approved scope.
 - frontend-to-backend health status check;
 - restricted development CORS;
 - `ru`, `en`, and `es` localization with persisted language selection;
-- responsive VILEORUF dark SaaS visual foundation;
-- documented development seed strategy without executable seed data.
+- responsive VILEORUF light CRM UI, Clients, Deals and Pipeline Kanban;
+- public request form/API and explicit deterministic development demo seed.
 
 ## Tech stack
 
@@ -214,6 +212,30 @@ The frontend reads its backend URL from `VITE_API_BASE_URL` in the root environm
 - Backend health: `http://localhost:8000/health`
 - PostgreSQL host connection: `127.0.0.1:55432`
 
+### Application routes and public requests
+
+- `/` — public VILEORUF request form, without authentication;
+- `/login` — employee email/password login;
+- `/crm/clients`, `/crm/deals`, `/crm/pipeline` — protected ADMIN/MANAGER CRM pages.
+
+The public form sends only approved contact and project fields to `POST /public/requests`. One accepted request atomically creates `Client(status=CUSTOMER, lead_source=Website)` and an unassigned `Deal` in the system `New Lead` stage. It does not accept status, stage, probability, responsible employee or internal notes and does not create customer authentication.
+
+### Development demo seed
+
+Run the explicit deterministic seed only against development or test:
+
+```bash
+docker compose exec backend python -m backend.app.scripts.seed_demo
+```
+
+It is idempotent and creates exactly three fictitious Clients and five Deals; it creates no Users or credentials. Remove only these deterministic demo records with:
+
+```bash
+docker compose exec backend python -m backend.app.scripts.seed_demo --clean
+```
+
+Both commands refuse `APP_ENV=production`; they never truncate tables or remove unrelated data. Demo data is separate from the seven system PipelineStages and is governed by [`DEVELOPMENT_SEED_STRATEGY.md`](docs/DEVELOPMENT_SEED_STRATEGY.md).
+
 The frontend development origin is intentionally restricted to `http://localhost:5173` by the backend CORS configuration.
 
 ## Testing and verification
@@ -267,7 +289,7 @@ curl -i -c /tmp/vileoruf-cookies.txt \
 
 Open `http://localhost:5173` after starting Compose. If no ADMIN exists, create the first one with the bootstrap command above, then sign in using that employee email/password. The access token remains only in React memory; a page reload restores the session through the backend HttpOnly refresh cookie. The authenticated foundation screen shows display name, email and role. Use **Sign out / Выйти / Cerrar sesión** to clear local authentication and the refresh cookie.
 
-For local browser authentication, keep both frontend and backend on the `localhost` hostnames documented above. Refresh remains stateless, so logout cannot centrally revoke an already copied JWT before expiration. CRM role/ownership authorization is not implemented. External customers are not authenticated users.
+For local browser authentication, keep both frontend and backend on the `localhost` hostnames documented above. Refresh remains stateless, so logout cannot centrally revoke an already copied JWT before expiration. CRM role/ownership authorization is enforced by the backend. External customers are not authenticated users.
 
 ## Employee management
 

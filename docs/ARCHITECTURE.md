@@ -11,7 +11,7 @@ Reasons:
 
 ## 2. High-level architecture
 
-The diagram below is the target MVP architecture. At the end of Day 1, React/FastAPI/PostgreSQL and their foundation wiring are implemented. AI Service, integration adapters, Celery and Redis remain planned and must not be treated as existing functionality.
+The diagram below is the target MVP architecture. Day 1 Foundation and Day 2 CRM Core are implemented. AI Service, integration adapters, Celery and Redis remain planned and must not be treated as existing functionality.
 
 ```text
 React Frontend
@@ -49,15 +49,15 @@ The target FastAPI backend contains:
 
 Avoid putting business logic directly in route handlers.
 
-Day 1 currently implements:
+Implemented backend baseline through Day 2:
 - Python 3.10.12 and FastAPI;
 - `GET /health`, independent of database availability;
 - centralized environment settings using `pydantic-settings`;
 - PostgreSQL-only SQLAlchemy 2.x engine/session infrastructure using Psycopg 3;
-- Alembic with shared application configuration, initial revision `20260827_0001`, and current auth-foundation head `20260829_0002`;
+- Alembic with shared application configuration and current head `20260831_0003`;
 - restricted development CORS for the configured `FRONTEND_ORIGIN`.
-
-No CRM Core domain models, repositories or business services are implemented yet. Verified authentication and ADMIN employee management are implemented; CRM role/ownership authorization remains unimplemented.
+- `Client`, `PipelineStage`, and `Deal` domain models and services, including backend-authoritative CRM role/ownership authorization;
+- the public request action endpoint and development/test-only deterministic demo seed.
 
 ## 4. Frontend responsibilities
 The target React frontend contains:
@@ -74,7 +74,7 @@ The target React frontend contains:
 - API client layer;
 - i18n resources (`ru`, `en`, `es`).
 
-Day 1 currently implements a JavaScript React foundation using project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes a responsive protected technical screen, API services for health/auth, `AuthProvider`/`useAuth`, and i18next/react-i18next resources. On mount, the provider attempts cookie-based refresh before rendering login or authenticated content. Access JWT exists only in React memory; login stores token/user in provider state, and logout clears local state even if its backend request fails. Login/loading/errors/logout/current-user UI is translated in ru/en/es. CRM pages and navigation are not implemented yet.
+The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals, and Pipeline Kanban pages, native drag-and-drop with accessible Move fallback, and a public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
 
 Target application boundary:
 
@@ -86,7 +86,7 @@ React application
     └── ADMIN/MANAGER authentication required
 ```
 
-Preferred future route semantics are `/` for the public entry/request area and `/crm` for the protected employee CRM. This is a target contract, not the current route structure. The public area and routing are not implemented, and React Router is neither installed nor required by this readiness decision. Public area does not mean customer portal.
+Current routes are `/` for public request, `/login` for employee login, and `/crm/clients`, `/crm/deals`, and `/crm/pipeline` for protected employee CRM. Public area does not mean customer portal.
 
 ## 5. Target repository structure
 
@@ -139,7 +139,7 @@ vileoruf-crm/
 
 Codex must not substantially reorganize this architecture without explicit approval.
 
-Future feature directories in the target tree are created only with their corresponding implementation; empty directories are not required. The verified Day 1 foundation currently includes:
+Future feature directories are created only with their corresponding implementation; empty directories are not required. The implemented repository also contains CRM API modules, models, schemas, services, scripts, tests, frontend pages/services, and the VILEORUF logo asset for Day 2.
 
 ```text
 vileoruf-crm/
@@ -201,9 +201,23 @@ Deal
 
 `Deal` ownership uses `responsible_user_id` (or an equivalent foreign key) to `User`. `Client` has the lifecycle states `CUSTOMER` and `CLIENT`; the first Deal moved successfully to `Won` promotes `CUSTOMER` to `CLIENT`, with no automatic reverse transition.
 
+The implemented public boundary is an action endpoint, not an entity: `POST /public/requests` atomically creates a `CUSTOMER` Client and unassigned Deal in system stage `New Lead`. Public visitors never become `User`; `/` is public while `/login` and `/crm/*` remain employee routes.
+
 Do not introduce Payment, Invoice, Subscription or similar financial-processing entities unless requirements change.
 
-`User` is implemented only as the authentication backend foundation. The remaining entities are planned and not implemented; CRM Core has not started.
+`User`, `Client`, `Deal`, and `PipelineStage` are implemented. `Communication` and `Task` are planned Day 3 entities; AIAnalysis and Integration remain planned.
+
+### 6.1 Day 3 Communications contract
+
+`Communication` is an append-oriented CRM history record, not a live integration. It has a required Client, optional Deal, channel (`EMAIL`, `TELEGRAM`, `WHATSAPP`, `MANUAL`, `OTHER`), direction (`INCOMING`, `OUTGOING`), content, actual communication timestamp, and the sole initial CRM status `RECORDED`.
+
+When linked to a Deal, the Deal must belong to its Client; the backend authoritatively validates this invariant. Day 3 supports create and get/list/read only, with no DELETE or arbitrary edit. ADMIN may create history for any Client/Deal. MANAGER may create client-level records for any Client and Deal-linked records only on Deals they own. Both roles can read history. Channel classification does not create Gmail, Telegram, WhatsApp, or other live integration semantics; delivery tracking, provider IDs, delivery/read states, retries, errors, and synchronization are excluded.
+
+### 6.2 Day 3 Tasks contract
+
+`Task` is an internal CRM task with title, optional description, due datetime, persisted `OPEN`/`COMPLETED` status, responsible active ADMIN/MANAGER employee, and optional Client and Deal associations. General tasks are allowed. Where both Client and Deal are specified, the Deal must belong to the Client; a Deal-only task does not need a duplicate Client. The backend authoritatively validates these relationships.
+
+ADMIN sees and updates all Tasks, may create for any active ADMIN/MANAGER, and may reassign responsibility. MANAGER sees all Tasks but may create only for themself and update/complete only Tasks assigned to themself; they cannot reassign. Future implementation supports create, list/get and update/completion, never DELETE. `OVERDUE` is derived from an open task with a past due datetime, not persisted.
 
 ## 7. AI architecture
 AI calls must be isolated behind an AI service layer.
@@ -278,11 +292,11 @@ Implemented Day 1 details:
 - backend base URL comes from `VITE_API_BASE_URL`, not React components.
 
 ## 11. UI architecture / brand
-Use a professional dark SaaS dashboard based on the VILEORUF logo:
-- dark graphite surfaces;
-- blue primary actions/highlights;
-- steel/light-gray text and secondary accents;
-- restrained glow/metallic effects.
+Use a professional Modern Minimal Light UI based on the VILEORUF logo:
+- light neutral background and white surfaces;
+- blue primary actions/highlights as a functional accent;
+- graphite text and restrained neutral-gray secondary accents;
+- subtle borders/shadows and moderate radius; no metallic, glow, 3D or glass effects.
 
 Decorative branding must not reduce contrast, readability, accessibility or information density.
 
@@ -297,7 +311,7 @@ Any change that introduces a new major dependency, new infrastructure component,
 - Data persists in the `vileoruf_postgres_data` volume and the service has a healthcheck.
 - Application and Alembic read the same `DATABASE_URL`; credentials are not stored in `alembic.ini`.
 - `.env.example` contains public placeholders; the local `.env` is ignored.
-- Development seed rules are defined in `docs/DEVELOPMENT_SEED_STRATEGY.md`; no executable seed or seed records exist yet.
+- Development seed rules are defined in `docs/DEVELOPMENT_SEED_STRATEGY.md`; the implemented explicit demo seed is deterministic, idempotent, development/test-only, and never creates users or credentials.
 - Development Compose includes PostgreSQL, FastAPI backend, and React/Vite frontend services. `docker compose up --build` starts the complete verified foundation.
 - Backend waits for healthy PostgreSQL, uses `postgres:5432` through the Compose network, applies `alembic upgrade head`, and runs Uvicorn on `0.0.0.0:8000` with reload.
 - Frontend uses Node.js 24, installs from `package-lock.json` with `npm ci`, and runs Vite on `0.0.0.0:5173`. A separate container volume preserves `node_modules` beneath the source bind mount.
@@ -343,7 +357,7 @@ The implemented HTTP flow exposes `POST /auth/login`, `POST /auth/refresh`, `POS
 
 ### 14.4 Public request boundary
 
-Unauthenticated public request submission is architecturally allowed and should reuse `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. Its endpoint/form/route contract is deferred to a controlled Day 2 iteration and is not implemented. This introduces neither an authenticated external user nor a customer portal or new lead-like domain entity. Employee CRM access remains protected.
+Unauthenticated `POST /public/requests` atomically creates `Client(status=CUSTOMER, lead_source=Website)` and an unassigned Deal in system stage `New Lead`. `/` provides its public form; `/login` and `/crm/*` remain protected employee routes. This introduces neither an authenticated external user nor a customer portal or new lead-like domain entity.
 
 All future authentication, authorization, user-management, role, access-denied, and Client lifecycle UI follows the established `ru`/`en`/`es` localization architecture.
 
@@ -351,6 +365,10 @@ OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, 
 
 ## 15. Planned components and architecture gates
 
-The following remain planned and are not implemented: CRM domain modules, AI Service/OpenAI calls, integration adapters, Celery and Redis. Employee management uses `/users`, typed schemas, `services/users.py`, and reusable `require_admin`; role comes from the current DB User. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative. CRM role/ownership enforcement remains pending.
+The following remain planned and are not implemented: Communications and Tasks persistence/API/UI, Initial Dashboard, AI Service/OpenAI calls, integration adapters, Celery and Redis. Employee management uses `/users`, typed schemas, `services/users.py`, and reusable `require_admin`; role comes from the current DB User. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative.
 
-Authentication backend/frontend and employee management are `IMPLEMENTED / VERIFIED`; CRM role/ownership authorization is `NOT IMPLEMENTED`. Day 2 remains not started.
+Authentication backend/frontend, employee management, CRM Core, and Deal ownership authorization are `IMPLEMENTED / VERIFIED`.
+
+## 16. Dashboard boundary
+
+The future Initial Dashboard is a small operational overview of existing CRM data. It is not the Day 6 Analytics / Reporting subsystem. D3.0 defines no analytics architecture, reporting subsystem, forecast, conversion analytics, complex aggregations, or new infrastructure. Its exact minimal contract is deferred to a D3.6 preflight/contract iteration after Communications and Tasks are implemented.

@@ -2,67 +2,38 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
-import { getBackendHealth } from "../services/api.js";
-import LanguageSwitcher from "./LanguageSwitcher.jsx";
+import ClientsPage from "./ClientsPage.jsx";
+import CrmShell from "./CrmShell.jsx";
+import DealsPage from "./DealsPage.jsx";
 import EmployeeManagement from "./EmployeeManagement.jsx";
-
+import PipelinePage from "./PipelinePage.jsx";
 
 function AuthenticatedApp() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
-  const [backendStatus, setBackendStatus] = useState("checking");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuth();
+  const [location, setLocation] = useState(() => ({ pathname: window.location.pathname, search: window.location.search }));
+  const pathname = location.pathname;
 
   useEffect(() => {
-    const controller = new AbortController();
-    getBackendHealth(controller.signal)
-      .then((data) => setBackendStatus(data.status === "ok" ? "available" : "unavailable"))
-      .catch((error) => {
-        if (error.name !== "AbortError") setBackendStatus("unavailable");
-      });
-    return () => controller.abort();
+    if (!["/crm/clients", "/crm/deals", "/crm/pipeline"].includes(pathname)) {
+      window.history.replaceState({}, "", "/crm/clients");
+      setLocation({ pathname: "/crm/clients", search: "" });
+    }
+    const onPopState = () => setLocation({ pathname: window.location.pathname, search: window.location.search });
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  async function handleLogout() {
-    setIsLoggingOut(true);
-    await logout();
+  function navigate(nextPath) {
+    const nextLocation = new URL(nextPath, window.location.origin);
+    window.history.pushState({}, "", `${nextLocation.pathname}${nextLocation.search}`);
+    setLocation({ pathname: nextLocation.pathname, search: nextLocation.search });
   }
 
-  return (
-    <main className="foundation-shell">
-      <section className="foundation-card" aria-labelledby="product-title">
-        <div className="app-toolbar">
-          <div className="brand-mark" aria-hidden="true">V</div>
-          <div className="identity-card" aria-label={t("auth.currentUser")}>
-            <strong>{user.display_name}</strong>
-            <span>{user.email}</span>
-            <span className="role-badge">{user.role}</span>
-          </div>
-        </div>
-
-        <p className="eyebrow">{t("product.kind")}</p>
-        <h1 id="product-title">{t("product.name")}</h1>
-        <p className="subtitle">{t("product.subtitleAuthenticated")}</p>
-
-        <div className="status-grid">
-          <article className="status-item">
-            <span>{t("status.frontend.label")}</span>
-            <strong className="status status--available"><span className="status-dot" aria-hidden="true" />{t("status.frontend.ready")}</strong>
-          </article>
-          <article className="status-item">
-            <span>{t("status.backend.label")}</span>
-            <strong className={`status status--${backendStatus}`}><span className="status-dot" aria-hidden="true" />{t(`status.backend.${backendStatus}`)}</strong>
-          </article>
-        </div>
-
-        <button className="secondary-button" type="button" onClick={handleLogout} disabled={isLoggingOut}>
-          {t(isLoggingOut ? "auth.signingOut" : "auth.logout")}
-        </button>
-        <LanguageSwitcher />
-        {user.role === "ADMIN" && <EmployeeManagement />}
-      </section>
-    </main>
-  );
+  return <CrmShell pathname={pathname} onNavigate={navigate}>
+    {pathname === "/crm/deals" ? <DealsPage initialDealId={new URLSearchParams(location.search).get("deal")} /> : pathname === "/crm/pipeline" ? <PipelinePage onOpenDeal={(dealId) => navigate(`/crm/deals?deal=${dealId}`)} /> : <ClientsPage />}
+    {user.role === "ADMIN" && <details className="admin-tools"><summary>{t("employees.title")}</summary><EmployeeManagement /></details>}
+  </CrmShell>;
 }
 
 

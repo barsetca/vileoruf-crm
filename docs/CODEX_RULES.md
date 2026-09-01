@@ -77,7 +77,7 @@ Do not remove existing functionality unless explicitly requested or required to 
 - Use reusable components.
 - Keep API access in a service/client layer rather than scattered raw calls.
 - Implement loading, error and empty states for user-facing flows.
-- Maintain the VILEORUF dark SaaS visual language.
+- Maintain the Modern Minimal Light UI, Apple-inspired visual contract: light neutral background, white surfaces, VILEORUF blue functional accents, graphite text, subtle borders/shadows, moderate radius, and practical information density. Preserve the existing VILEORUF logo. Do not introduce dark theme, gradients, glassmorphism, metallic effects, or glow without a separate decision.
 - Avoid decorative effects that harm usability.
 
 ## 8. Internationalization is mandatory

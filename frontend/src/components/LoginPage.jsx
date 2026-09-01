@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
+import logoUrl from "../assets/vileoruf-logo.png";
 import LanguageSwitcher from "./LanguageSwitcher.jsx";
 
 
@@ -30,7 +31,7 @@ function LoginPage() {
     <main className="auth-shell">
       <section className="auth-card" aria-labelledby="login-title">
         <div className="auth-heading">
-          <div className="brand-mark" aria-hidden="true">V</div>
+          <img className="brand-logo brand-logo--login" src={logoUrl} alt="" />
           <div>
             <p className="eyebrow">{t("auth.internalAccess")}</p>
             <h1 id="login-title">{t("auth.title")}</h1>

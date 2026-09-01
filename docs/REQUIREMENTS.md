@@ -61,28 +61,26 @@ A deal belongs to a client. Proposed MVP fields:
 
 Estimated budget is CRM deal information and is NOT payment processing.
 
-### 3.4 Communication history
-Maintain communication history for clients/deals. Proposed channels:
-- email;
-- Telegram;
-- WhatsApp;
-- manual/other communication where useful.
+### 3.4 Communication history — Day 3 contract
+`Communication` is an append-oriented CRM history record, not a live provider integration. It has `id`, required `client_id`, optional `deal_id`, `channel`, `direction`, `content`, actual communication timestamp, and `status`.
 
-Proposed communication data:
-- channel;
-- incoming/outgoing direction;
-- content;
-- timestamp;
-- client;
-- optional deal;
-- status.
+- Channels are `EMAIL`, `TELEGRAM`, `WHATSAPP`, `MANUAL`, and `OTHER`; they classify a CRM record only and do not imply a live integration.
+- Directions are `INCOMING` and `OUTGOING`.
+- The sole Day 3 status is `RECORDED`, meaning the communication fact is registered in CRM.
+- If `deal_id` is present, that Deal must belong to the specified Client; the backend is authoritative for this invariant.
+- Day 3 provides create and get/list/read only. DELETE and arbitrary edits are excluded.
+- Both employee roles may read history. ADMIN may create for any Client/Deal. MANAGER may create client-level history for any existing Client and Deal-linked history only for Deals for which the manager is responsible.
 
-### 3.5 Tasks
-Tasks are an MVP extension supporting manager recommendations/workflow:
-- title/description;
-- due date;
-- completion status;
-- client/deal association where applicable.
+Provider delivery receipts, provider message IDs, `SENT`/`DELIVERED`/`READ`, retries, provider errors, synchronization state, and Gmail/Telegram/WhatsApp live integrations are out of scope until separately approved.
+
+### 3.5 Tasks — Day 3 contract
+`Task` is an internal CRM task with `id`, `title`, optional `description`, `due_at`, persisted completion `status`, `responsible_user_id`, and optional `client_id` and `deal_id`.
+
+- Persisted statuses are only `OPEN` and `COMPLETED`. `OVERDUE`, if needed, is derived from an open task whose `due_at` is in the past; it is not stored.
+- The responsible employee must be an active existing User with role ADMIN or MANAGER.
+- General tasks without Client or Deal are allowed. If both relations are supplied, the Deal must belong to the Client. A task linked only to a Deal need not duplicate its Client; the backend enforces these relationship invariants.
+- ADMIN can view all Tasks, create for any active ADMIN/MANAGER, update any Task, and reassign responsibility. MANAGER can view all Tasks, create only for themself, and update/complete only Tasks assigned to themself; a MANAGER cannot reassign a Task.
+- Future implementation includes create, list/get, update, and completion through `status`; DELETE is excluded.
 
 ## 4. AI requirements
 
@@ -147,7 +145,7 @@ Because the source specification does not define concrete encryption/GDPR accept
 
 ### 8.1 Authentication / authorization
 
-Authentication and authorization are required for the internal CRM interface. Backend/frontend authentication and ADMIN-only employee management are implemented. ADMIN can list/create/update employees, including role, name and active state; MANAGER is forbidden. Email/password changes and physical deletion are absent. Self-deactivation/self-downgrade and removal of the last active ADMIN are rejected. CRM role/ownership authorization remains pending.
+Authentication and authorization are required for the internal CRM interface. Backend/frontend authentication, ADMIN-only employee management, and Day 2 CRM role/ownership authorization are implemented. ADMIN can list/create/update employees, including role, name and active state; MANAGER is forbidden. Email/password changes and physical deletion are absent. Self-deactivation/self-downgrade and removal of the last active ADMIN are rejected.
 
 #### Users and roles
 
@@ -186,9 +184,9 @@ Backend authorization is authoritative; frontend hiding/disabling controls is on
 
 #### Public requests
 
-Public visitors do not authenticate and may submit a future public request without an employee login. The internal CRM remains protected for `ADMIN`/`MANAGER`. External customers remain `Client` records, never `User` accounts: the public area is not a customer portal and provides no password, personal cabinet, order-history login, customer JWT, or customer role.
+Public visitors do not authenticate and may submit a public request without an employee login. The internal CRM remains protected for `ADMIN`/`MANAGER`. External customers remain `Client` records, never `User` accounts: the public area is not a customer portal and provides no password, personal cabinet, order-history login, customer JWT, or customer role.
 
-Once implemented during Day 2, a public request maps to `Client(status=CUSTOMER)` plus a Deal in the initial pipeline stage. The exact API/form contract remains deferred to a separate controlled Day 2 iteration; neither the public route/form nor request endpoint exists yet, and no new `Lead`, `Inquiry`, or `Request` entity is approved by this principle alone.
+The implemented public request maps atomically to `Client(status=CUSTOMER)` plus an unassigned Deal in the system `New Lead` stage. No new `Lead`, `Inquiry`, or `Request` entity is created by this flow.
 
 #### Authentication internationalization
 

@@ -4,12 +4,14 @@
 
 Development seed data will provide deterministic test data for local development and demonstrations after the corresponding CRM domain models exist.
 
-No seed executable or domain records are created during Day 1 because the CRM domain model has not been implemented yet.
+Required system/bootstrap data is a separate category from demo/development seed data. System data needed for approved application behavior may be installed explicitly in development, test and production. Demo/development data remains forbidden in production.
+
+The implemented `python -m backend.app.scripts.seed_demo` command installs exactly three fictitious Clients and five Deals with deterministic UUIDs. It is allowed only in `development` and `test`, is idempotent, creates no User/credentials, and is forbidden in `production`. `--clean` removes only those deterministic demo Deals/Clients, never real data or stages.
 
 ## Rules
 
-1. Seed execution must be explicit and limited to development/test environments.
-2. The seed command must refuse to run in production.
+1. Demo/development seed execution must be explicit and limited to development/test environments.
+2. Demo/development seed commands must refuse to run in production; explicit system/bootstrap commands may run in production when they create only required non-demo application data.
 3. Seed data must contain no real personal data, credentials, tokens or provider secrets.
 4. Database schema changes remain in Alembic migrations; seed data remains outside migrations.
 5. Seed execution must be repeatable and idempotent, using deterministic identifiers or stable lookup keys where appropriate.

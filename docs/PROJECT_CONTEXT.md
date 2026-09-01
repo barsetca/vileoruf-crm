@@ -4,13 +4,11 @@
 Full-stack CRM with AI sales automation for VILEORUF Studio.
 
 ## Current phase
-Day 1 foundation is complete. Day 2 CRM Core has not started.
+Day 1 Foundation and Day 2 CRM Core are complete. Day 3 starts with the documented Communications and Tasks contracts; those features are not implemented yet.
 
-The verified foundation currently includes a FastAPI health endpoint, PostgreSQL/SQLAlchemy/Alembic infrastructure, a Docker Compose PostgreSQL service, and a React/Vite technical frontend with mandatory `ru`/`en`/`es` localization.
+The verified application includes FastAPI, PostgreSQL/SQLAlchemy/Alembic, Docker Compose, a React/Vite frontend with `ru`/`en`/`es`, employee authentication and ADMIN employee management. Day 2 adds Clients, Deals, database-backed PipelineStages, Deal ownership authorization, a dedicated stage transition, CUSTOMER-to-CLIENT promotion on a real transition to Won, protected Clients/Deals/Pipeline CRM pages, and the public request boundary.
 
-CRM domain models and workflows, CRM authorization, Celery/Redis, OpenAI functionality and external integrations are not implemented yet. Verified employee authentication works end to end, and ADMIN employee management supports listing, creating, editing role/name, deactivation and reactivation with backend-authoritative access and last-admin safety. CRM role/ownership enforcement remains a separate controlled stage before Day 2 CRM Core begins.
-
-The current React frontend opens directly into the employee authentication/protected foundation flow. The approved target adds a separate unauthenticated public entry/request area for prospective customers while keeping the employee CRM protected. That public boundary is documented but not implemented; it is not a customer portal and creates no customer account, password, JWT, or `User` role.
+`ADMIN` has CRM-wide access. `MANAGER` sees all Clients and Deals, but may change business state only for Deals they own; backend enforcement is authoritative. The public `/` request creates a `CUSTOMER` Client and unassigned Deal in `New Lead`. It is not a customer portal and creates no customer account, password, JWT, or `User` role.
 
 ## Business context
 VILEORUF Studio creates turnkey video content: scripting, professional editing from client materials or stock footage, AI-generated visuals/video, color correction, transitions, sound effects, music, text, and adaptation for social networks.
@@ -48,12 +46,13 @@ Target implementation period: 7 days. Development follows an MVP-first approach.
 6. Do not implement payment functionality unless requirements are explicitly changed.
 
 ## Brand / UI direction
-The interface should visually relate to the VILEORUF Studio logo:
-- dark graphite/black SaaS interface;
-- electric/deep blue primary accent;
-- light steel/metallic secondary accents;
-- restrained glow/3D effects;
-- readability and daily usability take priority over decorative effects.
+The CRM uses a Modern Minimal Light UI, Apple-inspired direction:
+- very light neutral background and white surfaces;
+- VILEORUF electric/deep blue as a functional accent;
+- graphite typography and neutral-gray secondary details;
+- subtle borders/shadows and moderate radius;
+- no metallic gradients, chrome, glow, 3D or glass effects;
+- practical daily CRM readability and information density take priority over decoration.
 
 ## Internationalization
 Required UI languages:

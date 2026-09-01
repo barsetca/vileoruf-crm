@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 import { setLanguage, supportedLanguages } from "../i18n/index.js";
 
 
-function LanguageSwitcher() {
+function LanguageSwitcher({ compact = false }) {
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="language-switcher">
+    <div className={`language-switcher ${compact ? "language-switcher--compact" : ""}`}>
       <span className="language-label">{t("language.label")}</span>
       <div className="language-options">
         {supportedLanguages.map((language) => (

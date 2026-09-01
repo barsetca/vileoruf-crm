@@ -1,11 +1,16 @@
 from datetime import datetime, timezone
 from enum import Enum
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, DateTime, Enum as SqlEnum, String, Uuid, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base import Base
+
+
+if TYPE_CHECKING:
+    from backend.app.models.deal import Deal
 
 
 def utc_now() -> datetime:
@@ -46,4 +51,7 @@ class User(Base):
         default=utc_now,
         onupdate=utc_now,
         server_default=func.now(),
+    )
+    responsible_deals: Mapped[list["Deal"]] = relationship(
+        back_populates="responsible_user"
     )
