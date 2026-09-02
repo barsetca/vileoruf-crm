@@ -4,7 +4,7 @@
 Full-stack CRM with AI sales automation for VILEORUF Studio.
 
 ## Current phase
-Day 1 Foundation and Day 2 CRM Core are complete. Day 3 starts with the documented Communications and Tasks contracts; those features are not implemented yet.
+Day 1 Foundation, Day 2 CRM Core, and Day 3 (D3.0–D3.7) are complete, including Communications, Tasks, and the bounded Initial Operational Dashboard. The next planned step is Day 4 AI work.
 
 The verified application includes FastAPI, PostgreSQL/SQLAlchemy/Alembic, Docker Compose, a React/Vite frontend with `ru`/`en`/`es`, employee authentication and ADMIN employee management. Day 2 adds Clients, Deals, database-backed PipelineStages, Deal ownership authorization, a dedicated stage transition, CUSTOMER-to-CLIENT promotion on a real transition to Won, protected Clients/Deals/Pipeline CRM pages, and the public request boundary.
 

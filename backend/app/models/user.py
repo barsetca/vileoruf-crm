@@ -11,6 +11,7 @@ from backend.app.db.base import Base
 
 if TYPE_CHECKING:
     from backend.app.models.deal import Deal
+    from backend.app.models.task import Task
 
 
 def utc_now() -> datetime:
@@ -53,5 +54,8 @@ class User(Base):
         server_default=func.now(),
     )
     responsible_deals: Mapped[list["Deal"]] = relationship(
+        back_populates="responsible_user"
+    )
+    responsible_tasks: Mapped[list["Task"]] = relationship(
         back_populates="responsible_user"
     )

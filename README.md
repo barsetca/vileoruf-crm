@@ -1,22 +1,21 @@
 # VILEORUF CRM
 
-VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The planned MVP will support AI-assisted sales automation, while the current repository contains only the verified application foundation.
+VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The planned MVP will support AI-assisted sales automation, while the current repository contains the verified Day 1 foundation, Day 2 CRM Core, and Day 3 Communications and Tasks workflows.
 
 ## Current status
 
 - **Day 1 — Foundation: COMPLETE**
 - **Day 2 — CRM Core: COMPLETE**
+- **Day 3 — Communications, Tasks, and Initial Operational Dashboard: COMPLETE**
 
-The repository provides the verified Day 2 CRM Core: Clients, Deals, system PipelineStages, employee ownership authorization, Deals UI, Pipeline Kanban and a public request boundary. `/` is public; `/login` and `/crm/*` are employee-only. A public request creates a `CUSTOMER` Client and unassigned Deal in `New Lead`; it does not create a customer account.
+The repository provides the verified Day 1 foundation, Day 2 CRM Core, and Day 3 Communications, Tasks, and bounded Initial Operational Dashboard. `/` is public; `/login` and `/crm/*` are employee-only. A public request creates a `CUSTOMER` Client and unassigned Deal in `New Lead`; it does not create a customer account.
 
-Current routes are `/` (public request page), `/login` (employee login), `/crm/clients`, `/crm/deals` and `/crm/pipeline` (protected employee CRM). A public visitor is never a User and receives no customer account, password, JWT or personal cabinet.
+Current routes are `/` (public request page), `/login` (employee login), `/crm` (operational dashboard), `/crm/clients`, `/crm/deals`, `/crm/pipeline` and `/crm/tasks` (protected employee CRM). A public visitor is never a User and receives no customer account, password, JWT or personal cabinet.
 
 ## Planned MVP capabilities
 
 The following capabilities are planned and are **not implemented yet**:
 
-- communication history;
-- manager tasks;
 - AI lead scoring;
 - deal prediction;
 - next-best-action recommendations;
@@ -24,20 +23,20 @@ The following capabilities are planned and are **not implemented yet**:
 - Gmail, Telegram, WhatsApp, and Calendar integrations;
 - sales analytics and reporting.
 
-Payment processing is not part of the approved scope.
+Communication persistence, authenticated create/get/list API, and Client/Deal context timeline are implemented. Task persistence, authenticated create/list/get/update/completion API, and protected employee Tasks UI are implemented. Payment processing is not part of the approved scope.
 
-## Implemented foundation
+## Implemented foundation, CRM Core, Communications timeline, and Tasks
 
 - FastAPI backend with `GET /health`;
 - centralized environment configuration;
 - PostgreSQL-only database configuration;
 - SQLAlchemy 2.x engine and session infrastructure using Psycopg 3;
-- Alembic configuration and applied initial revision;
+- Alembic configuration with current applied head `20260901_0004`;
 - internal User persistence with `ADMIN`/`MANAGER` roles;
 - Argon2id password and JWT access/refresh token primitives;
 - secure interactive first-ADMIN bootstrap CLI;
 - backend login/refresh/logout/me endpoints and reusable Bearer current-user authentication;
-- localized frontend login and protected foundation screen with memory-only access JWT, reload restoration and logout;
+- localized frontend login and protected CRM shell with memory-only access JWT, reload restoration and logout;
 - PostgreSQL 16 service through Docker Compose, with persistent storage and a healthcheck;
 - one-command Docker Compose development environment for PostgreSQL, FastAPI, and React/Vite;
 - React/Vite technical frontend;
@@ -45,7 +44,9 @@ Payment processing is not part of the approved scope.
 - restricted development CORS;
 - `ru`, `en`, and `es` localization with persisted language selection;
 - responsive VILEORUF light CRM UI, Clients, Deals and Pipeline Kanban;
+- protected operational `/crm` Dashboard with bounded open Tasks, recent Communications, and quick CRM navigation; no global counts or analytics;
 - public request form/API and explicit deterministic development demo seed.
+- Communication and Task persistence models with PostgreSQL enums, foreign keys, and timeline/worklist indexes; authenticated Communication create/get/list API and Client/Deal context timeline; authenticated Task create/list/get/update/completion API and protected `/crm/tasks` UI with role-aware responsibility rules.
 
 ## Tech stack
 
@@ -216,7 +217,7 @@ The frontend reads its backend URL from `VITE_API_BASE_URL` in the root environm
 
 - `/` — public VILEORUF request form, without authentication;
 - `/login` — employee email/password login;
-- `/crm/clients`, `/crm/deals`, `/crm/pipeline` — protected ADMIN/MANAGER CRM pages.
+- `/crm` — protected operational Dashboard; `/crm/clients`, `/crm/deals`, `/crm/pipeline`, `/crm/tasks` — protected ADMIN/MANAGER CRM pages.
 
 The public form sends only approved contact and project fields to `POST /public/requests`. One accepted request atomically creates `Client(status=CUSTOMER, lead_source=Website)` and an unassigned `Deal` in the system `New Lead` stage. It does not accept status, stage, probability, responsible employee or internal notes and does not create customer authentication.
 
@@ -293,7 +294,7 @@ For local browser authentication, keep both frontend and backend on the `localho
 
 ## Employee management
 
-After signing in as ADMIN, use the **Employees / Сотрудники / Empleados** section on the protected foundation screen. ADMIN can create MANAGER or additional ADMIN accounts, edit display name and role, and deactivate/reactivate accounts. Deactivation preserves the database row; physical deletion, email change and password reset are intentionally absent. MANAGER cannot see this section and receives HTTP 403 from `/users`. The current ADMIN cannot deactivate or downgrade itself, and the backend always preserves at least one active ADMIN.
+After signing in as ADMIN, use the **Employees / Сотрудники / Empleados** section in the protected CRM shell. ADMIN can create MANAGER or additional ADMIN accounts, edit display name and role, and deactivate/reactivate accounts. Deactivation preserves the database row; physical deletion, email change and password reset are intentionally absent. MANAGER cannot see this section and receives HTTP 403 from `/users`. The current ADMIN cannot deactivate or downgrade itself, and the backend always preserves at least one active ADMIN.
 
 ## Security and secrets
 

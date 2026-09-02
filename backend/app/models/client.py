@@ -11,7 +11,9 @@ from backend.app.models.user import utc_now
 
 
 if TYPE_CHECKING:
+    from backend.app.models.communication import Communication
     from backend.app.models.deal import Deal
+    from backend.app.models.task import Task
 
 
 class ClientStatus(str, Enum):
@@ -52,3 +54,5 @@ class Client(Base):
         server_default=func.now(),
     )
     deals: Mapped[list["Deal"]] = relationship(back_populates="client")
+    communications: Mapped[list["Communication"]] = relationship(back_populates="client")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="client")

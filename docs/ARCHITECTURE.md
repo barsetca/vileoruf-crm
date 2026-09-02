@@ -74,7 +74,7 @@ The target React frontend contains:
 - API client layer;
 - i18n resources (`ru`, `en`, `es`).
 
-The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals, and Pipeline Kanban pages, native drag-and-drop with accessible Move fallback, and a public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
+The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals, Pipeline Kanban, and Tasks pages, native drag-and-drop with accessible Move fallback, and a public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
 
 Target application boundary:
 
@@ -86,7 +86,7 @@ React application
     └── ADMIN/MANAGER authentication required
 ```
 
-Current routes are `/` for public request, `/login` for employee login, and `/crm/clients`, `/crm/deals`, and `/crm/pipeline` for protected employee CRM. Public area does not mean customer portal.
+Current routes are `/` for public request, `/login` for employee login, and `/crm`, `/crm/clients`, `/crm/deals`, `/crm/pipeline`, and `/crm/tasks` for protected employee CRM. `/crm` is the bounded operational Dashboard, not a reporting route. Public area does not mean customer portal.
 
 ## 5. Target repository structure
 
@@ -205,7 +205,7 @@ The implemented public boundary is an action endpoint, not an entity: `POST /pub
 
 Do not introduce Payment, Invoice, Subscription or similar financial-processing entities unless requirements change.
 
-`User`, `Client`, `Deal`, and `PipelineStage` are implemented. `Communication` and `Task` are planned Day 3 entities; AIAnalysis and Integration remain planned.
+`User`, `Client`, `Deal`, `PipelineStage`, `Communication`, and `Task` persistence models are implemented. Communications create/get/list API and its Client/Deal context timeline frontend are implemented. Tasks create/list/get/update/completion API and protected Tasks frontend are implemented. AIAnalysis and Integration remain planned.
 
 ### 6.1 Day 3 Communications contract
 
@@ -217,7 +217,7 @@ When linked to a Deal, the Deal must belong to its Client; the backend authorita
 
 `Task` is an internal CRM task with title, optional description, due datetime, persisted `OPEN`/`COMPLETED` status, responsible active ADMIN/MANAGER employee, and optional Client and Deal associations. General tasks are allowed. Where both Client and Deal are specified, the Deal must belong to the Client; a Deal-only task does not need a duplicate Client. The backend authoritatively validates these relationships.
 
-ADMIN sees and updates all Tasks, may create for any active ADMIN/MANAGER, and may reassign responsibility. MANAGER sees all Tasks but may create only for themself and update/complete only Tasks assigned to themself; they cannot reassign. Future implementation supports create, list/get and update/completion, never DELETE. `OVERDUE` is derived from an open task with a past due datetime, not persisted.
+ADMIN sees and updates all Tasks, may create for any active ADMIN/MANAGER, and may reassign responsibility. MANAGER sees all Tasks but may create only for themself and update/complete only Tasks assigned to themself; they cannot reassign. The implemented API provides create, list/get, PATCH of business fields, and explicit `POST /tasks/{task_id}/complete`; DELETE is absent. `OVERDUE` is derived from an open task with a past due datetime, not persisted or returned as an API field.
 
 ## 7. AI architecture
 AI calls must be isolated behind an AI service layer.
@@ -365,10 +365,10 @@ OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, 
 
 ## 15. Planned components and architecture gates
 
-The following remain planned and are not implemented: Communications and Tasks persistence/API/UI, Initial Dashboard, AI Service/OpenAI calls, integration adapters, Celery and Redis. Employee management uses `/users`, typed schemas, `services/users.py`, and reusable `require_admin`; role comes from the current DB User. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative.
+The following remain planned and are not implemented: AI Service/OpenAI calls, integration adapters, Celery and Redis. Communication create/get/list API uses typed schemas and `services/communications.py`; its frontend is embedded in existing Client and Deal detail contexts, without a standalone Communications route. The backend authoritatively validates Client/Deal consistency and manager Deal ownership; frontend role-aware controls are UX only. Tasks uses typed schemas and `services/tasks.py`; its protected `/crm/tasks` frontend uses all-task visibility, active employee references, and the existing D3.4 filters/mutations. The protected `/crm` Dashboard independently consumes bounded first-page OPEN Tasks and recent Communications requests; it shows no global counts, Pipeline counts, page crawling, aggregation endpoint, analytics, or reporting. Communication/Task persistence uses PostgreSQL enums, restrictive foreign keys, and ordinary ORM relationships. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative.
 
 Authentication backend/frontend, employee management, CRM Core, and Deal ownership authorization are `IMPLEMENTED / VERIFIED`.
 
 ## 16. Dashboard boundary
 
-The future Initial Dashboard is a small operational overview of existing CRM data. It is not the Day 6 Analytics / Reporting subsystem. D3.0 defines no analytics architecture, reporting subsystem, forecast, conversion analytics, complex aggregations, or new infrastructure. Its exact minimal contract is deferred to a D3.6 preflight/contract iteration after Communications and Tasks are implemented.
+The implemented Initial Dashboard is a small protected operational overview of existing CRM data. It uses bounded existing `GET /tasks?status=OPEN` and `GET /communications` requests, each with no aggregation or page crawling, plus quick navigation. It is not the Day 6 Analytics / Reporting subsystem: it has no global counts, Pipeline counts, charts, forecasts, trends, reporting, analytics architecture, or new infrastructure. `/dashboard/summary` is not part of the architecture.

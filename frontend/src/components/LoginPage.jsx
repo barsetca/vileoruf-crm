@@ -6,7 +6,7 @@ import logoUrl from "../assets/vileoruf-logo.png";
 import LanguageSwitcher from "./LanguageSwitcher.jsx";
 
 
-function LoginPage() {
+function LoginPage({ onHome }) {
   const { t } = useTranslation();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -71,6 +71,9 @@ function LoginPage() {
           </button>
         </form>
 
+        <button className="text-button auth-home-link" type="button" onClick={onHome}>
+          {t("auth.backToHome")}
+        </button>
         <LanguageSwitcher />
       </section>
     </main>

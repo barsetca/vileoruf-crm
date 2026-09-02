@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
+import CommunicationTimeline from "./CommunicationTimeline.jsx";
 import { createClient, getClient, listClients, updateClient } from "../services/clients.js";
 
 
@@ -93,7 +94,7 @@ function ClientsPage() {
         <nav className="pagination" aria-label={t("clients.pagination.label")}><button className="secondary-button" type="button" disabled={offset === 0} onClick={() => load(Math.max(0, offset - PAGE_SIZE))}>{t("clients.pagination.previous")}</button><span>{t("clients.pagination.page", { page: Math.floor(offset / PAGE_SIZE) + 1 })}</span><button className="secondary-button" type="button" disabled={clients.length < PAGE_SIZE} onClick={() => load(offset + PAGE_SIZE)}>{t("clients.pagination.next")}</button></nav>
       </>}
     </section>
-    {modal && <div className="modal-backdrop" role="presentation"><section className="client-modal" role="dialog" aria-modal="true" aria-labelledby="client-modal-title"><div className="modal-header"><div><p className="eyebrow">{modal.mode === "edit" ? t("clients.edit") : t("clients.create")}</p><h2 id="client-modal-title">{modal.mode === "edit" ? modal.client?.name : t("clients.create")}</h2></div><button className="icon-button" type="button" onClick={() => setModal(null)} aria-label={t("common.close")}>×</button></div>{modal.mode === "loading" ? <div className="state-panel"><span className="loading-spinner" /><p>{t("clients.loading")}</p></div> : <>{modal.mode === "edit" && <div className="readonly-status"><span>{t("clients.statusLabel")}</span><span className={`status-badge status-badge--${modal.client.status.toLowerCase()}`}>{t(`clients.status.${modal.client.status}`)}</span></div>}<ClientForm form={form} onChange={changeField} error={formError} submitting={isSubmitting} onSubmit={submit} submitLabel={t(isSubmitting ? "common.saving" : "common.save")} /></>}</section></div>}
+    {modal && <div className="modal-backdrop" role="presentation"><section className="client-modal" role="dialog" aria-modal="true" aria-labelledby="client-modal-title"><div className="modal-header"><div><p className="eyebrow">{modal.mode === "edit" ? t("clients.edit") : t("clients.create")}</p><h2 id="client-modal-title">{modal.mode === "edit" ? modal.client?.name : t("clients.create")}</h2></div><button className="icon-button" type="button" onClick={() => setModal(null)} aria-label={t("common.close")}>×</button></div>{modal.mode === "loading" ? <div className="state-panel"><span className="loading-spinner" /><p>{t("clients.loading")}</p></div> : <>{modal.mode === "edit" && <div className="readonly-status"><span>{t("clients.statusLabel")}</span><span className={`status-badge status-badge--${modal.client.status.toLowerCase()}`}>{t(`clients.status.${modal.client.status}`)}</span></div>}<ClientForm form={form} onChange={changeField} error={formError} submitting={isSubmitting} onSubmit={submit} submitLabel={t(isSubmitting ? "common.saving" : "common.save")} />{modal.mode === "edit" && <CommunicationTimeline clientId={modal.client.id} />}</>}</section></div>}
     {user.role === "ADMIN" && <p className="clients-permission-note">{t("clients.permissions.admin")}</p>}
   </>;
 }

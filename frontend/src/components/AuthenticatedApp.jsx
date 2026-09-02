@@ -4,9 +4,11 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext.jsx";
 import ClientsPage from "./ClientsPage.jsx";
 import CrmShell from "./CrmShell.jsx";
+import DashboardPage from "./DashboardPage.jsx";
 import DealsPage from "./DealsPage.jsx";
 import EmployeeManagement from "./EmployeeManagement.jsx";
 import PipelinePage from "./PipelinePage.jsx";
+import TasksPage from "./TasksPage.jsx";
 
 function AuthenticatedApp() {
   const { t } = useTranslation();
@@ -15,9 +17,9 @@ function AuthenticatedApp() {
   const pathname = location.pathname;
 
   useEffect(() => {
-    if (!["/crm/clients", "/crm/deals", "/crm/pipeline"].includes(pathname)) {
-      window.history.replaceState({}, "", "/crm/clients");
-      setLocation({ pathname: "/crm/clients", search: "" });
+    if (!["/crm", "/crm/clients", "/crm/deals", "/crm/pipeline", "/crm/tasks"].includes(pathname)) {
+      window.history.replaceState({}, "", "/crm");
+      setLocation({ pathname: "/crm", search: "" });
     }
     const onPopState = () => setLocation({ pathname: window.location.pathname, search: window.location.search });
     window.addEventListener("popstate", onPopState);
@@ -31,7 +33,7 @@ function AuthenticatedApp() {
   }
 
   return <CrmShell pathname={pathname} onNavigate={navigate}>
-    {pathname === "/crm/deals" ? <DealsPage initialDealId={new URLSearchParams(location.search).get("deal")} /> : pathname === "/crm/pipeline" ? <PipelinePage onOpenDeal={(dealId) => navigate(`/crm/deals?deal=${dealId}`)} /> : <ClientsPage />}
+    {pathname === "/crm" ? <DashboardPage onNavigate={navigate} /> : pathname === "/crm/deals" ? <DealsPage initialDealId={new URLSearchParams(location.search).get("deal")} /> : pathname === "/crm/pipeline" ? <PipelinePage onOpenDeal={(dealId) => navigate(`/crm/deals?deal=${dealId}`)} /> : pathname === "/crm/tasks" ? <TasksPage /> : <ClientsPage />}
     {user.role === "ADMIN" && <details className="admin-tools"><summary>{t("employees.title")}</summary><EmployeeManagement /></details>}
   </CrmShell>;
 }

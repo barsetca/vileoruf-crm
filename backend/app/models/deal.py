@@ -12,7 +12,9 @@ from backend.app.models.user import utc_now
 
 if TYPE_CHECKING:
     from backend.app.models.client import Client
+    from backend.app.models.communication import Communication
     from backend.app.models.pipeline_stage import PipelineStage
+    from backend.app.models.task import Task
     from backend.app.models.user import User
 
 
@@ -61,3 +63,5 @@ class Deal(Base):
     responsible_user: Mapped["User | None"] = relationship(
         back_populates="responsible_deals"
     )
+    communications: Mapped[list["Communication"]] = relationship(back_populates="deal")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="deal")

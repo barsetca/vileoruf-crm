@@ -35,7 +35,7 @@ function AuthBoundary() {
 
   if (isLoading && pathname !== "/") return <AuthLoading />;
   if (pathname === "/" && !isAuthenticated) return <PublicPage onLogin={() => navigate("/login")} />;
-  if (!isAuthenticated) return <LoginPage />;
+  if (!isAuthenticated) return <LoginPage onHome={() => navigate("/")} />;
   return <AuthenticatedApp />;
 }
 
