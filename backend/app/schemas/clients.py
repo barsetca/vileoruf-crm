@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
 
-from backend.app.models import ClientStatus
+from backend.app.models import ClientStatus, PreferredCommunicationLanguage
 
 
 ClientName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
@@ -31,6 +31,7 @@ class ClientResponse(BaseModel):
     lead_source: str | None
     notes: str | None
     status: ClientStatus
+    preferred_communication_language: PreferredCommunicationLanguage
     created_at: datetime
     updated_at: datetime
 
@@ -47,6 +48,7 @@ class ClientCreate(BaseModel):
     company: Company | None = None
     lead_source: LeadSource | None = None
     notes: str | None = None
+    preferred_communication_language: PreferredCommunicationLanguage = PreferredCommunicationLanguage.RU
 
 
 class ClientUpdate(BaseModel):
@@ -61,6 +63,7 @@ class ClientUpdate(BaseModel):
     company: Company | None = None
     lead_source: LeadSource | None = None
     notes: str | None = None
+    preferred_communication_language: PreferredCommunicationLanguage | None = None
 
     @model_validator(mode="after")
     def require_valid_change(self):
@@ -68,4 +71,6 @@ class ClientUpdate(BaseModel):
             raise ValueError("At least one field must be provided")
         if "name" in self.model_fields_set and self.name is None:
             raise ValueError("Client name cannot be null")
+        if "preferred_communication_language" in self.model_fields_set and self.preferred_communication_language is None:
+            raise ValueError("Preferred communication language cannot be null")
         return self

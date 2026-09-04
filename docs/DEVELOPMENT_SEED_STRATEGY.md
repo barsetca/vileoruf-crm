@@ -8,6 +8,8 @@ Required system/bootstrap data is a separate category from demo/development seed
 
 The implemented `python -m backend.app.scripts.seed_demo` command installs exactly three fictitious Clients and five Deals with deterministic UUIDs. It is allowed only in `development` and `test`, is idempotent, creates no User/credentials, and is forbidden in `production`. `--clean` removes only those deterministic demo Deals/Clients, never real data or stages.
 
+The implemented `python -m backend.app.scripts.bootstrap_business_catalog` command is required system/bootstrap data, not a production demo seed. It idempotently installs fixed-UUID records for the minimum agreed D4.2 foundation: Category `Другое / Other / Otro` with 50 EUR/person-hour and 8 person-hours, plus Service `Общий запрос / General request / Solicitud general`. It is explicit, may run in any valid environment, creates no Users/credentials, and detects conflicting records instead of silently duplicating or overwriting them. Studio-specific catalog expansion remains an ADMIN business-settings action.
+
 ## Rules
 
 1. Demo/development seed execution must be explicit and limited to development/test environments.
@@ -28,3 +30,5 @@ When the seed mechanism is implemented, its task is complete only when:
 - created records are usable through the corresponding backend/frontend flow;
 - automated checks cover the environment guard and repeatability;
 - setup and cleanup instructions are documented.
+
+Required business catalog bootstrap has no cleanup command because existing Deals may retain its historical foreign keys and physical deletion is outside the Category/Service contract.

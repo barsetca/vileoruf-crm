@@ -17,6 +17,7 @@ from backend.app.main import app
 from backend.app.models import Client, ClientStatus, Deal, PipelineStage
 from backend.app.models.pipeline_stage import SYSTEM_PIPELINE
 from backend.app.scripts.seed_demo import DEMO_CLIENT_IDS, DEMO_DEAL_IDS, DemoSeedError, clean_demo, seed_demo
+from backend.app.scripts.bootstrap_business_catalog import GENERAL_SERVICE_ID, bootstrap_business_catalog
 
 
 pytestmark = pytest.mark.skipif(os.getenv("RUN_DATABASE_TESTS") != "1", reason="Set RUN_DATABASE_TESTS=1 against PostgreSQL")
@@ -64,8 +65,8 @@ def request(path: str, payload: dict) -> httpx.Response:
 def test_public_request_creates_atomic_crm_records_and_rejects_internal_fields(isolated_session_factory):
     with isolated_session_factory() as session:
         session.add_all([PipelineStage(name=name, position=position) for name, position in SYSTEM_PIPELINE])
-        session.commit()
-    payload = {"name": "Public Synthetic", "deal_name": "Public Synthetic Deal", "company": "Fictional Studio"}
+        session.commit(); bootstrap_business_catalog(session)
+    payload = {"name": "Public Synthetic", "deal_name": "Public Synthetic Deal", "company": "Fictional Studio", "service_id": str(GENERAL_SERVICE_ID)}
     response = request("/public/requests", payload)
     assert response.status_code == 201
     with isolated_session_factory() as session:

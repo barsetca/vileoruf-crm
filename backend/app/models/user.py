@@ -12,6 +12,7 @@ from backend.app.db.base import Base
 if TYPE_CHECKING:
     from backend.app.models.deal import Deal
     from backend.app.models.task import Task
+    from backend.app.models.email_draft import EmailDraft
 
 
 def utc_now() -> datetime:
@@ -59,3 +60,4 @@ class User(Base):
     responsible_tasks: Mapped[list["Task"]] = relationship(
         back_populates="responsible_user"
     )
+    email_drafts: Mapped[list["EmailDraft"]] = relationship(back_populates="creator")

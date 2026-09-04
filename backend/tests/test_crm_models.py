@@ -21,6 +21,7 @@ def test_client_model_has_approved_status_and_contact_fields() -> None:
         "lead_source",
         "notes",
         "status",
+        "preferred_communication_language",
         "created_at",
         "updated_at",
     }
@@ -56,6 +57,8 @@ def test_deal_model_has_required_foreign_keys_and_constraints() -> None:
         "probability",
         "client_id",
         "responsible_user_id",
+        "service_id",
+        "manager_effort_estimate",
         "created_at",
         "updated_at",
     }

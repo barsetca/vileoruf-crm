@@ -16,6 +16,20 @@ services:
       retries: 10
       start_period: 10s
 
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-56379}:6379"
+    volumes:
+      - vileoruf_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
   backend:
     build:
       context: .
@@ -29,6 +43,20 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
       AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: ${CELERY_TASK_ALWAYS_EAGER:-false}
+      CELERY_TASK_EAGER_PROPAGATES: ${CELERY_TASK_EAGER_PROPAGATES:-true}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-30}
+      AI_MAX_RETRIES: ${AI_MAX_RETRIES:-2}
+      AI_RETRY_BACKOFF_SECONDS: ${AI_RETRY_BACKOFF_SECONDS:-2}
+      AI_COMMUNICATION_CONTEXT_CHAR_LIMIT: ${AI_COMMUNICATION_CONTEXT_CHAR_LIMIT:-12000}
+      AI_ANALYSIS_MODEL: ${AI_ANALYSIS_MODEL:-gpt-5.4-mini}
+      AI_EMAIL_MODEL: ${AI_EMAIL_MODEL:-gpt-5.4-mini}
+      AI_MODEL_ALLOWLIST: ${AI_MODEL_ALLOWLIST:-gpt-5.4-mini,gpt-5.4,gpt-5.4-nano}
+      AI_RATE_LIMIT_REQUESTS: ${AI_RATE_LIMIT_REQUESTS:-10}
+      AI_RATE_LIMIT_WINDOW_SECONDS: ${AI_RATE_LIMIT_WINDOW_SECONDS:-60}
     command: >-
       sh -c "python -m alembic -c backend/alembic.ini upgrade head &&
       python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
@@ -51,6 +79,39 @@ services:
       retries: 10
       start_period: 10s
 
+  celery_worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vileoruf_app}:${POSTGRES_PASSWORD:-vileoruf_dev_password}@postgres:5432/${POSTGRES_DB:-vileoruf_crm}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: ${CELERY_TASK_ALWAYS_EAGER:-false}
+      CELERY_TASK_EAGER_PROPAGATES: ${CELERY_TASK_EAGER_PROPAGATES:-true}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-30}
+      AI_MAX_RETRIES: ${AI_MAX_RETRIES:-2}
+      AI_RETRY_BACKOFF_SECONDS: ${AI_RETRY_BACKOFF_SECONDS:-2}
+      AI_COMMUNICATION_CONTEXT_CHAR_LIMIT: ${AI_COMMUNICATION_CONTEXT_CHAR_LIMIT:-12000}
+      AI_ANALYSIS_MODEL: ${AI_ANALYSIS_MODEL:-gpt-5.4-mini}
+      AI_EMAIL_MODEL: ${AI_EMAIL_MODEL:-gpt-5.4-mini}
+      AI_MODEL_ALLOWLIST: ${AI_MODEL_ALLOWLIST:-gpt-5.4-mini,gpt-5.4,gpt-5.4-nano}
+      AI_RATE_LIMIT_REQUESTS: ${AI_RATE_LIMIT_REQUESTS:-10}
+      AI_RATE_LIMIT_WINDOW_SECONDS: ${AI_RATE_LIMIT_WINDOW_SECONDS:-60}
+    command: >-
+      python -m celery -A backend.app.workers.celery_app:celery_app worker
+      --loglevel=INFO --queues=ai --concurrency=1
+    user: "65534:65534"
+    volumes:
+      - .:/app
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   frontend:
     build:
       context: frontend
@@ -69,4 +130,5 @@ services:
 
 volumes:
   vileoruf_postgres_data:
+  vileoruf_redis_data:
   frontend_node_modules:

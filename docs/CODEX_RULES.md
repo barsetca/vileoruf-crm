@@ -72,6 +72,7 @@ Do not remove existing functionality unless explicitly requested or required to 
 - Validate inputs.
 - Return appropriate HTTP status codes/errors.
 - Never hard-code secrets.
+- Temporary or generated credentials must never be printed, embedded in inline command arguments that could be rendered in a traceback, or persisted in source, docs, `.env`, reports, or test assertions. Secret-bearing smoke harnesses must pass secrets out-of-band from executable text and sanitize failures at their boundary.
 
 ## 7. Frontend rules
 - Use reusable components.
@@ -166,6 +167,8 @@ TASK COMPLETED
 ```
 
 If a section has no changes, explicitly say `None`.
+
+For every future substantial implementation iteration, Codex must provide the full completion report directly in the Cursor chat and save the same full report in a new `history/ANSWER_XX.md` file. A short summary alone is insufficient: the chat and history report must substantively match and include all mandatory sections, tests/checks actually run, migrations, known issues, deviations, and the recommended next step.
 
 ## 15. Status update
 When explicitly requested, update `docs/DEVELOPMENT_STATUS.md` to reflect verified work. Do not mark work DONE merely because code was written; mark it done only after the relevant verification has succeeded.

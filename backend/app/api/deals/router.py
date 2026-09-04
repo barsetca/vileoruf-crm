@@ -14,6 +14,8 @@ from backend.app.services.deals import (
     DealNotFoundError,
     DealPersistenceError,
     DealStageNotFoundError,
+    DealServiceNotFoundError,
+    InactiveDealServiceError,
     InvalidResponsibleUserError,
     ResponsibleAssignmentForbiddenError,
     ResponsibleUserNotFoundError,
@@ -35,16 +37,23 @@ async def post_deal(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     try:
+        values = payload.model_dump()
+        analysis_language = values.pop("ai_analysis_language")
         return create_deal(
             session,
-            values=payload.model_dump(),
+            values=values,
             current_user=current_user,
             responsible_was_supplied="responsible_user_id" in payload.model_fields_set,
+            analysis_language=analysis_language,
         )
     except DealClientNotFoundError as error:
         raise HTTPException(status_code=404, detail="Client not found") from error
     except DealStageNotFoundError as error:
         raise HTTPException(status_code=404, detail="Pipeline stage not found") from error
+    except DealServiceNotFoundError as error:
+        raise HTTPException(status_code=404, detail="Service not found") from error
+    except InactiveDealServiceError as error:
+        raise HTTPException(status_code=422, detail="Service and Category must be active") from error
     except ResponsibleUserNotFoundError as error:
         raise HTTPException(status_code=404, detail="Responsible user not found") from error
     except InvalidResponsibleUserError as error:
@@ -121,6 +130,10 @@ async def patch_deal(
             status_code=422,
             detail="Responsible user must be an active ADMIN or MANAGER",
         ) from error
+    except DealServiceNotFoundError as error:
+        raise HTTPException(status_code=404, detail="Service not found") from error
+    except InactiveDealServiceError as error:
+        raise HTTPException(status_code=422, detail="Service and Category must be active") from error
     except DealPersistenceError as error:
         raise _persistence_error() from error
 

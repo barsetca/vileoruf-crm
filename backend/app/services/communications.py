@@ -12,6 +12,8 @@ from backend.app.models import (
     User,
     UserRole,
 )
+from backend.app.services.ai.deal_prediction import invalidate_latest_deal_prediction
+from backend.app.services.ai.next_best_action import invalidate_latest_next_best_action
 
 
 class CommunicationServiceError(ValueError):
@@ -104,6 +106,9 @@ def create_communication(
 
         communication = Communication(**values, status=CommunicationStatus.RECORDED)
         session.add(communication)
+        if communication.deal_id is not None:
+            invalidate_latest_deal_prediction(session, deal_id=communication.deal_id)
+            invalidate_latest_next_best_action(session, deal_id=communication.deal_id)
         session.commit()
         session.refresh(communication)
         return communication

@@ -11,7 +11,7 @@ Reasons:
 
 ## 2. High-level architecture
 
-The diagram below is the target MVP architecture. Day 1 Foundation and Day 2 CRM Core are implemented. AI Service, integration adapters, Celery and Redis remain planned and must not be treated as existing functionality.
+The diagram below is the target MVP architecture. Day 1–4 functionality is implemented, including Lead Scoring, Deal Prediction, advisory Next Best Action, initial new-Deal AI orchestration, employee-controlled AI Email Drafts, unified AI history, runtime AI settings, manual-launch hardening, final public/authenticated browser verification, and safe local smoke credential handling. Day 4 is complete; integration adapters remain planned.
 
 ```text
 React Frontend
@@ -49,15 +49,26 @@ The target FastAPI backend contains:
 
 Avoid putting business logic directly in route handlers.
 
-Implemented backend baseline through Day 2:
+Implemented backend baseline through D4.6:
 - Python 3.10.12 and FastAPI;
 - `GET /health`, independent of database availability;
 - centralized environment settings using `pydantic-settings`;
 - PostgreSQL-only SQLAlchemy 2.x engine/session infrastructure using Psycopg 3;
-- Alembic with shared application configuration and current head `20260831_0003`;
+- Alembic with shared application configuration and current head `20260903_0008`;
 - restricted development CORS for the configured `FRONTEND_ORIGIN`.
 - `Client`, `PipelineStage`, and `Deal` domain models and services, including backend-authoritative CRM role/ownership authorization;
 - the public request action endpoint and development/test-only deterministic demo seed.
+- common `AIAnalysis`, separate `EmailDraft`, and model-override persistence foundations at Alembic head `20260902_0005`;
+- reusable deterministic fingerprint/compact snapshot, strict structured validation, normalized failure/retry lifecycle, and duplicate in-flight protection;
+- OpenAI Responses API adapter behind the internal provider boundary, with no API key required until a provider operation runs;
+- Redis-backed Celery application and dedicated AI queue for background AI work only.
+- `Category`, `Service`, singleton Lead Scoring settings, Deal Service/effort fields, and Client preferred communication language persistence;
+- typed business-management and manual Deal Lead Scoring APIs, deterministic backend Commercial Value/overall scoring, and targeted freshness invalidation.
+- typed manual Deal Prediction and Next Best Action APIs plus Celery tasks on the common `AIAnalysis` lifecycle;
+- persisted `AI Enabled`, automatic-new-Deal-analysis, DP validity, and NBA validity business settings;
+- a minimal `InitialAIAnalysisPipeline` correlation row that freezes the creator-selected language and exact initial LS/DP/NBA analysis IDs.
+- `ai.email_draft.execute`, typed generation/history and EmailDraft CRUD endpoints. Generation stores a placeholder-form `AIAnalysis` only; explicit save creates an editable EmailDraft and never creates a Communication.
+- ADMIN-only safe runtime AI settings API, role-aware unified AI history, and a Redis-backed per-employee fixed-window limiter shared by the four manual launch endpoints.
 
 ## 4. Frontend responsibilities
 The target React frontend contains:
@@ -74,7 +85,7 @@ The target React frontend contains:
 - API client layer;
 - i18n resources (`ru`, `en`, `es`).
 
-The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals, Pipeline Kanban, and Tasks pages, native drag-and-drop with accessible Move fallback, and a public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
+The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals with all four AI sections and Deal-level history, Pipeline Kanban, Tasks, unified AI History, ADMIN business/AI settings, and a Service-aware public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
 
 Target application boundary:
 
@@ -86,7 +97,7 @@ React application
     └── ADMIN/MANAGER authentication required
 ```
 
-Current routes are `/` for public request, `/login` for employee login, and `/crm`, `/crm/clients`, `/crm/deals`, `/crm/pipeline`, and `/crm/tasks` for protected employee CRM. `/crm` is the bounded operational Dashboard, not a reporting route. Public area does not mean customer portal.
+Current routes are `/` for public request, `/login` for employee login, `/crm`, `/crm/clients`, `/crm/deals`, `/crm/pipeline`, `/crm/tasks`, and `/crm/ai-history` for protected employee CRM, plus ADMIN-only `/crm/settings/business` and `/crm/settings/ai`. `/crm` is the bounded operational Dashboard, not a reporting route. Public area does not mean customer portal.
 
 ## 5. Target repository structure
 
@@ -182,6 +193,7 @@ Initial domain model:
 - Communication
 - Task
 - AIAnalysis
+- EmailDraft
 - Integration
 
 Core relationships:
@@ -196,7 +208,8 @@ Deal
  ├── PipelineStage
  ├── Communications
  ├── Tasks
- └── AIAnalysis
+ ├── AIAnalysis
+ └── EmailDraft
 ```
 
 `Deal` ownership uses `responsible_user_id` (or an equivalent foreign key) to `User`. `Client` has the lifecycle states `CUSTOMER` and `CLIENT`; the first Deal moved successfully to `Won` promotes `CUSTOMER` to `CLIENT`, with no automatic reverse transition.
@@ -205,7 +218,7 @@ The implemented public boundary is an action endpoint, not an entity: `POST /pub
 
 Do not introduce Payment, Invoice, Subscription or similar financial-processing entities unless requirements change.
 
-`User`, `Client`, `Deal`, `PipelineStage`, `Communication`, and `Task` persistence models are implemented. Communications create/get/list API and its Client/Deal context timeline frontend are implemented. Tasks create/list/get/update/completion API and protected Tasks frontend are implemented. AIAnalysis and Integration remain planned.
+`User`, `Client`, `Deal`, `PipelineStage`, `Communication`, `Task`, `Category`, `Service`, `LeadScoringSettings`, `AIAnalysis`, `InitialAIAnalysisPipeline`, and `EmailDraft` persistence models are implemented. D4.5 uses EmailDraft as an employee-controlled working document: multiple drafts per Deal, explicit manual/AI-origin save, edit and physical deletion without deleting the source AIAnalysis. It is distinct from Communication and has no send path.
 
 ### 6.1 Day 3 Communications contract
 
@@ -218,6 +231,42 @@ When linked to a Deal, the Deal must belong to its Client; the backend authorita
 `Task` is an internal CRM task with title, optional description, due datetime, persisted `OPEN`/`COMPLETED` status, responsible active ADMIN/MANAGER employee, and optional Client and Deal associations. General tasks are allowed. Where both Client and Deal are specified, the Deal must belong to the Client; a Deal-only task does not need a duplicate Client. The backend authoritatively validates these relationships.
 
 ADMIN sees and updates all Tasks, may create for any active ADMIN/MANAGER, and may reassign responsibility. MANAGER sees all Tasks but may create only for themself and update/complete only Tasks assigned to themself; they cannot reassign. The implemented API provides create, list/get, PATCH of business fields, and explicit `POST /tasks/{task_id}/complete`; DELETE is absent. `OVERDUE` is derived from an open task with a past due datetime, not persisted or returned as an API field.
+
+### 6.3 D4.2 business configuration and Lead Scoring
+
+Each `Service` belongs to exactly one `Category`; Deals reference Service only, so Category cannot conflict and is derived through that relation. Records use active/inactive state instead of physical deletion, while existing Deals retain historical foreign keys. Category holds positive target EUR/person-hour and target person-hours. A separate singleton stores four non-negative Lead Scoring weights constrained to exactly 100 and a validated ordered Commercial Value scale.
+
+Commercial Value is deterministic backend business logic. Effective effort uses `Deal.manager_effort_estimate` when present, otherwise Category target effort. With a budget, the backend computes deal hourly rate and its ratio to Category target rate, applies clamped piecewise-linear interpolation, and rounds scores with decimal half-up semantics to one decimal. Missing budget is `NO_BUDGET` with score `0.0`, not a negative AI judgment; missing/invalid rate or effort is a configuration error and prevents launch. The provider schema contains only Service Fit, Lead Quality, Feasibility, explanations, summary, optional missing-data/security information, and an allowlisted Category suggestion. It cannot submit Commercial Value, weights, rates, effort, ratio, or overall score. The backend recomputes the final overall weighted score.
+
+Manual Lead Scoring creates one `AIAnalysis` row and dispatches `ai.lead_scoring.execute` to the dedicated Celery queue. ADMIN can run/read any Deal; MANAGER can run/read only an owned Deal. Won/Lost Deals cannot start new calculations. Relevant Deal or business-configuration changes mark only the latest successful Lead Scoring of affected active Deals outdated; stage-only changes do not, closed historical analyses are preserved, and no automatic recomputation or time expiry exists.
+
+### 6.4 D4.3 Deal Prediction
+
+Deal Prediction estimates `probability_won` separately from evidence `confidence`. Its input is the current Deal, deterministic newest-first character-bounded current-Deal Communications, structured Task/activity indicators, and anonymized same-Client aggregate history. It never uses global CRM history, raw other-Deal data, structured Client/employee PII, or Lead Scoring. Active results expire lazily after the persisted validity period (default 7 days); closed history does not age out.
+
+### 6.5 D4.4 Next Best Action and initial orchestration
+
+Next Best Action is advisory only: it returns 1–3 strictly validated ranked actions with priority, action, reason and timing, but cannot execute CRM mutations, create/complete Tasks or Communications, send messages, or call integrations. It reuses the Deal Prediction primary context builder and optionally adds the latest successful Lead Scoring and Deal Prediction with explicit `available`/`is_outdated` metadata. Probability, evidence confidence, commercial attractiveness and NBA urgency remain distinct concepts. New successful LS or DP results stale the latest successful NBA; dependencies never flow backwards. Active NBA expires lazily after its persisted validity period (default 7 days), while closed history is preserved.
+
+For a newly committed active Deal, when both persistent switches are enabled, the service creates one correlation row and two independently queued sibling analyses in one transaction, then dispatches both after commit:
+
+```text
+Lead Scoring (specific analysis id) ─────┐
+                                        ├──> Next Best Action (once)
+Deal Prediction (specific analysis id) ─┘
+```
+
+Each branch records expected provider/configuration failure as terminal `FAILED`; the correlator waits for both exact initial rows to reach `SUCCESS` or `FAILED`, then freezes NBA's own current context using whichever successful auxiliary results exist. Unique database constraints prevent duplicate pipeline/branch/NBA identity. Public requests freeze `RU`; employee-created Deals freeze the creator's current UI language. Deal creation is committed before dispatch and remains successful if the broker is unavailable. If the Deal closes before follow-on NBA creation, orchestration no-ops; already accepted operations may finish as outdated historical results.
+
+### 6.6 D4.5 AI Email Draft
+
+`POST/GET /deals/{deal_id}/email-draft` creates/reads an asynchronous `EMAIL_DRAFT` AIAnalysis proposal; CRUD at `/deals/{deal_id}/email-drafts` is a separate employee document flow. The selected NBA reference is optional and backend-resolved from a successful same-Deal action. The generation input is frozen for retries; a later context mismatch marks the proposal outdated but never changes a saved EmailDraft. Client preferred communication language controls the email independently of UI language. No structured Client PII is sent to the provider: `{{client_name}}` is the only supported token and is substituted for authorized presentation only. ADMIN is unrestricted; MANAGER is limited to owned Deals. Unlike LS/DP/NBA, closed Deals remain eligible. `AI Enabled` rejects new AI generation but not history or manual EmailDraft CRUD. No SMTP/provider/integration/send/Communication side effect exists.
+
+### 6.7 D4.6 AI History, settings, and hardening
+
+`GET /ai-history` and `GET /deals/{deal_id}/ai-history` provide one paginated newest-first history across Lead Scoring, Deal Prediction, Next Best Action, and Email Draft analyses. ADMIN sees all authorized CRM history; MANAGER is constrained in the database query to owned Deals. Filters cover function, status, Deal, language, outdated state, and current successful result. Responses revalidate stored typed results and expose only safe metadata/usage; malformed legacy results degrade to an unavailable payload and raw prompts, snapshots, fingerprints, provider errors, and secrets are never returned.
+
+`GET/PATCH /settings/ai` is ADMIN-only and manages runtime switches, allowlisted analysis/email model overrides, and 1–365 day DP/NBA validity. Updates are atomic, model reset falls back to environment defaults, prepared analyses keep their frozen model, and changed fields produce safe application-log audit events. Manual launch requests for all four functions share a per-authenticated-employee Redis fixed window. The limiter runs before the handler, returns `429` with `Retry-After` at the boundary, and fails open on Redis errors; automatic orchestration and read/CRUD routes are excluded.
 
 ## 7. AI architecture
 AI calls must be isolated behind an AI service layer.
@@ -240,7 +289,6 @@ Validated structured result
 
 AI capabilities:
 - lead scoring;
-- deal prediction;
 - next-best-action;
 - email draft generation.
 
@@ -260,11 +308,11 @@ Integration interface
 Credentials belong in environment configuration/secrets, never source control.
 
 ## 9. Background processing
-Use Celery for operations that should not block request handling. Redis is the proposed broker.
+Use Celery for operations that should not block request handling. D4.1 implements Redis as the broker/result backend and a dedicated JSON-serialized `ai` queue; D4.2–D4.5 add `ai.lead_scoring.execute`, `ai.deal_prediction.execute`, `ai.next_best_action.execute`, and `ai.email_draft.execute`. D4.6 also uses Redis for ephemeral manual AI launch counters, not durable business state.
 
 Do not move ordinary simple CRUD into background tasks without a reason.
 
-Celery and Redis are not implemented at the end of Day 1.
+Ordinary CRM CRUD remains synchronous. Redis is not used for authentication/session state or business settings. D4.1 includes the worker application and infrastructure smoke task; D4.2–D4.4 add only their approved analysis tasks and minimal terminal-state orchestration. Email Draft work remains scoped to D4.5; D4.6 adds only request-path manual-launch rate limiting and no new worker task.
 
 ## 10. i18n architecture
 Frontend translations live outside UI components.
@@ -365,7 +413,7 @@ OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, 
 
 ## 15. Planned components and architecture gates
 
-The following remain planned and are not implemented: AI Service/OpenAI calls, integration adapters, Celery and Redis. Communication create/get/list API uses typed schemas and `services/communications.py`; its frontend is embedded in existing Client and Deal detail contexts, without a standalone Communications route. The backend authoritatively validates Client/Deal consistency and manager Deal ownership; frontend role-aware controls are UX only. Tasks uses typed schemas and `services/tasks.py`; its protected `/crm/tasks` frontend uses all-task visibility, active employee references, and the existing D3.4 filters/mutations. The protected `/crm` Dashboard independently consumes bounded first-page OPEN Tasks and recent Communications requests; it shows no global counts, Pipeline counts, page crawling, aggregation endpoint, analytics, or reporting. Communication/Task persistence uses PostgreSQL enums, restrictive foreign keys, and ordinary ORM relationships. PATCH uses a PostgreSQL table lock for active-admin safety, forbids self-deactivation/self-downgrade, and preserves one active ADMIN. The frontend renders employee management only for ADMIN; backend authorization remains authoritative.
+Lead Scoring and its business-settings UI are implemented in D4.2, Deal Prediction in D4.3, advisory Next Best Action plus initial new-Deal orchestration in D4.4, AI Email Draft in D4.5, unified AI settings/history plus manual-launch hardening in D4.6, final regression/runtime/provider/browser verification in D4.7/D4.7.1, and credential-output process remediation in D4.7.2. Day 4 AI Automation is COMPLETE. Integration adapters remain planned. Existing Communications, Tasks, Dashboard, employee management, CRM authorization, and synchronous CRUD contracts remain unchanged; backend authorization remains authoritative.
 
 Authentication backend/frontend, employee management, CRM Core, and Deal ownership authorization are `IMPLEMENTED / VERIFIED`.
 

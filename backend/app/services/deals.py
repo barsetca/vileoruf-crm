@@ -1,11 +1,18 @@
+import logging
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from backend.app.models import Client, ClientStatus, Deal, PipelineStage, User, UserRole
+from backend.app.models import AIResultLanguage, Client, ClientStatus, Deal, PipelineStage, Service, User, UserRole
+from backend.app.services.business import invalidate_latest_lead_scoring
+from backend.app.services.ai.deal_prediction import invalidate_latest_deal_prediction
+from backend.app.services.ai.next_best_action import invalidate_latest_next_best_action
 from backend.app.models.pipeline_stage import WON_STAGE_NAME
+
+
+logger = logging.getLogger(__name__)
 
 
 class DealServiceError(ValueError):
@@ -44,6 +51,10 @@ class DealPersistenceError(DealServiceError):
     pass
 
 
+class DealServiceNotFoundError(DealServiceError): pass
+class InactiveDealServiceError(DealServiceError): pass
+
+
 def list_deals(session: Session, *, limit: int, offset: int) -> list[Deal]:
     statement = (
         select(Deal)
@@ -75,6 +86,7 @@ def create_deal(
     values: dict,
     current_user: User,
     responsible_was_supplied: bool,
+    analysis_language: AIResultLanguage | None = None,
 ) -> Deal:
     if current_user.role is UserRole.MANAGER:
         if responsible_was_supplied:
@@ -85,6 +97,9 @@ def create_deal(
         if responsible_user_id is not None:
             _validate_responsible_user(session, responsible_user_id)
 
+    if values.get("service_id") is not None:
+        _validate_service(session, values["service_id"])
+
     try:
         if session.get(Client, values["client_id"]) is None:
             raise DealClientNotFoundError
@@ -93,6 +108,9 @@ def create_deal(
 
         deal = Deal(**values)
         session.add(deal)
+        session.flush()
+        invalidate_latest_deal_prediction(session, client_id=deal.client_id)
+        invalidate_latest_next_best_action(session, client_id=deal.client_id)
         session.commit()
         session.refresh(deal)
     except DealServiceError:
@@ -100,6 +118,16 @@ def create_deal(
     except SQLAlchemyError as error:
         session.rollback()
         raise DealPersistenceError from error
+    if analysis_language is not None:
+        try:
+            from backend.app.services.ai.orchestration import start_initial_ai_pipeline
+
+            start_initial_ai_pipeline(
+                session, deal_id=deal.id, language=analysis_language
+            )
+        except Exception:
+            session.rollback()
+            logger.error("initial_ai_pipeline_start_failed deal=%s", deal.id)
     return deal
 
 
@@ -120,8 +148,19 @@ def update_deal(
         if responsible_user_id is not None:
             _validate_responsible_user(session, responsible_user_id)
 
+    if "service_id" in changes and changes["service_id"] is not None:
+        _validate_service(session, changes["service_id"])
+
+    significant_fields = {"service_id", "description", "estimated_budget", "deadline", "manager_effort_estimate"}
+    significant_changed = any(field in changes and getattr(deal, field) != changes[field] for field in significant_fields)
+
     for field, value in changes.items():
         setattr(deal, field, value)
+
+    if significant_changed:
+        invalidate_latest_lead_scoring(session, deal_id=deal.id)
+        invalidate_latest_deal_prediction(session, client_id=deal.client_id)
+        invalidate_latest_next_best_action(session, client_id=deal.client_id)
 
     try:
         session.commit()
@@ -154,6 +193,14 @@ def transition_deal(
             return deal
 
         deal.stage_id = target_stage.id
+        invalidate_latest_deal_prediction(session, client_id=deal.client_id)
+        invalidate_latest_next_best_action(session, client_id=deal.client_id)
+        invalidate_latest_deal_prediction(
+            session, deal_id=deal.id, include_closed=True
+        )
+        invalidate_latest_next_best_action(
+            session, deal_id=deal.id, include_closed=True
+        )
         if target_stage.name == WON_STAGE_NAME:
             client = session.get(Client, deal.client_id, with_for_update=True)
             if client is None:
@@ -191,3 +238,12 @@ def _validate_responsible_user(session: Session, user_id: UUID) -> User:
     if user.role not in (UserRole.ADMIN, UserRole.MANAGER) or not user.is_active:
         raise InvalidResponsibleUserError
     return user
+
+
+def _validate_service(session: Session, service_id: UUID) -> Service:
+    service = session.get(Service, service_id)
+    if service is None:
+        raise DealServiceNotFoundError
+    if not service.is_active or not service.category.is_active:
+        raise InactiveDealServiceError
+    return service

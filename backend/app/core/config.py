@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import PositiveInt, field_validator
+from pydantic import Field, PositiveFloat, PositiveInt, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
@@ -63,6 +63,68 @@ class SecuritySettings(BaseSettings):
         return value
 
 
+class AIInfrastructureSettings(BaseSettings):
+    celery_broker_url: str = "redis://127.0.0.1:56379/0"
+    celery_result_backend: str = "redis://127.0.0.1:56379/1"
+    celery_task_always_eager: bool = False
+    celery_task_eager_propagates: bool = True
+    openai_api_key: SecretStr | None = None
+    openai_timeout_seconds: PositiveFloat = 30.0
+    ai_max_retries: int = Field(default=2, ge=0, le=2)
+    ai_retry_backoff_seconds: PositiveFloat = 2.0
+    ai_communication_context_char_limit: PositiveInt = 12000
+    ai_analysis_model: str = "gpt-5.4-mini"
+    ai_email_model: str = "gpt-5.4-mini"
+    ai_model_allowlist: str = "gpt-5.4-mini,gpt-5.4,gpt-5.4-nano"
+    ai_rate_limit_requests: int = Field(default=10, ge=1, le=1000)
+    ai_rate_limit_window_seconds: int = Field(default=60, ge=1, le=86400)
+
+    model_config = SettingsConfigDict(
+        env_file=PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    @property
+    def allowed_models(self) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                item.strip()
+                for item in self.ai_model_allowlist.split(",")
+                if item.strip()
+            )
+        )
+
+    @field_validator(
+        "celery_broker_url",
+        "celery_result_backend",
+        "ai_analysis_model",
+        "ai_email_model",
+        "ai_model_allowlist",
+    )
+    @classmethod
+    def require_non_empty(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("AI infrastructure setting must not be empty")
+        return value
+
+    @field_validator("celery_broker_url", "celery_result_backend")
+    @classmethod
+    def require_redis_url(cls, value: str) -> str:
+        if not value.startswith(("redis://", "rediss://")):
+            raise ValueError("Celery broker/backend URL must use Redis")
+        return value
+
+    @model_validator(mode="after")
+    def require_defaults_in_allowlist(self) -> "AIInfrastructureSettings":
+        if not self.allowed_models:
+            raise ValueError("AI_MODEL_ALLOWLIST must contain at least one model")
+        for model in (self.ai_analysis_model, self.ai_email_model):
+            if model not in self.allowed_models:
+                raise ValueError("Default AI models must be present in AI_MODEL_ALLOWLIST")
+        return self
+
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
@@ -76,3 +138,8 @@ def get_frontend_settings() -> FrontendSettings:
 @lru_cache
 def get_security_settings() -> SecuritySettings:
     return SecuritySettings()
+
+
+@lru_cache
+def get_ai_infrastructure_settings() -> AIInfrastructureSettings:
+    return AIInfrastructureSettings()

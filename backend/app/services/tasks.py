@@ -5,6 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from backend.app.models import Client, Deal, Task, TaskStatus, User, UserRole
+from backend.app.services.ai.deal_prediction import invalidate_latest_deal_prediction
+from backend.app.services.ai.next_best_action import invalidate_latest_next_best_action
 
 
 class TaskServiceError(ValueError):
@@ -97,6 +99,9 @@ def create_task(session: Session, *, values: dict, current_user: User) -> Task:
         _validate_associations(session, values.get("client_id"), values.get("deal_id"))
         task = Task(**values, status=TaskStatus.OPEN)
         session.add(task)
+        if task.deal_id is not None:
+            invalidate_latest_deal_prediction(session, deal_id=task.deal_id)
+            invalidate_latest_next_best_action(session, deal_id=task.deal_id)
         session.commit()
         session.refresh(task)
         return task
@@ -113,6 +118,7 @@ def update_task(
 ) -> Task:
     try:
         task = get_task(session, task_id=task_id)
+        previous_deal_id = task.deal_id
         _ensure_update_allowed(task, current_user)
         if "responsible_user_id" in changes:
             if current_user.role is not UserRole.ADMIN:
@@ -123,6 +129,12 @@ def update_task(
         _validate_associations(session, client_id, deal_id)
         for field, value in changes.items():
             setattr(task, field, value)
+        if previous_deal_id is not None:
+            invalidate_latest_deal_prediction(session, deal_id=previous_deal_id)
+            invalidate_latest_next_best_action(session, deal_id=previous_deal_id)
+        if task.deal_id is not None:
+            invalidate_latest_deal_prediction(session, deal_id=task.deal_id)
+            invalidate_latest_next_best_action(session, deal_id=task.deal_id)
         session.commit()
         session.refresh(task)
         return task
@@ -139,6 +151,9 @@ def complete_task(session: Session, *, task_id: UUID, current_user: User) -> Tas
         task = get_task(session, task_id=task_id)
         _ensure_update_allowed(task, current_user)
         task.status = TaskStatus.COMPLETED
+        if task.deal_id is not None:
+            invalidate_latest_deal_prediction(session, deal_id=task.deal_id)
+            invalidate_latest_next_best_action(session, deal_id=task.deal_id)
         session.commit()
         session.refresh(task)
         return task

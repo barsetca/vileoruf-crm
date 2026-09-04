@@ -6,9 +6,9 @@ import CommunicationTimeline from "./CommunicationTimeline.jsx";
 import { createClient, getClient, listClients, updateClient } from "../services/clients.js";
 
 
-const EMPTY_FORM = { name: "", contact_person: "", email: "", phone: "", telegram: "", whatsapp: "", company: "", lead_source: "", notes: "" };
+const EMPTY_FORM = { name: "", contact_person: "", email: "", phone: "", telegram: "", whatsapp: "", company: "", lead_source: "", notes: "", preferred_communication_language:"RU" };
 const PAGE_SIZE = 10;
-const FIELDS = ["name", "company", "contact_person", "email", "phone", "telegram", "whatsapp", "lead_source", "notes"];
+const FIELDS = ["name", "company", "contact_person", "email", "phone", "telegram", "whatsapp", "lead_source", "preferred_communication_language", "notes"];
 
 function toPayload(form) {
   return Object.fromEntries(Object.entries(form).map(([field, value]) => [field, field === "name" ? value.trim() : value.trim() || null]));
@@ -23,8 +23,8 @@ function ClientForm({ form, onChange, error, submitting, onSubmit, submitLabel }
   return <form className="client-form" onSubmit={onSubmit}>
     <div className="client-form-grid">
       {FIELDS.map((field) => <label className={field === "notes" ? "field field--full" : "field"} key={field}>
-        <span>{t(`clients.fields.${field}`)}{field === "name" && <em aria-hidden="true"> *</em>}</span>
-        {field === "notes" ? <textarea name={field} value={form[field]} onChange={onChange} rows="4" disabled={submitting} /> : <input name={field} type={field === "email" ? "email" : "text"} value={form[field]} onChange={onChange} disabled={submitting} required={field === "name"} />}
+        <span>{field === "preferred_communication_language" ? t("d4.preferredCommunicationLanguage") : t(`clients.fields.${field}`)}{field === "name" && <em aria-hidden="true"> *</em>}</span>
+        {field === "notes" ? <textarea name={field} value={form[field]} onChange={onChange} rows="4" disabled={submitting} /> : field === "preferred_communication_language" ? <select name={field} value={form[field]} onChange={onChange} disabled={submitting}>{["RU","EN","ES"].map((language) => <option key={language}>{language}</option>)}</select> : <input name={field} type={field === "email" ? "email" : "text"} value={form[field]} onChange={onChange} disabled={submitting} required={field === "name"} />}
       </label>)}
     </div>
     {error && <p className="form-error" role="alert">{error}</p>}

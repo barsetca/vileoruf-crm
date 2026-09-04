@@ -4,9 +4,9 @@
 Full-stack CRM with AI sales automation for VILEORUF Studio.
 
 ## Current phase
-Day 1 Foundation, Day 2 CRM Core, and Day 3 (D3.0–D3.7) are complete, including Communications, Tasks, and the bounded Initial Operational Dashboard. The next planned step is Day 4 AI work.
+Day 1 Foundation, Day 2 CRM Core and Day 3 (D3.0–D3.8) are complete. D4.0–D4.7 are complete. D4.8's initial Codex verification was PARTIAL, but its remaining authenticated browser scenarios were subsequently verified manually by the project owner; no active D4.8 blocker remains. D4.9 is DONE: it corrected the public services-load/submit error semantics and the Business Settings `updated_at` PUT mismatch, then passed targeted and full PostgreSQL regression, Alembic/static/frontend checks, and public/ADMIN/MANAGER Chromium smoke with settings restoration. Day 4 is COMPLETE. Next stage: Day 5 — Integrations architecture/product contract; Day 5 implementation has not started.
 
-The verified application includes FastAPI, PostgreSQL/SQLAlchemy/Alembic, Docker Compose, a React/Vite frontend with `ru`/`en`/`es`, employee authentication and ADMIN employee management. Day 2 adds Clients, Deals, database-backed PipelineStages, Deal ownership authorization, a dedicated stage transition, CUSTOMER-to-CLIENT promotion on a real transition to Won, protected Clients/Deals/Pipeline CRM pages, and the public request boundary.
+The verified application includes FastAPI, PostgreSQL/SQLAlchemy/Alembic, Docker Compose, Redis/Celery AI infrastructure, an internal OpenAI provider foundation, a React/Vite frontend with `ru`/`en`/`es`, employee authentication and ADMIN employee management. D4.5 provides async AI email proposals and employee-controlled EmailDraft CRUD without sending; D4.6 adds unified safe AI history, ADMIN runtime AI settings, and shared per-employee Redis limiting for manual AI launches. `AIAnalysis` remains the immutable analysis/history record, `EmailDraft` remains an editable employee document, and `Communication` remains actual communication history. AI disablement prevents new generation without hiding prior results.
 
 `ADMIN` has CRM-wide access. `MANAGER` sees all Clients and Deals, but may change business state only for Deals they own; backend enforcement is authoritative. The public `/` request creates a `CUSTOMER` Client and unassigned Deal in `New Lead`. It is not a customer portal and creates no customer account, password, JWT, or `User` role.
 
@@ -24,13 +24,13 @@ Target implementation period: 7 days. Development follows an MVP-first approach.
 - Frontend: JavaScript + React, built with Node.js 24 LTS and Vite
 - Database: PostgreSQL 16
 - ORM/migrations: SQLAlchemy + Alembic
-- Background tasks (planned): Celery
-- AI (planned): OpenAI
+- Background tasks: Celery with Redis for background AI operations
+- AI provider foundation: official OpenAI Python SDK behind an internal provider abstraction
 - Deployment foundation: Docker / Docker Compose
 - Development assistant: Codex in Cursor
 
 ## Architectural additions
-- Redis may be used as the Celery broker when background processing is implemented.
+- Redis is implemented as the Celery broker/result backend for background AI operations only; it is not auth/session storage.
 - Frontend i18n uses i18next/react-i18next.
 - Architecture style: modular monolith.
 - External channels are isolated behind integration adapters.

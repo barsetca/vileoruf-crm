@@ -1,0 +1,21 @@
+import { useTranslation } from "react-i18next";
+
+function Result({ item }) {
+  const { t } = useTranslation();
+  const result = item.result_payload;
+  if (item.status !== "SUCCESS") return item.status === "FAILED" ? <p className="form-error">{t(`aiHistory.errors.${item.error_category}`, { defaultValue: t("aiHistory.errors.unknown") })}</p> : null;
+  if (!item.result_valid || !result) return <p className="form-error">{t("aiHistory.invalidHistoricalResult")}</p>;
+  if (item.function_type === "LEAD_SCORING") return <><strong>{result.overall_score}/100</strong><p>{result.summary}</p><div className="factor-grid">{["service_fit","commercial_value","lead_quality","feasibility"].map((key) => <article className="factor-card" key={key}><div><strong>{t(`leadScoring.factors.${key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())}`)}</strong><span>{result[key]?.score}/100</span></div><p>{result[key]?.explanation}</p></article>)}</div>{result.missing_data.length > 0 && <div className="warning-box"><strong>{t("leadScoring.missing")}</strong><ul>{result.missing_data.map((value) => <li key={value}>{t(`leadScoring.missingItems.${value}`, { defaultValue:value })}</li>)}</ul></div>}{result.category_suggestion && <div className="warning-box"><strong>{t("leadScoring.suggestion")}: {result.category_suggestion.category_name}</strong><p>{result.category_suggestion.reason}</p></div>}</>;
+  if (item.function_type === "DEAL_PREDICTION") return <><div className="prediction-metrics"><article><span>{t("dealPrediction.probability")}</span><strong>{result.probability_won}%</strong></article><article><span>{t("dealPrediction.confidence")}</span><strong>{t(`dealPrediction.confidenceValues.${result.confidence}`)}</strong></article></div><p>{result.summary}</p>{[["positive",result.positive_signals],["risks",result.risks],["missing",result.missing_context]].map(([key, values]) => values.length > 0 && <div className="warning-box" key={key}><strong>{t(`dealPrediction.${key}`)}</strong><ul>{values.map((value, index) => <li key={index}>{value}</li>)}</ul></div>)}</>;
+  if (item.function_type === "NEXT_BEST_ACTION") return <><p>{result.summary}</p>{result.actions.map((action) => <article className="action-card" key={action.rank}><div><b>{action.rank}. {action.action}</b> <span className={`priority-badge priority-badge--${action.priority}`}>{t(`nextBestAction.priorities.${action.priority}`)}</span></div><p>{action.reason}</p><small>{t("nextBestAction.timing")}: {action.timing}</small></article>)}</>;
+  return <><p><b>{t("emailDraft.subject")}:</b> {result.subject}</p><p className="history-email-body">{result.body}</p></>;
+}
+
+function AIHistoryList({ items }) {
+  const { t, i18n } = useTranslation();
+  const date = (value) => value ? new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle:"medium", timeStyle:"short" }).format(new Date(value)) : "—";
+  if (!items.length) return <p className="readonly-note">{t("aiHistory.empty")}</p>;
+  return <div className="ai-history-list">{items.map((item) => <details className="action-card" key={item.id}><summary><span><strong>{t(`aiHistory.functions.${item.function_type}`)}</strong><small>{item.deal_name}</small></span><span className={`history-status history-status--${item.status}`}>{t(`aiHistory.status.${item.status}`)}</span></summary><div className="history-meta"><span>{t("aiHistory.created")}: {date(item.created_at)}</span><span>{t("aiHistory.started")}: {date(item.started_at)}</span><span>{t("aiHistory.completed")}: {date(item.finished_at)}</span><span>{t("aiHistory.model")}: {item.actual_model || "—"}</span><span>{t("aiHistory.language")}: {item.language}</span>{item.duration_ms != null && <span>{t("aiHistory.duration")}: {item.duration_ms} ms</span>}<span>{t("aiHistory.attempts")}: {item.attempt_count}</span>{item.provider_usage?.total_tokens != null && <span>{t("aiHistory.usageTokens")}: {item.provider_usage.total_tokens}</span>}{item.is_current && <span>{t("aiHistory.current")}</span>}{item.is_outdated && <span className="deadline-warning">{t("aiHistory.outdated")}</span>}</div><Result item={item} />{item.result_payload?.security_warning && <div className="warning-box warning-box--security"><strong>{t("leadScoring.security")}</strong><p>{item.result_payload.security_warning}</p></div>}</details>)}</div>;
+}
+
+export default AIHistoryList;

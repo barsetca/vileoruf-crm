@@ -21,6 +21,12 @@ class ClientStatus(str, Enum):
     CLIENT = "CLIENT"
 
 
+class PreferredCommunicationLanguage(str, Enum):
+    RU = "RU"
+    EN = "EN"
+    ES = "ES"
+
+
 class Client(Base):
     __tablename__ = "clients"
 
@@ -39,6 +45,12 @@ class Client(Base):
         nullable=False,
         default=ClientStatus.CUSTOMER,
         server_default=ClientStatus.CUSTOMER.value,
+    )
+    preferred_communication_language: Mapped[PreferredCommunicationLanguage] = mapped_column(
+        SqlEnum(PreferredCommunicationLanguage, name="preferred_communication_language"),
+        nullable=False,
+        default=PreferredCommunicationLanguage.RU,
+        server_default=PreferredCommunicationLanguage.RU.value,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
