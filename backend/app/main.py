@@ -17,6 +17,8 @@ from backend.app.api.pipeline_stages.router import router as pipeline_stages_rou
 from backend.app.api.public.router import router as public_router
 from backend.app.api.tasks.router import router as tasks_router
 from backend.app.api.users.router import router as users_router
+from backend.app.api.integrations.router import router as integrations_router
+from backend.app.api.integrations.telegram_webhook import router as telegram_webhook_router
 from backend.app.core.config import get_frontend_settings
 
 
@@ -46,6 +48,8 @@ app.include_router(pipeline_stages_router)
 app.include_router(public_router)
 app.include_router(tasks_router)
 app.include_router(users_router)
+app.include_router(integrations_router)
+app.include_router(telegram_webhook_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)

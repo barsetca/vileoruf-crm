@@ -16,6 +16,7 @@ def test_client_model_has_approved_status_and_contact_fields() -> None:
         "email",
         "phone",
         "telegram",
+        "telegram_provider_user_id",
         "whatsapp",
         "company",
         "lead_source",
@@ -32,6 +33,7 @@ def test_client_model_has_approved_status_and_contact_fields() -> None:
     assert columns["status"].nullable is False
     assert columns["email"].unique is not True
     assert columns["phone"].unique is not True
+    assert columns["telegram_provider_user_id"].unique is True
 
 
 def test_pipeline_stage_is_database_ordered_data() -> None:

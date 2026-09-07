@@ -7,6 +7,9 @@ import {
   createCommunication,
   listCommunications,
 } from "../services/communications.js";
+import { sendTelegram } from "../services/integrations.js";
+import { getClient } from "../services/clients.js";
+import { getTelegramAvailability } from "../services/integrations.js";
 
 
 const PAGE_SIZE = 10;
@@ -44,6 +47,19 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
   const [form, setForm] = useState(initialForm);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [telegramText, setTelegramText] = useState("");
+  const [telegramRequestKey, setTelegramRequestKey] = useState(null);
+  const [telegramState, setTelegramState] = useState("idle");
+  const [telegramAvailable, setTelegramAvailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setTelegramAvailable(false);
+    Promise.all([getClient(accessToken, clientId), getTelegramAvailability(accessToken)])
+      .then(([client, integration]) => { if (active) setTelegramAvailable(Boolean(client.telegram_provider_user_id) && integration.available === true); })
+      .catch(() => { if (active) setTelegramAvailable(false); });
+    return () => { active = false; };
+  }, [accessToken, clientId]);
 
   const load = useCallback((nextOffset = 0, append = false) => {
     const controller = new AbortController();
@@ -70,6 +86,7 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
   function changeField(event) {
     setForm((previous) => ({ ...previous, [event.target.name]: event.target.value }));
   }
+  async function submitTelegram(event) { event.preventDefault(); if (!telegramText.trim()) return; const requestKey=telegramRequestKey ?? crypto.randomUUID(); setTelegramRequestKey(requestKey); setTelegramState("sending"); try { await sendTelegram(accessToken, { client_id: clientId, ...(dealId ? { deal_id: dealId } : {}), content: telegramText.trim() }, requestKey); setTelegramText(""); setTelegramRequestKey(null); setTelegramState("pending"); } catch { setTelegramState("error"); } }
 
   async function submit(event) {
     event.preventDefault();
@@ -107,6 +124,7 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
 
   const locale = i18n.resolvedLanguage ?? "ru";
   const hasMore = communications.length > 0 && communications.length % PAGE_SIZE === 0;
+  const telegramSendAvailable = telegramAvailable && canCreate;
 
   return <section className="communication-timeline" aria-live="polite">
     <div className="communication-timeline-header">
@@ -128,6 +146,7 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
       {formError && <p className="form-error" role="alert">{formError}</p>}
       <button className="primary-button" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "common.saving" : "communications.submit")}</button>
     </form> : <p className="readonly-note">{t("communications.permissions.dealCreateForbidden")}</p>}
+    {telegramSendAvailable ? <form className="communication-form" onSubmit={submitTelegram}><h3>{t("telegram.send")}</h3><label className="field field--full"><span>{t("telegram.message")}</span><textarea value={telegramText} onChange={(event) => { setTelegramText(event.target.value); setTelegramRequestKey(null); }} rows="3" disabled={telegramState === "sending"} required /></label>{telegramState === "pending" && <p className="status-note">{t("telegram.pending")}</p>}{telegramState === "error" && <p className="form-error">{t("telegram.error")}</p>}<button className="secondary-button" disabled={telegramState === "sending"}>{t(telegramState === "sending" ? "telegram.sending" : "telegram.send")}</button></form> : <p className="readonly-note">{t("telegram.unavailable")}</p>}
   </section>;
 }
 

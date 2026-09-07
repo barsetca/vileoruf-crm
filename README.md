@@ -14,18 +14,25 @@ VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The reposito
 - **D4.5 — AI Email Draft: DONE**
 - **D4.6 — AI History + AI Settings + Hardening: DONE**
 - **D4.7 — Final verification: COMPLETE** — regression, runtime, controlled real-provider, public and authenticated ADMIN/MANAGER Chromium smoke checks pass; D4.7.2 verified safe temporary-credential harness handling.
+- **D5.0 — Integrations Architecture/Product Contract: APPROVED / ACTIVE** — [`DAY5_INTEGRATIONS_CONTRACT.md`](docs/DAY5_INTEGRATIONS_CONTRACT.md) governs all Day 5 work.
+- **D5.1 — Integration Foundation: DONE** — shared persistence/state, safe ADMIN settings API/UI, adapter/encryption/queue foundation, migration and migration/API/browser verification are complete.
+- **D5.2 — Gmail: DONE / LIVE VERIFIED**.
+- **D5.2a — Google OAuth Connection + Encrypted Token Lifecycle: DONE / LIVE VERIFIED** — secure state/callback, encrypted token persistence/refresh foundation and ADMIN connection-management UI are implemented; the configured corporate Google OAuth connection was verified live.
+- **D5.2b — Gmail Outbound Send: DONE / LIVE VERIFIED** — one owner-controlled synthetic message completed the normal explicit-send, integrations-queue and real Gmail provider flow; provider-confirmed success created exactly one Communication and immutable/readable/copyable historical EmailDraft.
+- **D5.2c — Gmail Inbound Synchronization: DONE / LIVE VERIFIED** — bounded ADMIN-triggered synchronization uses a persisted post-install checkpoint, a fixed five-minute provider-visibility overlap and page token, database provider-message deduplication, exact normalized Client email match and deterministic outbound-thread Deal correlation; a controlled corrected-recipient retry accepted exactly one real provider fact, created exactly one incoming EMAIL Communication without a Deal, and repeat sync created no duplicate.
+- **D5.3 — Telegram: DONE / LIVE PROVIDER VERIFIED** — one corporate Bot uses environment-backed secrets, authenticated webhook delivery and `IntegrationConnection` lifecycle. Live verification proved real inbound persistence, unmatched preservation, explicit manual linking, subsequent stable `telegram_provider_user_id` auto-matching (never username), and one CRM/Celery/provider outbound flow from `PENDING` to `SENT` with exactly one outgoing Communication and owner receipt. PostgreSQL-backed authenticity/idempotency and terminal lifecycle coverage remains automated; deliberate live redelivery/replay was not performed.
 
 The D4.6 workflow adds a unified, safe AI history for all four AI functions, an ADMIN-only runtime AI settings surface, and a shared per-employee Redis fixed-window limit for manual AI launches. Existing AI results remain readable when AI is disabled. `/` is public; `/login` and `/crm/*` are employee-only.
 
 D4.7 ran the complete PostgreSQL backend regression (237 passed), Alembic/static checks, frontend production build, live service health checks, a controlled two-call OpenAI smoke through the normal Celery/provider path, and Chromium public plus authenticated ADMIN/MANAGER route smoke. D4.7.1 removed all synthetic local employee identities and related CRM/AI fixture data afterward. D4.7.2 remediated local smoke credential handling: forced failure and successful temporary authentication both verified no secret in captured stdout/stderr, with no residue. No send/integration behavior was introduced.
 
-Current routes are `/` (public request page), `/login` (employee login), `/crm` (operational dashboard), `/crm/clients`, `/crm/deals`, `/crm/pipeline`, `/crm/tasks`, `/crm/ai-history`, and ADMIN-only `/crm/settings/business` plus `/crm/settings/ai`. A public visitor is never a User and receives no customer account, password, JWT or personal cabinet.
+Current routes are `/` (public request page), `/login` (employee login), `/crm` (operational dashboard), `/crm/clients`, `/crm/deals`, `/crm/pipeline`, `/crm/tasks`, `/crm/ai-history`, and ADMIN-only `/crm/settings/business`, `/crm/settings/ai`, plus `/crm/settings/integrations`. Integration Settings has safe Gmail Connect/Reconnect/Disconnect controls; the provider callback is `GET /settings/integrations/google/callback`. A public visitor is never a User and receives no customer account, password, JWT or personal cabinet.
 
 ## Planned MVP capabilities
 
-The following capabilities are planned and are **not implemented yet**:
+The shared D5.1 integration foundation, D5.2 Gmail and D5.3 Telegram are complete as documented above. The following provider-specific capabilities are **not implemented yet**. Their approved Day 5 MVP architecture/product contract is [`DAY5_INTEGRATIONS_CONTRACT.md`](docs/DAY5_INTEGRATIONS_CONTRACT.md):
 
-- Gmail, Telegram, WhatsApp, and Calendar integrations;
+- WhatsApp and Calendar integrations;
 - sales analytics and reporting.
 
 Communication persistence, authenticated create/get/list API, and Client/Deal context timeline are implemented. Task persistence, authenticated create/list/get/update/completion API, and protected employee Tasks UI are implemented. Payment processing is not part of the approved scope.
@@ -36,7 +43,7 @@ Communication persistence, authenticated create/get/list API, and Client/Deal co
 - centralized environment configuration;
 - PostgreSQL-only database configuration;
 - SQLAlchemy 2.x engine and session infrastructure using Psycopg 3;
-- Alembic configuration with current applied head `20260903_0008`;
+- Alembic configuration with current applied head `20260907_0011`;
 - internal User persistence with `ADMIN`/`MANAGER` roles;
 - Argon2id password and JWT access/refresh token primitives;
 - secure interactive first-ADMIN bootstrap CLI;
@@ -54,13 +61,16 @@ Communication persistence, authenticated create/get/list API, and Client/Deal co
 - Communication and Task persistence models with PostgreSQL enums, foreign keys, and timeline/worklist indexes; authenticated Communication create/get/list API and Client/Deal context timeline; authenticated Task create/list/get/update/completion API and protected `/crm/tasks` UI with role-aware responsibility rules.
 - common `AIAnalysis` history/audit persistence with `QUEUED`/`RUNNING`/`SUCCESS`/`FAILED`, validated JSON results, safe error categories, input fingerprint/snapshot metadata, and a PostgreSQL duplicate in-flight guard;
 - separate `EmailDraft` persistence foundation and environment-default/DB-override model settings foundation;
-- Celery 5.6 with a dedicated `ai` queue, Redis broker/result backend, JSON-only serialization, and an infrastructure smoke task;
+- Celery 5.6 with logical `ai` and `integrations` queues, Redis broker/result backend, JSON-only serialization, and infrastructure/foundation smoke tasks;
 - official OpenAI Python SDK behind an internal provider abstraction with Pydantic structured responses; no real key or provider call is required for backend startup/tests.
 - D4.2 business catalog and settings persistence, typed management APIs, deterministic Commercial Value/overall calculation, manual Celery Lead Scoring, safe structured AI factors, and freshness/authorization enforcement.
 - D4.3 manual Celery Deal Prediction with distinct probability/evidence-confidence semantics and privacy-bounded current-Deal plus same-client aggregate context.
 - D4.4 advisory Next Best Action with 1–3 validated ranked recommendations, directed LS/DP freshness dependencies, and failure-tolerant `LS ∥ DP → NBA` orchestration for newly created active Deals.
 - D4.5 manual AI Email Draft generation, optional backend-resolved NBA action context, explicit working-draft CRUD, client-language selection, placeholder privacy, and localized Deal UI. Closed Deals remain eligible; `AI Enabled` blocks only new generation, not manual EmailDraft CRUD.
 - D4.6 ADMIN AI Settings with safe model overrides/reset, unified role-aware AI History, typed result presentation, and fail-open Redis rate limiting shared across the four manual AI launch endpoints.
+- D5.1 Integration Foundation: `IntegrationConnection`, `ExternalMessage`, and `CalendarEvent`; EmailDraft `DRAFT`/`SENT` state plus historical `SENT` immutability; provider adapter and safe error/retry classification boundaries; application-level encrypted token-storage foundation using environment-only `INTEGRATION_TOKEN_ENCRYPTION_KEY`; safe ADMIN `GET /settings/integrations`; and localized ADMIN `/crm/settings/integrations` cards for Gmail, Telegram, Google Calendar, and WhatsApp.
+- D5.2a Google OAuth foundation: ADMIN-only `POST /settings/integrations/google/connect`, `/reconnect`, and `/disconnect`; provider callback; one-time PostgreSQL-hashed/expiring OAuth state; code exchange and access-token refresh behind the Google service boundary; and encrypted token ciphertext only in the existing Gmail `IntegrationConnection` internal field.
+- D5.2b Gmail outbound foundation: authenticated `POST /deals/{deal_id}/email-drafts/{draft_id}/send`, explicit UI confirmation with recipient/subject, a one-to-one EmailDraft-to-ExternalMessage correlation, integrations-queue Gmail adapter execution and provider-confirmed finalization to Communication plus immutable EmailDraft `SENT`.
 
 ## Tech stack
 
@@ -96,7 +106,7 @@ Communication persistence, authenticated create/get/list API, and Client/Deal co
 - Docker
 - Docker Compose
 
-External integration adapters remain planned. Redis is not used for JWT, refresh tokens, session state, or persistent AI business settings.
+D5.2a implements and live-verifies Google OAuth connection/token lifecycle for the configured corporate Google account. D5.2b is also live-provider verified through one owner-controlled synthetic outbound message; its provider-confirmed result created exactly one CRM Communication and immutable historical EmailDraft. D5.2c Gmail inbound synchronization is also live-provider verified: a controlled corrected-recipient message was accepted through the bounded Gmail API sync, exact-matched to its synthetic Client, persisted as exactly one incoming EMAIL Communication without a Deal, and remained deduplicated on repeat sync. D5.3 Telegram is DONE / LIVE PROVIDER VERIFIED: real HTTPS webhook delivery persisted inbound facts, preserved an unmatched sender until explicit linking, automatically matched the next inbound fact by stable provider user ID, and sent one provider-confirmed outbound message through the normal CRM/Celery flow. Automated PostgreSQL coverage proves webhook and HTTP idempotency; deliberate live provider redelivery was not performed. Google Calendar D5.4 and WhatsApp Business workflows are not implemented. Provider cards never expose secrets. Redis is not used for JWT, refresh tokens, session state, or persistent AI business settings.
 
 ## Internationalization
 
@@ -148,6 +158,10 @@ Set `JWT_SECRET_KEY` to a strong local secret. The value in `.env.example` is an
 
 `OPENAI_API_KEY` is optional for ordinary backend startup and tests. Set it only when an AI operation that calls OpenAI is intentionally run. `AI_ANALYSIS_MODEL` and `AI_EMAIL_MODEL` default to `gpt-5.4-mini`; `AI_MODEL_ALLOWLIST` controls permitted runtime models. Celery/Redis URLs, provider timeout, retry count (maximum 2), and increasing-backoff base are environment-backed technical settings.
 
+`INTEGRATION_TOKEN_ENCRYPTION_KEY` is the environment-only application encryption key for a future OAuth token payload. It must be a valid Fernet key when OAuth-token storage is used. Do not commit it, expose it through an API/UI, or place a real value in `.env.example`. D5.1 itself does not perform OAuth or any provider operation.
+
+To enable a real local Google OAuth connection, set the following environment variables without committing their values: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, `GOOGLE_OAUTH_STATE_TTL_SECONDS`, and `INTEGRATION_TOKEN_ENCRYPTION_KEY`. The default local redirect URI is `http://localhost:8000/settings/integrations/google/callback`; register exactly that URI in a Google Cloud **Web application** OAuth client, or set the variable to the registered HTTPS deployment callback. Enable the Gmail API and Google Calendar API. The requested least-privilege Day 5 authorization scopes are `https://www.googleapis.com/auth/gmail.send` (D5.2b explicit send), `https://www.googleapis.com/auth/gmail.readonly` (D5.2c bounded inbound synchronization), and `https://www.googleapis.com/auth/calendar.events` (future D5.4 CRM-created events). Configure the OAuth consent screen and, while the app remains in testing, add the corporate test user. After editing `.env`, recreate `backend` and `celery_worker` with `docker compose up -d --force-recreate backend celery_worker`; D5.2a does not make a provider call until an ADMIN explicitly starts the connection.
+
 The persisted singleton `ai_model_settings` controls `ai_enabled` and `automatic_new_deal_analysis` (both default `true`), optional analysis/email model overrides, and Deal Prediction/Next Best Action validity periods (both default 7 days, accepted range 1–365). ADMIN manages these values at `/crm/settings/ai`; the API returns only safe configuration and never exposes provider credentials. A blank model override resets it to the environment default, and every changed field is recorded through privacy-safe application logging. Disabling AI blocks creation of new manual and automatic AI operations but does not hide history or cancel already accepted work. Disabling only automatic new-Deal analysis leaves manual operations available and never backfills existing Deals when re-enabled.
 
 D4.6 adds the non-secret `AI_RATE_LIMIT_REQUESTS=10` and `AI_RATE_LIMIT_WINDOW_SECONDS=60` defaults. Existing local `.env` files do not need an update because application and Compose defaults are present; add either value only to override it, then recreate the backend container (`docker compose up -d --force-recreate backend`). Manual Lead Scoring, Deal Prediction, Next Best Action, and Email Draft generation share this per-authenticated-employee fixed window. Redis failures are logged safely and fail open; automatic orchestration, reads, and EmailDraft CRUD do not consume the quota.
@@ -184,7 +198,7 @@ Detached startup is also supported:
 docker compose up -d --build
 ```
 
-Compose waits for PostgreSQL and Redis to become healthy, applies `alembic upgrade head`, starts FastAPI, starts the Celery worker on the dedicated `ai` queue, and then starts Vite. Backend and frontend source directories are bind-mounted for development reload; frontend dependencies remain in a container volume so the bind mount does not hide `node_modules`.
+Compose waits for PostgreSQL and Redis to become healthy, applies `alembic upgrade head`, starts FastAPI, starts the Celery worker on the logical `ai` and `integrations` queues, and then starts Vite. Backend and frontend source directories are bind-mounted for development reload; frontend dependencies remain in a container volume so the bind mount does not hide `node_modules`.
 
 Stop all services while preserving PostgreSQL data:
 
@@ -240,7 +254,7 @@ python3 -m venv .venv
 In another terminal, start the AI worker:
 
 ```bash
-.venv/bin/python -m celery -A backend.app.workers.celery_app:celery_app worker --loglevel=INFO --queues=ai
+.venv/bin/python -m celery -A backend.app.workers.celery_app:celery_app worker --loglevel=INFO --queues=ai,integrations
 ```
 
 In another terminal, start the frontend:
@@ -268,6 +282,7 @@ The frontend reads its backend URL from `VITE_API_BASE_URL` in the root environm
 - `/login` — employee email/password login;
 - `/crm` — protected operational Dashboard; `/crm/clients`, `/crm/deals`, `/crm/pipeline`, `/crm/tasks` — protected ADMIN/MANAGER CRM pages;
 - `/crm/settings/business` — ADMIN-only Categories, Services and Lead Scoring business settings.
+- `/crm/settings/integrations` — ADMIN-only safe Integration Settings status cards. It shows the four approved providers as disconnected until later provider-specific work; it does not connect accounts or expose credentials.
 
 The public form loads active Services from `GET /public/services` and sends an approved Service, contact/project fields, and preferred communication language to `POST /public/requests`. Category is always derived by the backend from Service. One accepted request atomically creates `Client(status=CUSTOMER, lead_source=Website)` and an unassigned Deal in the system `New Lead` stage. It does not accept status, stage, probability, responsible employee or internal notes and does not create customer authentication.
 
@@ -334,6 +349,7 @@ The project contract and detailed status are maintained in [`docs/`](docs/):
 - [`CODEX_RULES.md`](docs/CODEX_RULES.md) — development workflow and implementation rules;
 - [`DEVELOPMENT_SEED_STRATEGY.md`](docs/DEVELOPMENT_SEED_STRATEGY.md) — system/bootstrap and development seed rules.
 - [`DAY4_AI_CONTRACT.md`](docs/DAY4_AI_CONTRACT.md) — approved Day 4 AI architecture/product contract.
+- [`DAY5_INTEGRATIONS_CONTRACT.md`](docs/DAY5_INTEGRATIONS_CONTRACT.md) — approved/active Day 5 integrations architecture/product contract.
 
 ## Authentication status
 

@@ -68,7 +68,8 @@ def test_compact_snapshot_is_explicit_bounded_and_omits_free_text() -> None:
     assert "full communication" not in str(snapshot)
 
 
-def test_ai_environment_defaults_and_allowlist_parsing() -> None:
+def test_ai_environment_defaults_and_allowlist_parsing(monkeypatch) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     settings = AIInfrastructureSettings(_env_file=None)
 
     assert settings.ai_analysis_model == "gpt-5.4-mini"

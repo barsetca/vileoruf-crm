@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
 import { getNextBestAction } from "../services/nextBestAction.js";
-import { createEmailDraft, deleteEmailDraft, generateEmailDraft, getEmailGeneration, listEmailDrafts, updateEmailDraft } from "../services/emailDrafts.js";
+import { createEmailDraft, deleteEmailDraft, generateEmailDraft, getEmailGeneration, listEmailDrafts, sendEmailDraft, updateEmailDraft } from "../services/emailDrafts.js";
 
 const blank = { subject: "", body: "", purpose: "", language: "", source_ai_analysis_id: null };
 
-function EmailDraftSection({ deal, canRun }) {
+function EmailDraftSection({ deal, client, canRun }) {
   const { t } = useTranslation();
   const { accessToken } = useAuth();
   const [generation, setGeneration] = useState(null);
@@ -19,6 +19,7 @@ function EmailDraftSection({ deal, canRun }) {
   const [editing, setEditing] = useState(null);
   const [state, setState] = useState("loading");
   const [error, setError] = useState("");
+  const [sendingId, setSendingId] = useState(null);
 
   const load = useCallback(async () => {
     if (!canRun) { setGeneration(null); setDrafts([]); setNba(null); setState("ready"); return; }
@@ -64,10 +65,18 @@ function EmailDraftSection({ deal, canRun }) {
     try { await deleteEmailDraft(accessToken, deal.id, draft.id); await load(); } catch (nextError) { setError(nextError.message); }
   }
   async function copy(value) { try { await navigator.clipboard.writeText(value); } catch { setError(t("emailDraft.copyError")); } }
+  async function send(draft) {
+    if (!client?.email) { setError(t("emailDraft.recipientMissing")); return; }
+    if (!window.confirm(t("emailDraft.confirmSend", { recipient: client.email, subject: draft.subject }))) return;
+    setSendingId(draft.id); setError("");
+    try { await sendEmailDraft(accessToken, deal.id, draft.id); await load(); }
+    catch (nextError) { setError(nextError.message || t("emailDraft.sendFailed")); }
+    finally { setSendingId(null); }
+  }
 
   return <section className="next-best-action email-draft-section">
     <div className="section-heading"><div><p className="eyebrow">AI</p><h3>{t("emailDraft.title")}</h3></div>{canRun && <button className="primary-button" type="button" onClick={generate} disabled={state === "generating" || generation?.active}>{t("emailDraft.generate")}</button>}</div>
-    <p className="readonly-note">{t("emailDraft.noSend")}</p>
+    <p className="readonly-note">{t("emailDraft.noAutoSend")}</p>
     {!canRun && <p className="readonly-note">{t("deals.readonly")}</p>}
     {canRun && <div className="client-form-grid"><label className="field"><span>{t("emailDraft.purpose")} <em>*</em></span><input value={purpose} onChange={(event) => setPurpose(event.target.value)} maxLength="255" /></label><label className="field"><span>{t("emailDraft.instructions")}</span><input value={instructions} onChange={(event) => setInstructions(event.target.value)} maxLength="2000" /></label><label className="field field--full"><span>{t("emailDraft.nba")}</span><select value={selectedAction} onChange={(event) => setSelectedAction(event.target.value)}><option value="">{t("emailDraft.noNba")}</option>{actions.map((action) => <option key={action.rank} value={`${nbaAnalysis.id}:${action.rank}`}>{action.rank}. {action.action}{nbaAnalysis.is_outdated ? ` · ${t("emailDraft.nbaOutdated")}` : ""}</option>)}</select></label></div>}
     {state === "loading" && <p>{t("emailDraft.loading")}</p>}
@@ -76,7 +85,7 @@ function EmailDraftSection({ deal, canRun }) {
     {error && <p className="form-error" role="alert">{error}</p>}
     {result && <article className="action-card email-proposal"><div><strong>{t("emailDraft.generated")}</strong><small>{current.language}</small></div>{current.is_outdated && <p className="warning-box">{t("emailDraft.contextChanged")}</p>}<label className="field"><span>{t("emailDraft.subject")}</span><input value={result.subject} readOnly /></label><label className="field"><span>{t("emailDraft.body")}</span><textarea value={result.body} readOnly rows="5" /></label><div className="deal-actions"><button className="secondary-button" type="button" onClick={() => copy(result.subject)}>{t("emailDraft.copySubject")}</button><button className="secondary-button" type="button" onClick={() => copy(result.body)}>{t("emailDraft.copyBody")}</button>{canRun && <button className="primary-button" type="button" onClick={openGenerated}>{t("emailDraft.saveAs")}</button>}</div>{result.security_warning && <div className="warning-box warning-box--security"><strong>{t("emailDraft.security")}</strong><p>{result.security_warning}</p></div>}</article>}
     {canRun && <button className="secondary-button" type="button" onClick={openManual}>{t("emailDraft.newManual")}</button>}
-    <div className="action-list">{drafts.map((draft) => <article className="action-card" key={draft.id}><div><strong>{draft.subject}</strong><small>{draft.language}</small></div><p>{draft.body}</p><small>{t("emailDraft.purpose")}: {draft.purpose}</small>{canRun && <div className="deal-actions"><button className="secondary-button" type="button" onClick={() => openExisting(draft)}>{t("deals.edit")}</button><button className="secondary-button" type="button" onClick={() => copy(draft.body)}>{t("emailDraft.copyBody")}</button><button className="secondary-button" type="button" onClick={() => remove(draft)}>{t("emailDraft.delete")}</button></div>}</article>)}</div>
+    <div className="action-list">{drafts.map((draft) => <article className="action-card" key={draft.id}><div><strong>{draft.subject}</strong><small>{draft.state === "SENT" ? t("emailDraft.sent") : draft.language}</small></div>{draft.outbound_status === "PENDING" && <p className="status-note">{t("emailDraft.sending")}</p>}{draft.outbound_status === "FAILED" && <p className="form-error">{t("emailDraft.sendFailed")}</p>}{draft.outbound_status === "UNKNOWN" && <p className="warning-box">{t("emailDraft.unknownOutcome")}</p>}<p>{draft.body}</p><small>{t("emailDraft.purpose")}: {draft.purpose}</small><div className="deal-actions"><button className="secondary-button" type="button" onClick={() => copy(draft.subject)}>{t("emailDraft.copySubject")}</button><button className="secondary-button" type="button" onClick={() => copy(draft.body)}>{t("emailDraft.copyBody")}</button><button className="secondary-button" type="button" onClick={() => copy(`${draft.subject}\n\n${draft.body}`)}>{t("emailDraft.copyAll")}</button>{canRun && draft.state !== "SENT" && !draft.outbound_status && <><button className="primary-button" type="button" disabled={sendingId === draft.id} onClick={() => send(draft)}>{sendingId === draft.id ? t("emailDraft.sending") : t("emailDraft.send")}</button><button className="secondary-button" type="button" onClick={() => openExisting(draft)}>{t("deals.edit")}</button><button className="secondary-button" type="button" onClick={() => remove(draft)}>{t("emailDraft.delete")}</button></>}</div></article>)}</div>
     {editing && <div className="email-draft-editor"><h4>{editing.id ? t("emailDraft.editDraft") : t("emailDraft.newDraft")}</h4><label className="field"><span>{t("emailDraft.subject")}</span><input value={editing.subject} onChange={(event) => setEditing({ ...editing, subject: event.target.value })} /></label><label className="field"><span>{t("emailDraft.body")}</span><textarea rows="7" value={editing.body} onChange={(event) => setEditing({ ...editing, body: event.target.value })} /></label><label className="field"><span>{t("emailDraft.purpose")}</span><input value={editing.purpose} onChange={(event) => setEditing({ ...editing, purpose: event.target.value })} /></label><label className="field"><span>{t("emailDraft.language")}</span><select value={editing.language} onChange={(event) => setEditing({ ...editing, language: event.target.value })}><option value="">—</option><option value="RU">RU</option><option value="EN">EN</option><option value="ES">ES</option></select></label><div className="deal-actions"><button className="primary-button" type="button" onClick={save}>{t("common.save")}</button><button className="secondary-button" type="button" onClick={() => setEditing(null)}>{t("common.close")}</button></div></div>}
   </section>;
 }

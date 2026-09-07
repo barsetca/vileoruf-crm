@@ -36,6 +36,7 @@ class Client(Base):
     email: Mapped[str | None] = mapped_column(String(320), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(64), nullable=True)
     telegram: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    telegram_provider_user_id: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
     whatsapp: Mapped[str | None] = mapped_column(String(64), nullable=True)
     company: Mapped[str | None] = mapped_column(String(255), nullable=True)
     lead_source: Mapped[str | None] = mapped_column(String(255), nullable=True)

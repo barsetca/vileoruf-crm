@@ -143,3 +143,48 @@ def get_security_settings() -> SecuritySettings:
 @lru_cache
 def get_ai_infrastructure_settings() -> AIInfrastructureSettings:
     return AIInfrastructureSettings()
+
+class IntegrationSecuritySettings(BaseSettings):
+    integration_token_encryption_key: SecretStr | None = None
+    model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", env_file_encoding="utf-8", extra="ignore")
+
+@lru_cache
+def get_integration_security_settings() -> IntegrationSecuritySettings:
+    return IntegrationSecuritySettings()
+
+
+class GoogleOAuthSettings(BaseSettings):
+    google_oauth_client_id: str | None = None
+    google_oauth_client_secret: SecretStr | None = None
+    google_oauth_redirect_uri: str = "http://localhost:8000/settings/integrations/google/callback"
+    google_oauth_state_ttl_seconds: PositiveInt = 600
+
+    model_config = SettingsConfigDict(
+        env_file=PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    @field_validator("google_oauth_redirect_uri")
+    @classmethod
+    def require_http_redirect_uri(cls, value: str) -> str:
+        if not value.startswith(("http://", "https://")):
+            raise ValueError("GOOGLE_OAUTH_REDIRECT_URI must use HTTP(S)")
+        return value
+
+
+@lru_cache
+def get_google_oauth_settings() -> GoogleOAuthSettings:
+    return GoogleOAuthSettings()
+
+
+class TelegramSettings(BaseSettings):
+    telegram_bot_token: SecretStr | None = None
+    telegram_webhook_secret: SecretStr | None = None
+
+    model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", env_file_encoding="utf-8", extra="ignore")
+
+
+@lru_cache
+def get_telegram_settings() -> TelegramSettings:
+    return TelegramSettings()

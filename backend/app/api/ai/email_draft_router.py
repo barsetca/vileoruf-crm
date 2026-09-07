@@ -11,6 +11,7 @@ from backend.app.schemas.ai import (
     EmailDraftCreate,
     EmailDraftGenerationLaunch,
     EmailDraftResponse,
+    EmailDraftSendResponse,
     EmailDraftUpdate,
     EmailGenerationOverview,
     EmailGenerationResponse,
@@ -31,6 +32,7 @@ from backend.app.api.ai.dependencies import require_manual_ai_launch_quota
 from backend.app.services.email_drafts import (
     EmailDraftNotFoundError,
     EmailDraftPersistenceError,
+    SentEmailDraftImmutableError,
     InvalidEmailDraftSourceError,
     create_email_draft,
     delete_email_draft,
@@ -38,6 +40,15 @@ from backend.app.services.email_drafts import (
     list_email_drafts,
     update_email_draft,
 )
+from backend.app.services.gmail_outbound import (
+    GmailOutboundForbiddenError,
+    GmailOutboundNotFoundError,
+    GmailOutboundPersistenceError,
+    GmailOutboundValidationError,
+    mark_dispatch_failure,
+    request_gmail_send,
+)
+from backend.app.workers.integration_tasks import send_gmail_external_message
 
 
 generation_router = APIRouter(prefix="/deals/{deal_id}/email-draft", tags=["email-draft"])
@@ -104,12 +115,36 @@ def get_draft(deal_id: UUID, draft_id: UUID, session: Annotated[Session, Depends
     except EmailDraftNotFoundError as error: raise HTTPException(404, "Email Draft not found") from error
 
 
+@draft_router.post("/{draft_id}/send", response_model=EmailDraftSendResponse, status_code=status.HTTP_202_ACCEPTED)
+def post_send_draft(deal_id: UUID, draft_id: UUID, session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
+    try:
+        message = request_gmail_send(session, deal_id=deal_id, draft_id=draft_id, current_user=current_user)
+        if message.status.value == "PENDING":
+            try:
+                send_gmail_external_message.delay(str(message.id))
+            except Exception:
+                message = mark_dispatch_failure(session, external_message_id=message.id)
+                raise HTTPException(503, "Gmail send queue is unavailable")
+        return {"id": message.id, "email_draft_id": draft_id, "status": message.status, "retryable": False}
+    except GmailOutboundNotFoundError as error: raise HTTPException(404, "Email Draft not found") from error
+    except GmailOutboundForbiddenError as error: raise HTTPException(403, "Email Draft is available only for own Deals") from error
+    except GmailOutboundValidationError as error:
+        messages = {
+            "INVALID_RECIPIENT": "Client email is missing or invalid",
+            "AUTH_REQUIRED": "Gmail connection is unavailable",
+            "PROVIDER_ERROR": "Sent Email Draft cannot be sent again",
+        }
+        raise HTTPException(409 if error.code.value == "PROVIDER_ERROR" else 422, messages.get(error.code.value, "Gmail send is unavailable")) from error
+    except GmailOutboundPersistenceError as error: raise HTTPException(500, "Gmail send operation failed") from error
+
+
 @draft_router.patch("/{draft_id}", response_model=EmailDraftResponse)
 def patch_draft(deal_id: UUID, draft_id: UUID, payload: EmailDraftUpdate, session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
     try: return update_email_draft(session, deal_id=deal_id, draft_id=draft_id, changes=payload.model_dump(exclude_unset=True), current_user=current_user)
     except EmailDraftGenerationNotFoundError as error: raise HTTPException(404, "Deal not found") from error
     except EmailDraftGenerationForbiddenError as error: raise HTTPException(403, "Email Draft is available only for own Deals") from error
     except EmailDraftNotFoundError as error: raise HTTPException(404, "Email Draft not found") from error
+    except SentEmailDraftImmutableError as error: raise HTTPException(409, "Sent Email Draft is immutable") from error
     except EmailDraftPersistenceError as error: raise HTTPException(500, "Email Draft save failed") from error
 
 
@@ -121,4 +156,5 @@ def delete_draft(deal_id: UUID, draft_id: UUID, session: Annotated[Session, Depe
     except EmailDraftGenerationNotFoundError as error: raise HTTPException(404, "Deal not found") from error
     except EmailDraftGenerationForbiddenError as error: raise HTTPException(403, "Email Draft is available only for own Deals") from error
     except EmailDraftNotFoundError as error: raise HTTPException(404, "Email Draft not found") from error
+    except SentEmailDraftImmutableError as error: raise HTTPException(409, "Sent Email Draft is immutable") from error
     except EmailDraftPersistenceError as error: raise HTTPException(500, "Email Draft delete failed") from error

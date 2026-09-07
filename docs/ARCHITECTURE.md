@@ -11,7 +11,7 @@ Reasons:
 
 ## 2. High-level architecture
 
-The diagram below is the target MVP architecture. Day 1–4 functionality is implemented, including Lead Scoring, Deal Prediction, advisory Next Best Action, initial new-Deal AI orchestration, employee-controlled AI Email Drafts, unified AI history, runtime AI settings, manual-launch hardening, final public/authenticated browser verification, and safe local smoke credential handling. Day 4 is complete; integration adapters remain planned.
+The diagram below is the target MVP architecture. Day 1–4 functionality is implemented, including Lead Scoring, Deal Prediction, advisory Next Best Action, initial new-Deal AI orchestration, employee-controlled AI Email Drafts, unified AI history, runtime AI settings, manual-launch hardening, final public/authenticated browser verification, and safe local smoke credential handling. Day 4 is complete. D5.1 shared Integration Foundation and D5.2a Google OAuth/token lifecycle are implemented; Gmail business operations and other provider-specific Day 5 workflows remain planned and are governed by the approved `docs/DAY5_INTEGRATIONS_CONTRACT.md`.
 
 ```text
 React Frontend
@@ -54,14 +54,14 @@ Implemented backend baseline through D4.6:
 - `GET /health`, independent of database availability;
 - centralized environment settings using `pydantic-settings`;
 - PostgreSQL-only SQLAlchemy 2.x engine/session infrastructure using Psycopg 3;
-- Alembic with shared application configuration and current head `20260903_0008`;
+- Alembic with shared application configuration and current head `20260907_0010`;
 - restricted development CORS for the configured `FRONTEND_ORIGIN`.
 - `Client`, `PipelineStage`, and `Deal` domain models and services, including backend-authoritative CRM role/ownership authorization;
 - the public request action endpoint and development/test-only deterministic demo seed.
 - common `AIAnalysis`, separate `EmailDraft`, and model-override persistence foundations at Alembic head `20260902_0005`;
 - reusable deterministic fingerprint/compact snapshot, strict structured validation, normalized failure/retry lifecycle, and duplicate in-flight protection;
 - OpenAI Responses API adapter behind the internal provider boundary, with no API key required until a provider operation runs;
-- Redis-backed Celery application and dedicated AI queue for background AI work only.
+- Redis-backed Celery application with dedicated `ai` and logical `integrations` queues; D5.1 registers only a non-provider integration foundation task.
 - `Category`, `Service`, singleton Lead Scoring settings, Deal Service/effort fields, and Client preferred communication language persistence;
 - typed business-management and manual Deal Lead Scoring APIs, deterministic backend Commercial Value/overall scoring, and targeted freshness invalidation.
 - typed manual Deal Prediction and Next Best Action APIs plus Celery tasks on the common `AIAnalysis` lifecycle;
@@ -69,6 +69,10 @@ Implemented backend baseline through D4.6:
 - a minimal `InitialAIAnalysisPipeline` correlation row that freezes the creator-selected language and exact initial LS/DP/NBA analysis IDs.
 - `ai.email_draft.execute`, typed generation/history and EmailDraft CRUD endpoints. Generation stores a placeholder-form `AIAnalysis` only; explicit save creates an editable EmailDraft and never creates a Communication.
 - ADMIN-only safe runtime AI settings API, role-aware unified AI history, and a Redis-backed per-employee fixed-window limiter shared by the four manual launch endpoints.
+- D5.1 `IntegrationConnection`, `ExternalMessage`, and `CalendarEvent` persistence/lifecycle foundation, with one corporate connection per provider, provider-message uniqueness, and `ExternalMessage != Communication` / `Task != CalendarEvent` separation.
+- EmailDraft `DRAFT`/`SENT` foundation with service-level immutability for historical `SENT` content; provider adapter and safe error/retry classification boundaries; application-level encrypted token payload storage configured by an environment-only key.
+- D5.1 ADMIN-only safe `GET /settings/integrations` and localized `/crm/settings/integrations` with Gmail, Telegram, Google Calendar, and WhatsApp disconnected status cards; D5.1 itself introduced no OAuth, provider calls, send/sync/webhook, or provider-confirmed Communication workflow.
+- D5.2a Google OAuth boundary: ADMIN-only connect/reconnect/disconnect endpoints, short-lived single-use hashed state records, callback code exchange and refresh isolated in `google_oauth`, Fernet-encrypted token payload persistence on the single corporate Gmail connection, and safe redirect/UI outcomes. No Gmail API, Calendar API, provider message or Communication operation is included.
 
 ## 4. Frontend responsibilities
 The target React frontend contains:
@@ -85,7 +89,7 @@ The target React frontend contains:
 - API client layer;
 - i18n resources (`ru`, `en`, `es`).
 
-The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals with all four AI sections and Deal-level history, Pipeline Kanban, Tasks, unified AI History, ADMIN business/AI settings, and a Service-aware public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
+The implemented JavaScript React frontend uses project-pinned Node.js 24.20.0, npm 11.19.0, Vite 8.2.2 and `@vitejs/plugin-react`. It includes `AuthProvider`/`useAuth`, i18next/react-i18next resources, protected CRM shell/navigation, Clients, Deals with all four AI sections and Deal-level history, Pipeline Kanban, Tasks, unified AI History, ADMIN business/AI settings, ADMIN Integration Settings with four safe status cards, and a Service-aware public request page. Access JWT exists only in React memory; refresh restores the employee session from the cookie. The UI is translated in ru/en/es and reflects roles, but backend authorization remains authoritative.
 
 Target application boundary:
 
@@ -194,7 +198,9 @@ Initial domain model:
 - Task
 - AIAnalysis
 - EmailDraft
-- Integration
+- IntegrationConnection
+- ExternalMessage
+- CalendarEvent
 
 Core relationships:
 
@@ -210,6 +216,10 @@ Deal
  ├── Tasks
  ├── AIAnalysis
  └── EmailDraft
+
+IntegrationConnection
+ ├── ExternalMessages
+ └── CalendarEvents
 ```
 
 `Deal` ownership uses `responsible_user_id` (or an equivalent foreign key) to `User`. `Client` has the lifecycle states `CUSTOMER` and `CLIENT`; the first Deal moved successfully to `Won` promotes `CUSTOMER` to `CLIENT`, with no automatic reverse transition.
@@ -308,7 +318,7 @@ Integration interface
 Credentials belong in environment configuration/secrets, never source control.
 
 ## 9. Background processing
-Use Celery for operations that should not block request handling. D4.1 implements Redis as the broker/result backend and a dedicated JSON-serialized `ai` queue; D4.2–D4.5 add `ai.lead_scoring.execute`, `ai.deal_prediction.execute`, `ai.next_best_action.execute`, and `ai.email_draft.execute`. D4.6 also uses Redis for ephemeral manual AI launch counters, not durable business state.
+Use Celery for operations that should not block request handling. D4.1 implements Redis as the broker/result backend and a dedicated JSON-serialized `ai` queue; D4.2–D4.5 add `ai.lead_scoring.execute`, `ai.deal_prediction.execute`, `ai.next_best_action.execute`, and `ai.email_draft.execute`. D4.6 also uses Redis for ephemeral manual AI launch counters, not durable business state. D5.1 adds the logical `integrations` queue and a non-provider foundation ping task; provider operations remain unimplemented.
 
 Do not move ordinary simple CRUD into background tasks without a reason.
 
@@ -413,7 +423,7 @@ OAuth/SSO, LDAP, magic links, 2FA, email verification, password reset by email, 
 
 ## 15. Planned components and architecture gates
 
-Lead Scoring and its business-settings UI are implemented in D4.2, Deal Prediction in D4.3, advisory Next Best Action plus initial new-Deal orchestration in D4.4, AI Email Draft in D4.5, unified AI settings/history plus manual-launch hardening in D4.6, final regression/runtime/provider/browser verification in D4.7/D4.7.1, and credential-output process remediation in D4.7.2. Day 4 AI Automation is COMPLETE. Integration adapters remain planned. Existing Communications, Tasks, Dashboard, employee management, CRM authorization, and synchronous CRUD contracts remain unchanged; backend authorization remains authoritative.
+Lead Scoring and its business-settings UI are implemented in D4.2, Deal Prediction in D4.3, advisory Next Best Action plus initial new-Deal orchestration in D4.4, AI Email Draft in D4.5, unified AI settings/history plus manual-launch hardening in D4.6, final regression/runtime/provider/browser verification in D4.7/D4.7.1, and credential-output process remediation in D4.7.2. Day 4 AI Automation is COMPLETE. D5.1 shared integration foundation is implemented: `IntegrationConnection`, `ExternalMessage`, `CalendarEvent`, EmailDraft `DRAFT`/`SENT` foundation, adapter/error classification boundaries, encrypted token storage foundation, logical `integrations` queue, and ADMIN integration settings. D5.2a adds the one-corporate-account Google OAuth encrypted token lifecycle; the token owner is the `GMAIL` connection, while D5.4 may reuse the internal token lifecycle for its separate Calendar connection without duplicating a Google authorization flow. D5.2b Gmail send, D5.2c inbound synchronization, Telegram D5.3, Google Calendar D5.4 operations, WhatsApp D5.5, and later integration UX/hardening are not started. Existing Communications, Tasks, Dashboard, employee management, CRM authorization, and synchronous CRUD contracts remain unchanged; backend authorization remains authoritative.
 
 Authentication backend/frontend, employee management, CRM Core, and Deal ownership authorization are `IMPLEMENTED / VERIFIED`.
 

@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 from typing import Annotated
 
-from backend.app.models import AIAnalysisStatus, AIErrorCategory, AIResultLanguage
+from backend.app.models import AIAnalysisStatus, AIErrorCategory, AIResultLanguage, EmailDraftState, ExternalMessageStatus
 
 
 class StrictAIResult(BaseModel):
@@ -240,5 +240,16 @@ class EmailDraftResponse(BaseModel):
     purpose: str
     creator_user_id: UUID
     source_ai_analysis_id: UUID | None
+    state: EmailDraftState
+    outbound_status: ExternalMessageStatus | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class EmailDraftSendResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    email_draft_id: UUID
+    status: ExternalMessageStatus
+    retryable: bool = False

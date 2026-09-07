@@ -32,6 +32,7 @@ function CrmShell({ children, pathname, onNavigate }) {
           <button className={`crm-nav-item ${pathname === "/crm/ai-history" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/ai-history")}><span aria-hidden="true">◎</span>{t("crm.navigation.aiHistory")}</button>
           {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/business" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/business")}><span aria-hidden="true">⚙</span>{t("d4.businessSettings")}</button>}
           {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/ai" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/ai")}><span aria-hidden="true">⚙</span>{t("aiSettings.title")}</button>}
+          {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/integrations" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/integrations")}><span aria-hidden="true">⚙</span>{t("integrations.title")}</button>}
         </nav>
         <div className="crm-sidebar-footer">
           <p>{t("crm.sidebar.workspace")}</p>

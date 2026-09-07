@@ -15,6 +15,8 @@ Treat them as the current project contract.
 
 Read `docs/DEVELOPMENT_SEED_STRATEGY.md` before implementing or changing development seed behavior.
 
+For every substantial Day 5 iteration, read `docs/DAY5_INTEGRATIONS_CONTRACT.md` completely before changing code. It is the approved Day 5 architecture/product contract.
+
 ## 2. Do not expand scope
 Do not invent product features because they are common in other CRMs.
 

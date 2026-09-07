@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -14,6 +15,11 @@ if TYPE_CHECKING:
     from backend.app.models.ai import AIAnalysis
     from backend.app.models.deal import Deal
     from backend.app.models.user import User
+
+
+class EmailDraftState(str, Enum):
+    DRAFT = "DRAFT"
+    SENT = "SENT"
 
 
 class EmailDraft(Base):
@@ -36,6 +42,7 @@ class EmailDraft(Base):
     source_ai_analysis_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("ai_analyses.id"), nullable=True, index=True
     )
+    state: Mapped[EmailDraftState] = mapped_column(SqlEnum(EmailDraftState, name="email_draft_state"), nullable=False, default=EmailDraftState.DRAFT, server_default=EmailDraftState.DRAFT.value)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

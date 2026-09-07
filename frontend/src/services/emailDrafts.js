@@ -17,3 +17,4 @@ export const listEmailDrafts = (token, dealId, signal) => request(`/deals/${deal
 export const createEmailDraft = (token, dealId, payload) => request(`/deals/${dealId}/email-drafts`, token, { method: "POST", body: JSON.stringify(payload) });
 export const updateEmailDraft = (token, dealId, draftId, payload) => request(`/deals/${dealId}/email-drafts/${draftId}`, token, { method: "PATCH", body: JSON.stringify(payload) });
 export const deleteEmailDraft = (token, dealId, draftId) => request(`/deals/${dealId}/email-drafts/${draftId}`, token, { method: "DELETE" });
+export const sendEmailDraft = (token, dealId, draftId) => request(`/deals/${dealId}/email-drafts/${draftId}/send`, token, { method: "POST" });

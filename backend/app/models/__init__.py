@@ -16,7 +16,8 @@ from backend.app.models.communication import (
     CommunicationStatus,
 )
 from backend.app.models.deal import Deal
-from backend.app.models.email_draft import EmailDraft
+from backend.app.models.email_draft import EmailDraft, EmailDraftState
+from backend.app.models.integrations import CalendarEvent, CalendarEventStatus, ExternalMessage, ExternalMessageStatus, IntegrationConnection, IntegrationConnectionStatus, IntegrationOAuthState, IntegrationProvider
 from backend.app.models.pipeline_stage import PipelineStage
 from backend.app.models.task import Task, TaskStatus
 from backend.app.models.user import User, UserRole
@@ -42,6 +43,7 @@ __all__ = [
     "CommunicationStatus",
     "Deal",
     "EmailDraft",
+    "EmailDraftState", "IntegrationConnection", "IntegrationConnectionStatus", "IntegrationOAuthState", "IntegrationProvider", "ExternalMessage", "ExternalMessageStatus", "CalendarEvent", "CalendarEventStatus",
     "PipelineStage",
     "Task",
     "TaskStatus",

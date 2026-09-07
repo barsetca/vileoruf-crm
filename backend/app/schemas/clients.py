@@ -26,6 +26,7 @@ class ClientResponse(BaseModel):
     email: str | None
     phone: str | None
     telegram: str | None
+    telegram_provider_user_id: str | None
     whatsapp: str | None
     company: str | None
     lead_source: str | None
@@ -44,6 +45,7 @@ class ClientCreate(BaseModel):
     email: Email | None = None
     phone: Phone | None = None
     telegram: Telegram | None = None
+    telegram_provider_user_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)] | None = None
     whatsapp: WhatsApp | None = None
     company: Company | None = None
     lead_source: LeadSource | None = None
@@ -59,6 +61,7 @@ class ClientUpdate(BaseModel):
     email: Email | None = None
     phone: Phone | None = None
     telegram: Telegram | None = None
+    telegram_provider_user_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)] | None = None
     whatsapp: WhatsApp | None = None
     company: Company | None = None
     lead_source: LeadSource | None = None

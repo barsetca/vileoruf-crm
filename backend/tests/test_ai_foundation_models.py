@@ -94,6 +94,7 @@ def test_email_draft_and_model_override_foundations_are_separate_entities() -> N
         "purpose",
         "creator_user_id",
         "source_ai_analysis_id",
+        "state",
         "created_at",
         "updated_at",
     }

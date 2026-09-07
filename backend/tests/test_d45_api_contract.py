@@ -14,6 +14,7 @@ from backend.app.schemas.ai import EmailDraftAIResult, EmailDraftGenerationLaunc
 from backend.app.services.ai.email_draft import EmailDraftGenerationForbiddenError, InvalidSelectedNBAError
 from backend.app.services.ai.operations import DuplicateInFlightOperationError
 from backend.app.services.ai.runtime_settings import AIIsDisabledError
+from backend.app.services.email_drafts import SentEmailDraftImmutableError
 
 
 @pytest.fixture(autouse=True)
@@ -52,14 +53,28 @@ def test_email_launch_requires_purpose_and_complete_nba_reference():
     with pytest.raises(ValidationError): EmailDraftGenerationLaunch(purpose="Follow up", nba_analysis_id=uuid4())
 
 
-def test_email_routes_are_typed_authenticated_and_have_no_send_path():
+def test_sent_draft_update_and_delete_are_safe_conflicts(monkeypatch):
+    import backend.app.api.ai.email_draft_router as router
+    deal_id, draft_id = uuid4(), uuid4()
+    monkeypatch.setattr(router, "update_email_draft", lambda *args, **kwargs: (_ for _ in ()).throw(SentEmailDraftImmutableError()))
+    with pytest.raises(HTTPException) as update_error:
+        router.patch_draft(deal_id, draft_id, router.EmailDraftUpdate(body="attempt"), object(), object())
+    assert update_error.value.status_code == 409
+    monkeypatch.setattr(router, "delete_email_draft", lambda *args, **kwargs: (_ for _ in ()).throw(SentEmailDraftImmutableError()))
+    with pytest.raises(HTTPException) as delete_error:
+        router.delete_draft(deal_id, draft_id, object(), object())
+    assert delete_error.value.status_code == 409
+
+
+def test_email_routes_are_typed_authenticated_and_require_authentication_for_explicit_send():
     deal_id = uuid4()
     for method, path, payload in (("GET", f"/deals/{deal_id}/email-draft", None), ("POST", f"/deals/{deal_id}/email-draft", {"purpose": "Follow up"}), ("GET", f"/deals/{deal_id}/email-drafts", None), ("POST", f"/deals/{deal_id}/email-drafts", {"subject": "s", "body": "b", "purpose": "p"})):
         assert _request(method, path, payload).status_code == 401
     paths = app.openapi()["paths"]
     assert set(paths["/deals/{deal_id}/email-draft"]) == {"get", "post"}
     assert set(paths["/deals/{deal_id}/email-drafts/{draft_id}"]) == {"get", "patch", "delete"}
-    assert not any("send" in path.lower() for path in paths)
+    assert _request("POST", f"/deals/{deal_id}/email-drafts/{uuid4()}/send").status_code == 401
+    assert set(paths["/deals/{deal_id}/email-drafts/{draft_id}/send"]) == {"post"}
 
 
 @pytest.mark.parametrize("service_error,status_code", [(EmailDraftGenerationForbiddenError(), 403), (AIIsDisabledError(), 409), (InvalidSelectedNBAError(), 422), (DuplicateInFlightOperationError(), 409)])

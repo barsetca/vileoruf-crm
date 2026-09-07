@@ -102,7 +102,7 @@ services:
       AI_RATE_LIMIT_WINDOW_SECONDS: ${AI_RATE_LIMIT_WINDOW_SECONDS:-60}
     command: >-
       python -m celery -A backend.app.workers.celery_app:celery_app worker
-      --loglevel=INFO --queues=ai --concurrency=1
+      --loglevel=INFO --queues=ai,integrations --concurrency=1
     user: "65534:65534"
     volumes:
       - .:/app
