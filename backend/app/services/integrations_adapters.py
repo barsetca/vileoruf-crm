@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from email.utils import parseaddr, parsedate_to_datetime
 from enum import Enum
+from urllib.parse import quote
 
 import httpx
 class ProviderErrorCode(str,Enum): AUTH_REQUIRED="AUTH_REQUIRED"; INVALID_CONFIGURATION="INVALID_CONFIGURATION"; PERMISSION_DENIED="PERMISSION_DENIED"; INVALID_RECIPIENT="INVALID_RECIPIENT"; RATE_LIMITED="RATE_LIMITED"; PROVIDER_UNAVAILABLE="PROVIDER_UNAVAILABLE"; PROVIDER_ERROR="PROVIDER_ERROR"
@@ -13,6 +14,8 @@ class RetryClass(str,Enum): SAFE_RETRY="SAFE_RETRY"; NO_RETRY="NO_RETRY"; UNCERT
 GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
 GMAIL_MESSAGES_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
 TELEGRAM_API_BASE = "https://api.telegram.org"
+GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3"
+GOOGLE_CALENDAR_EVENTS_ENDPOINT = f"{GOOGLE_CALENDAR_API_BASE}/calendars/primary/events"
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,76 @@ class GmailAdapterError(ValueError):
         self.code = code
         self.retry_class = retry_class
         super().__init__(code.value)
+
+
+def google_calendar_authorization_headers(*, access_token: str) -> dict[str, str]:
+    """Keep Calendar-specific transport setup outside future business services/routes."""
+    if not isinstance(access_token, str) or not access_token:
+        raise GmailAdapterError(ProviderErrorCode.AUTH_REQUIRED, RetryClass.NO_RETRY)
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@dataclass(frozen=True)
+class GoogleCalendarCreateResult:
+    provider_event_id: str
+    external_url: str | None
+
+
+@dataclass(frozen=True)
+class GoogleCalendarUpdateResult:
+    external_url: str | None
+
+
+def create_google_calendar_event(*, access_token: str, title: str, description: str | None, start_at: datetime, end_at: datetime, timezone_name: str) -> GoogleCalendarCreateResult:
+    payload=_google_calendar_event_payload(title=title,description=description,start_at=start_at,end_at=end_at,timezone_name=timezone_name)
+    try: response=httpx.post(GOOGLE_CALENDAR_EVENTS_ENDPOINT,json=payload,headers=google_calendar_authorization_headers(access_token=access_token),timeout=20.0)
+    except httpx.RequestError as error: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN) from error
+    if response.status_code >= 500: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN)
+    if response.status_code == 429: raise GmailAdapterError(ProviderErrorCode.RATE_LIMITED,RetryClass.NO_RETRY)
+    if response.status_code in {401,403}: raise GmailAdapterError(ProviderErrorCode.PERMISSION_DENIED,RetryClass.NO_RETRY)
+    if response.status_code >= 400: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.NO_RETRY)
+    try: body=response.json(); event_id=body.get("id")
+    except (ValueError,AttributeError) as error: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.UNCERTAIN) from error
+    if not isinstance(event_id,str) or not event_id: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.UNCERTAIN)
+    link=body.get("htmlLink")
+    return GoogleCalendarCreateResult(provider_event_id=event_id,external_url=link if isinstance(link,str) else None)
+
+
+def update_google_calendar_event(*, access_token: str, provider_event_id: str, title: str, description: str | None, start_at: datetime, end_at: datetime, timezone_name: str) -> GoogleCalendarUpdateResult:
+    if not isinstance(provider_event_id,str) or not provider_event_id:
+        raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.NO_RETRY)
+    try:
+        response=httpx.patch(f"{GOOGLE_CALENDAR_EVENTS_ENDPOINT}/{quote(provider_event_id,safe='')}",json=_google_calendar_event_payload(title=title,description=description,start_at=start_at,end_at=end_at,timezone_name=timezone_name),headers=google_calendar_authorization_headers(access_token=access_token),timeout=20.0)
+    except httpx.RequestError as error: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN) from error
+    if response.status_code >= 500: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN)
+    if response.status_code == 429: raise GmailAdapterError(ProviderErrorCode.RATE_LIMITED,RetryClass.NO_RETRY)
+    if response.status_code in {401,403}: raise GmailAdapterError(ProviderErrorCode.PERMISSION_DENIED,RetryClass.NO_RETRY)
+    if response.status_code >= 400: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.NO_RETRY)
+    try: body=response.json()
+    except ValueError as error: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.UNCERTAIN) from error
+    if not isinstance(body,dict): raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.UNCERTAIN)
+    returned_id=body.get("id")
+    if returned_id is not None and returned_id != provider_event_id: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.UNCERTAIN)
+    link=body.get("htmlLink")
+    return GoogleCalendarUpdateResult(external_url=link if isinstance(link,str) else None)
+
+
+def cancel_google_calendar_event(*, access_token: str, provider_event_id: str) -> None:
+    if not isinstance(provider_event_id,str) or not provider_event_id:
+        raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.NO_RETRY)
+    try:
+        response=httpx.delete(f"{GOOGLE_CALENDAR_EVENTS_ENDPOINT}/{quote(provider_event_id,safe='')}",headers=google_calendar_authorization_headers(access_token=access_token),timeout=20.0)
+    except httpx.RequestError as error: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN) from error
+    if response.status_code >= 500: raise GmailAdapterError(ProviderErrorCode.PROVIDER_UNAVAILABLE,RetryClass.UNCERTAIN)
+    if response.status_code == 429: raise GmailAdapterError(ProviderErrorCode.RATE_LIMITED,RetryClass.NO_RETRY)
+    if response.status_code in {401,403}: raise GmailAdapterError(ProviderErrorCode.PERMISSION_DENIED,RetryClass.NO_RETRY)
+    if response.status_code >= 400: raise GmailAdapterError(ProviderErrorCode.PROVIDER_ERROR,RetryClass.NO_RETRY)
+
+
+def _google_calendar_event_payload(*, title: str, description: str | None, start_at: datetime, end_at: datetime, timezone_name: str) -> dict:
+    payload={"summary": title, "start": {"dateTime": start_at.isoformat(), "timeZone": timezone_name}, "end": {"dateTime": end_at.isoformat(), "timeZone": timezone_name}}
+    if description is not None: payload["description"] = description
+    return payload
 
 
 @dataclass(frozen=True)

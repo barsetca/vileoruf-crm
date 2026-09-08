@@ -1,4 +1,4 @@
-"""Google OAuth and encrypted-token lifecycle for the single corporate Gmail connection."""
+"""Google OAuth and encrypted-token lifecycle for the single corporate Google account."""
 import hashlib
 import json
 import secrets
@@ -101,6 +101,7 @@ def complete_google_oauth(session: Session, *, state: str | None, code: str | No
     connection.last_error_at = None
     connection.last_error_code = None
     session.commit()
+    _synchronize_calendar_connection(session)
     session.refresh(connection)
     return connection
 
@@ -116,6 +117,7 @@ def disconnect_google_oauth(session: Session) -> IntegrationConnection:
     connection.last_error_at = None
     connection.last_error_code = None
     session.commit()
+    _synchronize_calendar_connection(session)
     session.refresh(connection)
     return connection
 
@@ -146,6 +148,15 @@ def get_google_access_token(session: Session, *, connection: IntegrationConnecti
     except IntegrationTokenError:
         _mark_connection_error(session, connection, ProviderErrorCode.INVALID_CONFIGURATION)
         raise GoogleOAuthError(ProviderErrorCode.INVALID_CONFIGURATION) from None
+
+
+def get_google_authorized_scopes(connection: IntegrationConnection) -> frozenset[str]:
+    """Return persisted, encrypted OAuth scopes without exposing the token payload."""
+    payload = _load_token_payload(connection)
+    scopes = payload.get("scopes")
+    if not isinstance(scopes, list) or not all(isinstance(scope, str) for scope in scopes):
+        raise GoogleOAuthError(ProviderErrorCode.AUTH_REQUIRED)
+    return frozenset(scopes)
 
 
 def exchange_google_authorization_code(code: str) -> dict:
@@ -296,3 +307,10 @@ def _safe_json_value(response: httpx.Response, key: str) -> str | None:
     except (ValueError, AttributeError):
         return None
     return value if isinstance(value, str) else None
+
+
+def _synchronize_calendar_connection(session: Session) -> None:
+    # Local import prevents the Calendar reuse service from creating an import cycle.
+    from backend.app.services.google_calendar import synchronize_google_calendar_connection
+
+    synchronize_google_calendar_connection(session)

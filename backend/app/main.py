@@ -19,6 +19,7 @@ from backend.app.api.tasks.router import router as tasks_router
 from backend.app.api.users.router import router as users_router
 from backend.app.api.integrations.router import router as integrations_router
 from backend.app.api.integrations.telegram_webhook import router as telegram_webhook_router
+from backend.app.api.calendar_events import router as calendar_events_router
 from backend.app.core.config import get_frontend_settings
 
 
@@ -29,7 +30,7 @@ app.add_middleware(
     allow_origins=[frontend_settings.frontend_origin],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
 )
 app.include_router(auth_router)
 app.include_router(ai_router)
@@ -50,6 +51,7 @@ app.include_router(tasks_router)
 app.include_router(users_router)
 app.include_router(integrations_router)
 app.include_router(telegram_webhook_router)
+app.include_router(calendar_events_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)

@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
 import CommunicationTimeline from "./CommunicationTimeline.jsx";
+import CalendarEventsSection from "./CalendarEventsSection.jsx";
+import CreateCalendarEventForm from "./CreateCalendarEventForm.jsx";
 import LeadScoringSection from "./LeadScoringSection.jsx";
 import DealPredictionSection from "./DealPredictionSection.jsx";
 import NextBestActionSection from "./NextBestActionSection.jsx";
@@ -64,6 +66,8 @@ function DealsPage({ initialDealId }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCalendarCreate, setShowCalendarCreate] = useState(false);
+  const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
 
   const load = useCallback((nextOffset = offset) => {
     const controller = new AbortController();
@@ -112,7 +116,7 @@ function DealsPage({ initialDealId }) {
   }
   async function openDetail(dealId) {
     setModal({ mode: "loading" }); setFormError("");
-    try { setModal({ mode: "detail", deal: await getDeal(accessToken, dealId) }); }
+    try { setShowCalendarCreate(false); setModal({ mode: "detail", deal: await getDeal(accessToken, dealId) }); }
     catch { setModal(null); setState("error"); }
   }
   function openEdit(deal) {
@@ -176,6 +180,8 @@ function DealsPage({ initialDealId }) {
         <EmailDraftSection deal={modal.deal} client={lookups.clients.get(modal.deal.client_id)} canRun={canChange(modal.deal)} />
         {canChange(modal.deal) && <DealAIHistorySection dealId={modal.deal.id} />}
         <CommunicationTimeline clientId={modal.deal.client_id} dealId={modal.deal.id} canCreate={canChange(modal.deal)} />
+        <CalendarEventsSection dealId={modal.deal.id} refreshKey={calendarRefreshKey} />
+        {canChange(modal.deal) && <><button className="secondary-button" type="button" onClick={() => setShowCalendarCreate(true)}>{t("calendar.create.open")}</button>{showCalendarCreate && <CreateCalendarEventForm dealId={modal.deal.id} onClose={() => setShowCalendarCreate(false)} onAccepted={() => { setShowCalendarCreate(false); setCalendarRefreshKey((value) => value + 1); }} />}</>}
         {canChange(modal.deal) ? <div className="deal-actions"><button className="secondary-button" type="button" onClick={() => openEdit(modal.deal)}>{t("deals.edit")}</button><form className="transition-form" onSubmit={submitTransition}><label><span>{t("deals.transition")}</span><select name="stage_id" defaultValue={modal.deal.stage_id} disabled={isSubmitting}>{references.stages.map((stage) => <option key={stage.id} value={stage.id}>{t(`deals.stages.${stageKey(stage.name)}`, { defaultValue: stage.name })}</option>)}</select></label><button className="primary-button" type="submit" disabled={isSubmitting}>{t("deals.move")}</button></form></div> : <p className="readonly-note">{t("deals.readonly")}</p>}{formError && <p className="form-error" role="alert">{formError}</p>}
       </> : <DealForm form={form} clients={references.clients} stages={references.stages} employees={references.employees} services={references.services} categories={references.categories} isAdmin={user.role === "ADMIN"} submitting={isSubmitting} error={formError} onChange={changeField} onSubmit={submit} submitLabel={t(isSubmitting ? "common.saving" : "common.save")} mode={modal.mode} />}
     </section></div>}

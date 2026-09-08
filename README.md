@@ -21,6 +21,7 @@ VILEORUF CRM is a modular-monolith CRM project for VILEORUF Studio. The reposito
 - **D5.2b — Gmail Outbound Send: DONE / LIVE VERIFIED** — one owner-controlled synthetic message completed the normal explicit-send, integrations-queue and real Gmail provider flow; provider-confirmed success created exactly one Communication and immutable/readable/copyable historical EmailDraft.
 - **D5.2c — Gmail Inbound Synchronization: DONE / LIVE VERIFIED** — bounded ADMIN-triggered synchronization uses a persisted post-install checkpoint, a fixed five-minute provider-visibility overlap and page token, database provider-message deduplication, exact normalized Client email match and deterministic outbound-thread Deal correlation; a controlled corrected-recipient retry accepted exactly one real provider fact, created exactly one incoming EMAIL Communication without a Deal, and repeat sync created no duplicate.
 - **D5.3 — Telegram: DONE / LIVE PROVIDER VERIFIED** — one corporate Bot uses environment-backed secrets, authenticated webhook delivery and `IntegrationConnection` lifecycle. Live verification proved real inbound persistence, unmatched preservation, explicit manual linking, subsequent stable `telegram_provider_user_id` auto-matching (never username), and one CRM/Celery/provider outbound flow from `PENDING` to `SENT` with exactly one outgoing Communication and owner receipt. PostgreSQL-backed authenticity/idempotency and terminal lifecycle coverage remains automated; deliberate live redelivery/replay was not performed.
+- **D5.4a — Google Calendar OAuth Reuse + Adapter Foundation: DONE (local)** — the separate Calendar connection safely derives state from the encrypted Gmail Google-token owner and validated persisted `calendar.events` scope; no duplicate OAuth flow, duplicate token, CalendarEvent operation, or live Calendar API call was introduced.
 
 The D4.6 workflow adds a unified, safe AI history for all four AI functions, an ADMIN-only runtime AI settings surface, and a shared per-employee Redis fixed-window limit for manual AI launches. Existing AI results remain readable when AI is disabled. `/` is public; `/login` and `/crm/*` are employee-only.
 
@@ -30,7 +31,7 @@ Current routes are `/` (public request page), `/login` (employee login), `/crm` 
 
 ## Planned MVP capabilities
 
-The shared D5.1 integration foundation, D5.2 Gmail and D5.3 Telegram are complete as documented above. The following provider-specific capabilities are **not implemented yet**. Their approved Day 5 MVP architecture/product contract is [`DAY5_INTEGRATIONS_CONTRACT.md`](docs/DAY5_INTEGRATIONS_CONTRACT.md):
+The shared D5.1 integration foundation, D5.2 Gmail, D5.3 Telegram and the bounded D5.4a Calendar OAuth-reuse foundation are complete as documented above. The following provider-specific capabilities are **not implemented yet**. Their approved Day 5 MVP architecture/product contract is [`DAY5_INTEGRATIONS_CONTRACT.md`](docs/DAY5_INTEGRATIONS_CONTRACT.md):
 
 - WhatsApp and Calendar integrations;
 - sales analytics and reporting.
@@ -70,6 +71,7 @@ Communication persistence, authenticated create/get/list API, and Client/Deal co
 - D4.6 ADMIN AI Settings with safe model overrides/reset, unified role-aware AI History, typed result presentation, and fail-open Redis rate limiting shared across the four manual AI launch endpoints.
 - D5.1 Integration Foundation: `IntegrationConnection`, `ExternalMessage`, and `CalendarEvent`; EmailDraft `DRAFT`/`SENT` state plus historical `SENT` immutability; provider adapter and safe error/retry classification boundaries; application-level encrypted token-storage foundation using environment-only `INTEGRATION_TOKEN_ENCRYPTION_KEY`; safe ADMIN `GET /settings/integrations`; and localized ADMIN `/crm/settings/integrations` cards for Gmail, Telegram, Google Calendar, and WhatsApp.
 - D5.2a Google OAuth foundation: ADMIN-only `POST /settings/integrations/google/connect`, `/reconnect`, and `/disconnect`; provider callback; one-time PostgreSQL-hashed/expiring OAuth state; code exchange and access-token refresh behind the Google service boundary; and encrypted token ciphertext only in the existing Gmail `IntegrationConnection` internal field.
+- D5.4a Calendar foundation: a persisted, separate `GOOGLE_CALENDAR` connection has safe state derived from the Gmail Google-token owner only after encrypted persisted `calendar.events` scope validation; shared access-token acquisition and Calendar transport setup remain behind integration services/adapters. Calendar never copies the token payload.
 - D5.2b Gmail outbound foundation: authenticated `POST /deals/{deal_id}/email-drafts/{draft_id}/send`, explicit UI confirmation with recipient/subject, a one-to-one EmailDraft-to-ExternalMessage correlation, integrations-queue Gmail adapter execution and provider-confirmed finalization to Communication plus immutable EmailDraft `SENT`.
 
 ## Tech stack

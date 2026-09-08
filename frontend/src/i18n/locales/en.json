@@ -66,5 +66,46 @@
   },
   "emailDraft": {
     "title":"Email Draft","generate":"Generate draft","noAutoSend":"Nothing is sent automatically. Sending requires explicit employee confirmation.","send":"Send","sending":"Sending...","sent":"Sent","confirmSend":"Send this email to {{recipient}} with subject “{{subject}}”?","sendFailed":"The email could not be sent. The draft was preserved.","recipientMissing":"The client has no valid email address for sending.","copyAll":"Copy all","unknownOutcome":"Delivery could not be confirmed. Check Gmail before sending again.","purpose":"Purpose","purposeRequired":"Purpose is required to generate a draft.","instructions":"Additional AI instructions (optional)","nba":"Selected Next Best Action (optional)","noNba":"Do not use a recommendation","nbaOutdated":"possibly outdated","loading":"Loading email drafts...","failed":"The latest email generation failed safely.","status":{"QUEUED":"Queued...","RUNNING":"Generating draft..."},"generated":"Generated proposal","contextChanged":"CRM data changed while this draft was being generated. Review it before saving.","subject":"Subject","body":"Body","security":"Security warning","saveAs":"Edit and save as draft","newManual":"New manual draft","newDraft":"New draft","editDraft":"Edit draft","language":"Language","required":"Subject, body and purpose are required.","copySubject":"Copy subject","copyBody":"Copy body","copyError":"Could not copy the text.","delete":"Delete","confirmDelete":"Delete this email draft?"
+  },
+  "calendar": {
+    "title": "Calendar events",
+    "loading": "Loading calendar events...",
+    "empty": "There are no linked calendar events yet.",
+    "error": "Calendar events could not be loaded safely.",
+    "open": "Open in Google Calendar",
+    "create": {
+      "title": "Create calendar event",
+      "open": "Create event",
+      "fields": {"title": "Title", "description": "Description", "start": "Start", "end": "End", "timezone": "Time zone"},
+      "submit": "Create event",
+      "submitting": "Creating event...",
+      "close": "Close form",
+      "accepted": "The event was accepted for synchronization. Waiting for Google Calendar confirmation.",
+      "error": "The calendar event could not be created. Check the details and try again.",
+      "validation": {"title": "Enter an event title.", "start": "Enter a start time.", "end": "Enter an end time.", "range": "The end time must be later than the start time.", "timezone": "Enter a valid IANA time zone."}
+    },
+    "update": {
+      "title": "Edit calendar event",
+      "open": "Edit event",
+      "submit": "Save changes",
+      "submitting": "Saving changes...",
+      "error": "The calendar event could not be updated. Check the details and try again.",
+      "conflict": "This event cannot be updated right now. Refresh the list and try again."
+    },
+    "cancel": {
+      "title": "Cancel calendar event",
+      "open": "Cancel event",
+      "confirmation": "This event will be cancelled in Google Calendar. Confirm cancellation.",
+      "confirm": "Confirm cancellation",
+      "submitting": "Cancelling event...",
+      "error": "The calendar event could not be cancelled. Its state was not changed.",
+      "uncertain": "Cancellation could not be confirmed in Google Calendar. Check Google Calendar before trying again."
+    },
+    "status": {
+      "PENDING": "Pending synchronization",
+      "SYNCED": "Synchronized",
+      "ERROR": "Synchronization error",
+      "CANCELLED": "Cancelled"
+    }
   }
 }

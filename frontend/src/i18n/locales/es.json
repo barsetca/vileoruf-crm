@@ -66,5 +66,46 @@
   },
   "emailDraft": {
     "title":"Borrador de correo","generate":"Generar borrador","noAutoSend":"No se envía nada automáticamente. El envío requiere confirmación explícita del empleado.","send":"Enviar","sending":"Enviando...","sent":"Enviado","confirmSend":"¿Enviar este correo a {{recipient}} con el asunto «{{subject}}»?","sendFailed":"No se pudo enviar el correo. El borrador se conservó.","recipientMissing":"El cliente no tiene una dirección de correo válida para el envío.","copyAll":"Copiar todo","unknownOutcome":"No se pudo confirmar la entrega. Revisa Gmail antes de enviar de nuevo.","purpose":"Propósito","purposeRequired":"Indica el propósito para generar un borrador.","instructions":"Instrucciones adicionales para IA (opcional)","nba":"Siguiente mejor acción seleccionada (opcional)","noNba":"No usar recomendación","nbaOutdated":"posiblemente desactualizada","loading":"Cargando borradores...","failed":"La última generación de correo falló de forma segura.","status":{"QUEUED":"En cola...","RUNNING":"Generando borrador..."},"generated":"Propuesta generada","contextChanged":"Los datos de CRM cambiaron mientras se generaba este borrador. Revísalo antes de guardarlo.","subject":"Asunto","body":"Cuerpo","security":"Advertencia de seguridad","saveAs":"Editar y guardar borrador","newManual":"Nuevo borrador manual","newDraft":"Nuevo borrador","editDraft":"Editar borrador","language":"Idioma","required":"El asunto, el cuerpo y el propósito son obligatorios.","copySubject":"Copiar asunto","copyBody":"Copiar cuerpo","copyError":"No se pudo copiar el texto.","delete":"Eliminar","confirmDelete":"¿Eliminar este borrador de correo?"
+  },
+  "calendar": {
+    "title": "Eventos del calendario",
+    "loading": "Cargando eventos del calendario...",
+    "empty": "Aún no hay eventos de calendario vinculados.",
+    "error": "No se pudieron cargar los eventos del calendario de forma segura.",
+    "open": "Abrir en Google Calendar",
+    "create": {
+      "title": "Crear evento de calendario",
+      "open": "Crear evento",
+      "fields": {"title": "Título", "description": "Descripción", "start": "Inicio", "end": "Fin", "timezone": "Zona horaria"},
+      "submit": "Crear evento",
+      "submitting": "Creando evento...",
+      "close": "Cerrar formulario",
+      "accepted": "El evento fue aceptado para sincronización. Esperando la confirmación de Google Calendar.",
+      "error": "No se pudo crear el evento de calendario. Revisa los datos e inténtalo de nuevo.",
+      "validation": {"title": "Indica un título para el evento.", "start": "Indica la hora de inicio.", "end": "Indica la hora de finalización.", "range": "La hora de finalización debe ser posterior a la de inicio.", "timezone": "Indica una zona horaria IANA válida."}
+    },
+    "update": {
+      "title": "Editar evento de calendario",
+      "open": "Editar evento",
+      "submit": "Guardar cambios",
+      "submitting": "Guardando cambios...",
+      "error": "No se pudo actualizar el evento de calendario. Revisa los datos e inténtalo de nuevo.",
+      "conflict": "Este evento no se puede actualizar ahora. Actualiza la lista e inténtalo de nuevo."
+    },
+    "cancel": {
+      "title": "Cancelar evento del calendario",
+      "open": "Cancelar evento",
+      "confirmation": "Este evento se cancelará en Google Calendar. Confirma la cancelación.",
+      "confirm": "Confirmar cancelación",
+      "submitting": "Cancelando evento...",
+      "error": "No se pudo cancelar el evento del calendario. Su estado no ha cambiado.",
+      "uncertain": "No se pudo confirmar la cancelación en Google Calendar. Comprueba Google Calendar antes de intentarlo de nuevo."
+    },
+    "status": {
+      "PENDING": "Pendiente de sincronización",
+      "SYNCED": "Sincronizado",
+      "ERROR": "Error de sincronización",
+      "CANCELLED": "Cancelado"
+    }
   }
 }

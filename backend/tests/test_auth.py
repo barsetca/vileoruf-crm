@@ -313,12 +313,13 @@ def test_credentialed_cors_is_restricted() -> None:
         headers={
             "Origin": "http://localhost:5173",
             "Access-Control-Request-Method": "POST",
-            "Access-Control-Request-Headers": "content-type",
+            "Access-Control-Request-Headers": "content-type,idempotency-key",
         },
     )
     assert allowed.status_code == 200
     assert allowed.headers["access-control-allow-origin"] == "http://localhost:5173"
     assert allowed.headers["access-control-allow-credentials"] == "true"
+    assert "idempotency-key" in allowed.headers["access-control-allow-headers"].lower()
 
     denied = request(
         "OPTIONS",
