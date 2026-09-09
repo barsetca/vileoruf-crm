@@ -1,111 +1,705 @@
 {
-  "product": {
-    "name": "VILEORUF CRM",
-    "kind": "Sistema de gestión de ventas",
-    "subtitle": "La base del frontend está lista para seguir desarrollándose.",
-    "subtitleAuthenticated": "El espacio de trabajo protegido está listo. Los módulos CRM se añadirán en la próxima etapa."
-  },
-  "status": {
-    "frontend": {
-      "label": "Estado del frontend",
-      "ready": "En funcionamiento"
-    },
-    "backend": {
-      "label": "Estado del backend",
-      "checking": "Comprobando la conexión",
-      "available": "Disponible",
-      "unavailable": "No disponible"
-    }
-  },
-  "language": {
-    "label": "Idioma",
-    "ru": "Русский",
-    "en": "English",
-    "es": "Español"
-  },
-  "common": {"retry":"Reintentar","save":"Guardar","saving":"Guardando...","close":"Cerrar","resetDefault":"Restablecer valor predeterminado ({{value}})"},
-  "crm": {"navigation":{"label":"Navegación CRM","dashboard":"Resumen","clients":"Clientes","deals":"Negocios","pipeline":"Embudo","tasks":"Tareas","aiHistory":"Historial de IA","upcoming":"Próximamente"},"sidebar":{"workspace":"Espacio de trabajo"}},
-  "clients": {"title":"Clientes","subtitle":"Contactos y empresas de tu CRM.","create":"Añadir cliente","edit":"Editar cliente","loading":"Cargando clientes...","statusLabel":"Estado","createdAt":"Creado","fields":{"name":"Nombre o empresa","company":"Empresa","contact_person":"Persona de contacto","email":"Correo electrónico","phone":"Teléfono","telegram":"Telegram","whatsapp":"WhatsApp","lead_source":"Origen del lead","notes":"Notas"},"status":{"CUSTOMER":"Cliente potencial","CLIENT":"Cliente"},"empty":{"title":"Aún no hay clientes","description":"Añade tu primer cliente para empezar a trabajar en CRM.","action":"Añadir cliente"},"errors":{"load":"No se pudieron cargar los clientes.","save":"No se pudieron guardar los cambios. Inténtalo de nuevo."},"validation":{"nameRequired":"Indica un nombre o empresa."},"pagination":{"label":"Paginación de clientes","previous":"Anterior","next":"Siguiente","page":"Página {{page}}"},"permissions":{"admin":"Los administradores pueden trabajar con todos los clientes."}},
-  "deals": {"title":"Negocios","subtitle":"Proyectos y oportunidades comerciales de tu CRM.","create":"Añadir negocio","edit":"Editar negocio","details":"Detalles del negocio","loading":"Cargando negocios...","selectClient":"Selecciona un cliente","selectStage":"Selecciona una etapa","unassigned":"Sin asignar","unknownReference":"No disponible","readonly":"Este negocio solo está disponible para consulta.","transition":"Mover a la etapa","move":"Mover","fields":{"name":"Nombre del negocio","description":"Descripción","client":"Cliente","stage":"Etapa","estimated_budget":"Presupuesto estimado","deadline":"Fecha límite","probability":"Probabilidad","responsible":"Responsable"},"stages":{"newLead":"Nuevo lead","contact":"Contacto","qualification":"Cualificación","proposal":"Propuesta","negotiation":"Negociación","won":"Ganada","lost":"Perdida"},"empty":{"title":"Aún no hay negocios","description":"Añade tu primer negocio para trabajar con el embudo.","action":"Añadir negocio"},"errors":{"load":"No se pudieron cargar los negocios o los datos de referencia.","save":"No se pudo guardar el negocio. Inténtalo de nuevo.","transition":"No se pudo mover el negocio. Inténtalo de nuevo."},"validation":{"nameRequired":"Indica un nombre para el negocio."},"pagination":{"label":"Paginación de negocios","previous":"Anterior","next":"Siguiente","page":"Página {{page}}"}},
-  "tasks": {"title":"Tareas","subtitle":"Trabajo operativo para el equipo CRM.","create":"Nueva tarea","edit":"Editar tarea","details":"Detalles de la tarea","complete":"Completar tarea","loading":"Cargando tareas...","unknownReference":"No disponible","fields":{"title":"Título","description":"Descripción","dueAt":"Fecha y hora límite","status":"Estado","responsible":"Responsable","client":"Cliente","deal":"Negocio"},"status":{"OPEN":"Abierta","COMPLETED":"Completada","OVERDUE":"Vencida"},"filters":{"allStatuses":"Todos los estados","allEmployees":"Todos los empleados","allClients":"Todos los clientes","allDeals":"Todos los negocios","apply":"Aplicar filtros","reset":"Restablecer"},"associations":{"none":"Ninguno"},"empty":{"title":"No se encontraron tareas","description":"Crea una tarea o ajusta los filtros.","action":"Nueva tarea"},"pagination":{"label":"Paginación de tareas","previous":"Anterior","next":"Siguiente","page":"Página {{page}}"},"validation":{"titleRequired":"Indica un título para la tarea."},"permissions":{"readonly":"Esta tarea solo está disponible para consulta."},"errors":{"load":"No se pudieron cargar las tareas.","save":"No se pudo guardar la tarea. Inténtalo de nuevo.","complete":"No se pudo completar la tarea. Inténtalo de nuevo.","forbidden":"No tienes permiso para modificar esta tarea.","notFound":"La tarea o el registro vinculado ya no está disponible.","validation":"Revisa los detalles de la tarea e inténtalo de nuevo."}},
-  "dashboard": {"eyebrow":"Resumen operativo","greeting":"Hola, {{name}}","subtitle":"Céntrate en el trabajo que requiere atención ahora.","unknownEmployee":"Empleado no disponible","tasks":{"title":"Tareas que requieren atención","subtitle":"Tareas abiertas ordenadas por fecha límite.","viewAll":"Ver todas las tareas","loading":"Cargando tareas abiertas...","empty":"No hay tareas abiertas que requieran atención.","error":"No se pudieron cargar las tareas."},"communications":{"title":"Comunicaciones recientes","subtitle":"Últimos contactos registrados en CRM.","loading":"Cargando comunicaciones recientes...","empty":"Aún no hay comunicaciones registradas.","error":"No se pudieron cargar las comunicaciones."},"quick":{"title":"Acceso rápido"}},
-  "communications": {"title":"Historial de comunicaciones","clientSubtitle":"Todos los contactos registrados con este cliente.","dealSubtitle":"Contactos vinculados a este negocio.","create":"Añadir comunicación","submit":"Guardar comunicación","loading":"Cargando historial de comunicaciones...","loadingMore":"Cargando...","loadMore":"Cargar más","empty":"Aún no hay comunicaciones.","fields":{"channel":"Canal","direction":"Dirección","occurredAt":"Fecha y hora","content":"Mensaje"},"channels":{"EMAIL":"Correo electrónico","TELEGRAM":"Telegram","WHATSAPP":"WhatsApp","MANUAL":"Manual","OTHER":"Otro"},"directions":{"INCOMING":"Entrante","OUTGOING":"Saliente"},"validation":{"contentRequired":"Indica el mensaje de la comunicación."},"errors":{"load":"No se pudo cargar el historial de comunicaciones.","save":"No se pudo guardar la comunicación. Inténtalo de nuevo.","forbidden":"No tienes permiso para añadir una comunicación a este negocio.","contextMissing":"El cliente o negocio ya no está disponible.","validation":"Revisa los datos de la comunicación e inténtalo de nuevo."},"permissions":{"dealCreateForbidden":"Puedes ver el historial, pero no añadir comunicaciones a este negocio."}},
-  "pipeline": {"title":"Embudo","subtitle":"Todos los negocios por etapas de ventas.","boardLabel":"Tablero del embudo","loading":"Cargando embudo...","dealCount":"{{count}} negocios","move":"Mover","targetStage":"Etapa de destino","readonly":"Solo lectura","readonlyHint":"No tienes permiso para mover este negocio","cardMoveHint":"Arrastra o usa la acción Mover","empty":{"title":"No hay negocios en el embudo","description":"Crea un negocio en la página Negocios para verlo aquí."},"errors":{"load":"No se pudo cargar el embudo o los datos de referencia.","transition":"No se pudo mover el negocio. Se actualizaron los datos del embudo."}},
-  "public": {"eyebrow":"VILEORUF Studio","title":"Cuéntanos sobre tu proyecto","subtitle":"Deja tus datos de contacto y una breve descripción; nos pondremos en contacto.","login":"Acceso de empleados","send":"Enviar solicitud","sending":"Enviando...","error":"No se pudo enviar la solicitud. Inténtalo de nuevo.","servicesError":"No se pudieron cargar los servicios. Actualiza la página e inténtalo de nuevo.","success":{"title":"¡Gracias!","description":"Tu solicitud fue enviada. Nos pondremos en contacto.","again":"Enviar otra solicitud"},"fields":{"name":"Nombre o empresa","contact_person":"Persona de contacto","email":"Correo electrónico","phone":"Teléfono","telegram":"Telegram","whatsapp":"WhatsApp","company":"Empresa","deal_name":"Nombre del proyecto","description":"Descripción","estimated_budget":"Presupuesto estimado","deadline":"Fecha deseada","service_id":"Servicio","preferred_communication_language":"Idioma de comunicación preferido"}},
-  "d4": {"businessSettings":"Configuración comercial","preferredCommunicationLanguage":"Idioma de comunicación preferido","service":"Servicio","selectService":"Selecciona un servicio","category":"Categoría","managerEffort":"Estimación de esfuerzo, horas-persona","pastDeadline":"La fecha ya pasó","inactiveBusinessReference":"El Servicio o la Categoría vinculados están inactivos. Selecciona un Servicio activo antes de recalcular."},
-  "business": {"eyebrow":"Configuración del CRM","title":"Configuración comercial","subtitle":"Categorías, servicios, economía objetivo y reglas de atractivo.","loading":"Cargando configuración comercial...","error":"No se pudo cargar o guardar la configuración.","categories":"Categorías","services":"Servicios","category":"Categoría","scoring":"Pesos de atractivo y escala de valor comercial","scale":"Proporción → puntuación","addCategory":"Añadir categoría","addService":"Añadir servicio","activate":"Activar","deactivate":"Desactivar","fields":{"name_ru":"Nombre en ruso","name_en":"Nombre en inglés","name_es":"Nombre en español","target_hourly_rate":"Tarifa objetivo, EUR/hora-persona","target_effort":"Esfuerzo objetivo, horas-persona","service_fit_weight":"Ajuste al servicio, %","commercial_value_weight":"Valor comercial, %","lead_quality_weight":"Calidad del lead, %","feasibility_weight":"Viabilidad, %"}},
-  "leadScoring": {"title":"Atractivo","run":"Calcular atractivo","recalculate":"Recalcular","loading":"Cargando atractivo...","error":"No se pudo completar el cálculo de atractivo.","failed":"El último cálculo falló de forma segura. El resultado exitoso anterior sigue disponible.","closed":"No se puede iniciar un nuevo cálculo para negocios cerrados.","empty":"El atractivo aún no se ha calculado.","outdated":"Puede no coincidir con los datos actuales","fresh":"Resultado actual","missing":"Datos faltantes","security":"Advertencia de seguridad","suggestion":"Categoría sugerida","language":"Idioma del análisis","status":{"QUEUED":"En cola...","RUNNING":"Calculando..."},"factors":{"serviceFit":"Ajuste al servicio","commercialValue":"Valor comercial","leadQuality":"Calidad del lead","feasibility":"Viabilidad"},"missingItems":{"BUDGET":"No se indicó el presupuesto","DESIRED_DEADLINE":"No se indicó la fecha deseada"}},
-  "dealPrediction": {"title":"Probabilidad de éxito","run":"Calcular probabilidad","recalculate":"Recalcular","loading":"Cargando pronóstico...","error":"No se pudo completar la predicción del negocio.","failed":"La última predicción falló de forma segura. El resultado exitoso anterior sigue disponible.","closed":"No se puede iniciar una nueva predicción para negocios cerrados.","empty":"La probabilidad de éxito aún no se ha calculado.","outdated":"Puede no coincidir con los datos actuales","fresh":"Resultado actual","probability":"Probabilidad de ganar","confidence":"Confianza en la evidencia","confidenceHelp":"La confianza mide la suficiencia, actualidad y consistencia de la evidencia de CRM, no la calidad del negocio: una probabilidad alta puede tener confianza baja y viceversa.","positive":"Señales positivas","risks":"Riesgos","missing":"Contexto faltante","security":"Advertencia de seguridad","language":"Idioma del análisis","status":{"QUEUED":"En cola...","RUNNING":"Calculando..."},"confidenceValues":{"LOW":"Baja","MEDIUM":"Media","HIGH":"Alta"}},
-  "nextBestAction": {"title":"Siguiente mejor acción","run":"Obtener recomendaciones","recalculate":"Actualizar recomendaciones","loading":"Cargando recomendaciones...","error":"No se pudo completar la siguiente mejor acción. Es posible que un administrador haya desactivado la IA.","failed":"El último intento falló de forma segura. El resultado exitoso anterior sigue disponible.","closed":"No hay nuevas recomendaciones para negocios cerrados.","empty":"Aún no se han generado recomendaciones.","waiting":"Esperando a que finalicen el atractivo inicial y la predicción del negocio...","outdated":"Puede no coincidir con los datos actuales","fresh":"Recomendaciones actuales","advisory":"Las recomendaciones son solo consultivas. Ningún registro del CRM ni acción externa cambia automáticamente.","timing":"Momento recomendado","security":"Advertencia de seguridad","language":"Idioma del análisis","status":{"QUEUED":"En cola...","RUNNING":"Generando recomendaciones..."},"priorities":{"LOW":"Prioridad baja","MEDIUM":"Prioridad media","HIGH":"Prioridad alta"}},
-  "employees": {"title":"Empleados","name":"Nombre","email":"Correo electrónico","password":"Contraseña temporal","role":"Rol","active":"Activo","inactive":"Inactivo","create":"Crear empleado","edit":"Editar nombre","activate":"Activar","deactivate":"Desactivar","loading":"Cargando empleados...","empty":"No hay empleados","created":"Empleado creado.","updated":"Empleado actualizado.","roles":{"ADMIN":"Administrador","MANAGER":"Gestor"},"errors":{"duplicate":"Ya existe un empleado con este correo.","adminSafety":"Debe quedar al menos un administrador activo. No puedes quitar tu propio acceso.","generic":"No se pudo completar la operación del empleado."}},
-  "auth": {
-    "internalAccess": "Acceso del personal",
-    "title": "Iniciar sesión en VILEORUF CRM",
-    "subtitle": "Usa tu cuenta de empleado del estudio.",
-    "email": "Correo electrónico",
-    "password": "Contraseña",
-    "signIn": "Iniciar sesión",
-    "signingIn": "Iniciando sesión...",
-    "loading": "Comprobando tu sesión...",
-    "logout": "Cerrar sesión",
-    "backToHome": "Volver al inicio",
-    "signingOut": "Cerrando sesión...",
-    "currentUser": "Empleado actual",
-    "errors": {
-      "invalidCredentials": "Correo electrónico o contraseña incorrectos.",
-      "unavailable": "No se pudo conectar con el servidor. Inténtalo de nuevo."
-    }
-  },
-  "integrations":{"title":"Integraciones","subtitle":"Conexiones corporativas y estado seguro.","loading":"Cargando la configuración de integraciones...","error":"No se pudo cargar la configuración de integraciones.","notConfigured":"Sin configurar","connectedNoAccount":"Cuenta corporativa de Google conectada","providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"status":{"DISCONNECTED":"Desconectado","CONNECTING":"Conectando...","CONNECTED":"Conectado","ERROR":"Se requiere reconexión"},"inbound":{"sync":"Sincronizar Gmail","running":"La sincronización de Gmail está en curso...","error":"La sincronización de Gmail terminó con un error seguro."},"telegram":{"validate":"Validar bot de Telegram","validating":"Validando bot de Telegram..."},"oauth":{"connect":"Conectar Google","reconnect":"Reconectar","disconnect":"Desconectar","opening":"Abriendo Google...","disconnecting":"Desconectando...","success":"La conexión de Google se guardó correctamente.","error":"No se pudo completar la conexión de Google. Revisa la configuración y vuelve a conectar.","actionError":"No se pudo iniciar o cambiar la conexión de Google."}},
-  "telegram":{"send":"Enviar por Telegram","message":"Mensaje de Telegram","sending":"Enviando...","pending":"Mensaje aceptado para envío. Esperando la confirmación de Telegram.","sent":"Enviado","error":"No se pudo enviar el mensaje de Telegram.","unknown":"No se pudo confirmar el resultado de la entrega.","recipientNotLinked":"El cliente no tiene un destinatario de Telegram vinculado.","integrationUnavailable":"Telegram no está disponible actualmente.","unavailable":"Telegram no está disponible porque el destinatario no está vinculado o la integración no está conectada."},
-  "aiSettings": {
-    "title":"Configuración de IA","subtitle":"Controles de ejecución para nuevas operaciones de IA. Los secretos técnicos nunca se muestran aquí.","loading":"Cargando configuración de IA...","error":"No se pudo cargar o guardar la configuración de IA.","saved":"Configuración de IA guardada.","enabled":"IA activada","enabledHelp":"Controla la creación de nuevas operaciones de IA. El historial y el trabajo aceptado siguen disponibles.","automatic":"Análisis automático de nuevos acuerdos","automaticHelp":"Solo se aplica a acuerdos futuros. No procesa acuerdos existentes de forma retrospectiva.","analysisModel":"Modelo de análisis","analysisHelp":"Se usa para atractivo, predicción y siguiente mejor acción.","emailModel":"Modelo de correo","emailHelp":"Se usa solo para generar borradores de correo.","defaultModel":"Predeterminado: {{model}} (restablecer override)","effective":"Efectivo: {{model}}","dpValidity":"Validez de predicción, días","nbaValidity":"Validez de siguiente acción, días","validityHelp":"1–365 días. Solo afecta la comprobación diferida y no recalcula resultados."
-  },
-  "aiHistory": {
-    "title":"Historial de IA","dealTitle":"Historial de IA del acuerdo","subtitle":"Historial de solo lectura de operaciones de IA validadas.","loading":"Cargando historial de IA...","error":"No se pudo cargar el historial de IA.","empty":"No hay operaciones de IA coincidentes.","all":"Todos","function":"Función","technicalStatus":"Estado técnico","deal":"Acuerdo","freshness":"Vigencia","fresh":"Datos actuales","outdated":"Posiblemente desactualizado","current":"Último resultado exitoso","currentOnly":"Solo últimos exitosos","apply":"Aplicar filtros","created":"Creado","started":"Iniciado","completed":"Completado","model":"Modelo","language":"Idioma","duration":"Duración","attempts":"Intentos","usageTokens":"Tokens usados","invalidHistoricalResult":"El resultado histórico no se puede mostrar de forma segura.","functions":{"LEAD_SCORING":"Atractivo","DEAL_PREDICTION":"Probabilidad de éxito","NEXT_BEST_ACTION":"Siguiente mejor acción","EMAIL_DRAFT":"Generación de correo"},"status":{"QUEUED":"En cola","RUNNING":"En curso","SUCCESS":"Exitoso","FAILED":"Fallido"},"errors":{"PROVIDER_TIMEOUT":"Tiempo de espera del proveedor agotado","PROVIDER_UNAVAILABLE":"Proveedor no disponible","INVALID_STRUCTURED_RESPONSE":"Respuesta estructurada no válida","CONFIGURATION_ERROR":"Error de configuración","unknown":"La operación de IA falló"}
-  },
-  "emailDraft": {
-    "title":"Borrador de correo","generate":"Generar borrador","noAutoSend":"No se envía nada automáticamente. El envío requiere confirmación explícita del empleado.","send":"Enviar","sending":"Enviando...","sent":"Enviado","confirmSend":"¿Enviar este correo a {{recipient}} con el asunto «{{subject}}»?","sendFailed":"No se pudo enviar el correo. El borrador se conservó.","recipientMissing":"El cliente no tiene una dirección de correo válida para el envío.","copyAll":"Copiar todo","unknownOutcome":"No se pudo confirmar la entrega. Revisa Gmail antes de enviar de nuevo.","purpose":"Propósito","purposeRequired":"Indica el propósito para generar un borrador.","instructions":"Instrucciones adicionales para IA (opcional)","nba":"Siguiente mejor acción seleccionada (opcional)","noNba":"No usar recomendación","nbaOutdated":"posiblemente desactualizada","loading":"Cargando borradores...","failed":"La última generación de correo falló de forma segura.","status":{"QUEUED":"En cola...","RUNNING":"Generando borrador..."},"generated":"Propuesta generada","contextChanged":"Los datos de CRM cambiaron mientras se generaba este borrador. Revísalo antes de guardarlo.","subject":"Asunto","body":"Cuerpo","security":"Advertencia de seguridad","saveAs":"Editar y guardar borrador","newManual":"Nuevo borrador manual","newDraft":"Nuevo borrador","editDraft":"Editar borrador","language":"Idioma","required":"El asunto, el cuerpo y el propósito son obligatorios.","copySubject":"Copiar asunto","copyBody":"Copiar cuerpo","copyError":"No se pudo copiar el texto.","delete":"Eliminar","confirmDelete":"¿Eliminar este borrador de correo?"
-  },
-  "calendar": {
-    "title": "Eventos del calendario",
-    "loading": "Cargando eventos del calendario...",
-    "empty": "Aún no hay eventos de calendario vinculados.",
-    "error": "No se pudieron cargar los eventos del calendario de forma segura.",
-    "open": "Abrir en Google Calendar",
-    "create": {
-      "title": "Crear evento de calendario",
-      "open": "Crear evento",
-      "fields": {"title": "Título", "description": "Descripción", "start": "Inicio", "end": "Fin", "timezone": "Zona horaria"},
-      "submit": "Crear evento",
-      "submitting": "Creando evento...",
-      "close": "Cerrar formulario",
-      "accepted": "El evento fue aceptado para sincronización. Esperando la confirmación de Google Calendar.",
-      "error": "No se pudo crear el evento de calendario. Revisa los datos e inténtalo de nuevo.",
-      "validation": {"title": "Indica un título para el evento.", "start": "Indica la hora de inicio.", "end": "Indica la hora de finalización.", "range": "La hora de finalización debe ser posterior a la de inicio.", "timezone": "Indica una zona horaria IANA válida."}
-    },
-    "update": {
-      "title": "Editar evento de calendario",
-      "open": "Editar evento",
-      "submit": "Guardar cambios",
-      "submitting": "Guardando cambios...",
-      "error": "No se pudo actualizar el evento de calendario. Revisa los datos e inténtalo de nuevo.",
-      "conflict": "Este evento no se puede actualizar ahora. Actualiza la lista e inténtalo de nuevo."
-    },
-    "cancel": {
-      "title": "Cancelar evento del calendario",
-      "open": "Cancelar evento",
-      "confirmation": "Este evento se cancelará en Google Calendar. Confirma la cancelación.",
-      "confirm": "Confirmar cancelación",
-      "submitting": "Cancelando evento...",
-      "error": "No se pudo cancelar el evento del calendario. Su estado no ha cambiado.",
-      "uncertain": "No se pudo confirmar la cancelación en Google Calendar. Comprueba Google Calendar antes de intentarlo de nuevo."
+    "product": {
+        "name": "VILEORUF CRM",
+        "kind": "Sistema de gesti\u00f3n de ventas",
+        "subtitle": "La base del frontend est\u00e1 lista para seguir desarroll\u00e1ndose.",
+        "subtitleAuthenticated": "El espacio de trabajo protegido est\u00e1 listo. Los m\u00f3dulos CRM se a\u00f1adir\u00e1n en la pr\u00f3xima etapa."
     },
     "status": {
-      "PENDING": "Pendiente de sincronización",
-      "SYNCED": "Sincronizado",
-      "ERROR": "Error de sincronización",
-      "CANCELLED": "Cancelado"
+        "frontend": {
+            "label": "Estado del frontend",
+            "ready": "En funcionamiento"
+        },
+        "backend": {
+            "label": "Estado del backend",
+            "checking": "Comprobando la conexi\u00f3n",
+            "available": "Disponible",
+            "unavailable": "No disponible"
+        }
+    },
+    "language": {
+        "label": "Idioma",
+        "ru": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439",
+        "en": "English",
+        "es": "Espa\u00f1ol"
+    },
+    "common": {
+        "retry": "Reintentar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "close": "Cerrar",
+        "resetDefault": "Restablecer valor predeterminado ({{value}})"
+    },
+    "crm": {
+        "navigation": {
+            "label": "Navegaci\u00f3n CRM",
+            "dashboard": "Resumen",
+            "clients": "Clientes",
+            "deals": "Negocios",
+            "pipeline": "Embudo",
+            "tasks": "Tareas",
+            "aiHistory": "Historial de IA",
+            "inbox": "Bandeja de entrada",
+            "upcoming": "Pr\u00f3ximamente"
+        },
+        "sidebar": {
+            "workspace": "Espacio de trabajo"
+        }
+    },
+    "clients": {
+        "title": "Clientes",
+        "subtitle": "Contactos y empresas de tu CRM.",
+        "create": "A\u00f1adir cliente",
+        "edit": "Editar cliente",
+        "loading": "Cargando clientes...",
+        "statusLabel": "Estado",
+        "createdAt": "Creado",
+        "fields": {
+            "name": "Nombre o empresa",
+            "company": "Empresa",
+            "contact_person": "Persona de contacto",
+            "email": "Correo electr\u00f3nico",
+            "phone": "Tel\u00e9fono",
+            "telegram": "Telegram",
+            "whatsapp": "WhatsApp",
+            "lead_source": "Origen del lead",
+            "notes": "Notas"
+        },
+        "status": {
+            "CUSTOMER": "Cliente potencial",
+            "CLIENT": "Cliente"
+        },
+        "empty": {
+            "title": "A\u00fan no hay clientes",
+            "description": "A\u00f1ade tu primer cliente para empezar a trabajar en CRM.",
+            "action": "A\u00f1adir cliente"
+        },
+        "errors": {
+            "load": "No se pudieron cargar los clientes.",
+            "save": "No se pudieron guardar los cambios. Int\u00e9ntalo de nuevo."
+        },
+        "validation": {
+            "nameRequired": "Indica un nombre o empresa."
+        },
+        "pagination": {
+            "label": "Paginaci\u00f3n de clientes",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "page": "P\u00e1gina {{page}}"
+        },
+        "permissions": {
+            "admin": "Los administradores pueden trabajar con todos los clientes."
+        }
+    },
+    "deals": {
+        "title": "Negocios",
+        "subtitle": "Proyectos y oportunidades comerciales de tu CRM.",
+        "create": "A\u00f1adir negocio",
+        "edit": "Editar negocio",
+        "details": "Detalles del negocio",
+        "loading": "Cargando negocios...",
+        "selectClient": "Selecciona un cliente",
+        "selectStage": "Selecciona una etapa",
+        "unassigned": "Sin asignar",
+        "unknownReference": "No disponible",
+        "readonly": "Este negocio solo est\u00e1 disponible para consulta.",
+        "transition": "Mover a la etapa",
+        "move": "Mover",
+        "fields": {
+            "name": "Nombre del negocio",
+            "description": "Descripci\u00f3n",
+            "client": "Cliente",
+            "stage": "Etapa",
+            "estimated_budget": "Presupuesto estimado",
+            "deadline": "Fecha l\u00edmite",
+            "probability": "Probabilidad",
+            "responsible": "Responsable"
+        },
+        "stages": {
+            "newLead": "Nuevo lead",
+            "contact": "Contacto",
+            "qualification": "Cualificaci\u00f3n",
+            "proposal": "Propuesta",
+            "negotiation": "Negociaci\u00f3n",
+            "won": "Ganada",
+            "lost": "Perdida"
+        },
+        "empty": {
+            "title": "A\u00fan no hay negocios",
+            "description": "A\u00f1ade tu primer negocio para trabajar con el embudo.",
+            "action": "A\u00f1adir negocio"
+        },
+        "errors": {
+            "load": "No se pudieron cargar los negocios o los datos de referencia.",
+            "save": "No se pudo guardar el negocio. Int\u00e9ntalo de nuevo.",
+            "transition": "No se pudo mover el negocio. Int\u00e9ntalo de nuevo."
+        },
+        "validation": {
+            "nameRequired": "Indica un nombre para el negocio."
+        },
+        "pagination": {
+            "label": "Paginaci\u00f3n de negocios",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "page": "P\u00e1gina {{page}}"
+        }
+    },
+    "tasks": {
+        "title": "Tareas",
+        "subtitle": "Trabajo operativo para el equipo CRM.",
+        "create": "Nueva tarea",
+        "edit": "Editar tarea",
+        "details": "Detalles de la tarea",
+        "complete": "Completar tarea",
+        "loading": "Cargando tareas...",
+        "unknownReference": "No disponible",
+        "fields": {
+            "title": "T\u00edtulo",
+            "description": "Descripci\u00f3n",
+            "dueAt": "Fecha y hora l\u00edmite",
+            "status": "Estado",
+            "responsible": "Responsable",
+            "client": "Cliente",
+            "deal": "Negocio"
+        },
+        "status": {
+            "OPEN": "Abierta",
+            "COMPLETED": "Completada",
+            "OVERDUE": "Vencida"
+        },
+        "filters": {
+            "allStatuses": "Todos los estados",
+            "allEmployees": "Todos los empleados",
+            "allClients": "Todos los clientes",
+            "allDeals": "Todos los negocios",
+            "apply": "Aplicar filtros",
+            "reset": "Restablecer"
+        },
+        "associations": {
+            "none": "Ninguno"
+        },
+        "empty": {
+            "title": "No se encontraron tareas",
+            "description": "Crea una tarea o ajusta los filtros.",
+            "action": "Nueva tarea"
+        },
+        "pagination": {
+            "label": "Paginaci\u00f3n de tareas",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "page": "P\u00e1gina {{page}}"
+        },
+        "validation": {
+            "titleRequired": "Indica un t\u00edtulo para la tarea."
+        },
+        "permissions": {
+            "readonly": "Esta tarea solo est\u00e1 disponible para consulta."
+        },
+        "errors": {
+            "load": "No se pudieron cargar las tareas.",
+            "save": "No se pudo guardar la tarea. Int\u00e9ntalo de nuevo.",
+            "complete": "No se pudo completar la tarea. Int\u00e9ntalo de nuevo.",
+            "forbidden": "No tienes permiso para modificar esta tarea.",
+            "notFound": "La tarea o el registro vinculado ya no est\u00e1 disponible.",
+            "validation": "Revisa los detalles de la tarea e int\u00e9ntalo de nuevo."
+        }
+    },
+    "dashboard": {
+        "eyebrow": "Resumen operativo",
+        "greeting": "Hola, {{name}}",
+        "subtitle": "C\u00e9ntrate en el trabajo que requiere atenci\u00f3n ahora.",
+        "unknownEmployee": "Empleado no disponible",
+        "tasks": {
+            "title": "Tareas que requieren atenci\u00f3n",
+            "subtitle": "Tareas abiertas ordenadas por fecha l\u00edmite.",
+            "viewAll": "Ver todas las tareas",
+            "loading": "Cargando tareas abiertas...",
+            "empty": "No hay tareas abiertas que requieran atenci\u00f3n.",
+            "error": "No se pudieron cargar las tareas."
+        },
+        "communications": {
+            "title": "Comunicaciones recientes",
+            "subtitle": "\u00daltimos contactos registrados en CRM.",
+            "loading": "Cargando comunicaciones recientes...",
+            "empty": "A\u00fan no hay comunicaciones registradas.",
+            "error": "No se pudieron cargar las comunicaciones."
+        },
+        "quick": {
+            "title": "Acceso r\u00e1pido"
+        }
+    },
+    "communications": {
+        "title": "Historial de comunicaciones",
+        "clientSubtitle": "Todos los contactos registrados con este cliente.",
+        "dealSubtitle": "Contactos vinculados a este negocio.",
+        "create": "A\u00f1adir comunicaci\u00f3n",
+        "submit": "Guardar comunicaci\u00f3n",
+        "loading": "Cargando historial de comunicaciones...",
+        "loadingMore": "Cargando...",
+        "loadMore": "Cargar m\u00e1s",
+        "empty": "A\u00fan no hay comunicaciones.",
+        "fields": {
+            "channel": "Canal",
+            "direction": "Direcci\u00f3n",
+            "occurredAt": "Fecha y hora",
+            "content": "Mensaje"
+        },
+        "channels": {
+            "EMAIL": "Correo electr\u00f3nico",
+            "TELEGRAM": "Telegram",
+            "WHATSAPP": "WhatsApp",
+            "MANUAL": "Manual",
+            "OTHER": "Otro"
+        },
+        "directions": {
+            "INCOMING": "Entrante",
+            "OUTGOING": "Saliente"
+        },
+        "validation": {
+            "contentRequired": "Indica el mensaje de la comunicaci\u00f3n."
+        },
+        "errors": {
+            "load": "No se pudo cargar el historial de comunicaciones.",
+            "save": "No se pudo guardar la comunicaci\u00f3n. Int\u00e9ntalo de nuevo.",
+            "forbidden": "No tienes permiso para a\u00f1adir una comunicaci\u00f3n a este negocio.",
+            "contextMissing": "El cliente o negocio ya no est\u00e1 disponible.",
+            "validation": "Revisa los datos de la comunicaci\u00f3n e int\u00e9ntalo de nuevo."
+        },
+        "permissions": {
+            "dealCreateForbidden": "Puedes ver el historial, pero no a\u00f1adir comunicaciones a este negocio."
+        }
+    },
+    "pipeline": {
+        "title": "Embudo",
+        "subtitle": "Todos los negocios por etapas de ventas.",
+        "boardLabel": "Tablero del embudo",
+        "loading": "Cargando embudo...",
+        "dealCount": "{{count}} negocios",
+        "move": "Mover",
+        "targetStage": "Etapa de destino",
+        "readonly": "Solo lectura",
+        "readonlyHint": "No tienes permiso para mover este negocio",
+        "cardMoveHint": "Arrastra o usa la acci\u00f3n Mover",
+        "empty": {
+            "title": "No hay negocios en el embudo",
+            "description": "Crea un negocio en la p\u00e1gina Negocios para verlo aqu\u00ed."
+        },
+        "errors": {
+            "load": "No se pudo cargar el embudo o los datos de referencia.",
+            "transition": "No se pudo mover el negocio. Se actualizaron los datos del embudo."
+        }
+    },
+    "public": {
+        "eyebrow": "VILEORUF Studio",
+        "title": "Cu\u00e9ntanos sobre tu proyecto",
+        "subtitle": "Deja tus datos de contacto y una breve descripci\u00f3n; nos pondremos en contacto.",
+        "login": "Acceso de empleados",
+        "send": "Enviar solicitud",
+        "sending": "Enviando...",
+        "error": "No se pudo enviar la solicitud. Int\u00e9ntalo de nuevo.",
+        "servicesError": "No se pudieron cargar los servicios. Actualiza la p\u00e1gina e int\u00e9ntalo de nuevo.",
+        "success": {
+            "title": "\u00a1Gracias!",
+            "description": "Tu solicitud fue enviada. Nos pondremos en contacto.",
+            "again": "Enviar otra solicitud"
+        },
+        "fields": {
+            "name": "Nombre o empresa",
+            "contact_person": "Persona de contacto",
+            "email": "Correo electr\u00f3nico",
+            "phone": "Tel\u00e9fono",
+            "telegram": "Telegram",
+            "whatsapp": "WhatsApp",
+            "company": "Empresa",
+            "deal_name": "Nombre del proyecto",
+            "description": "Descripci\u00f3n",
+            "estimated_budget": "Presupuesto estimado",
+            "deadline": "Fecha deseada",
+            "service_id": "Servicio",
+            "preferred_communication_language": "Idioma de comunicaci\u00f3n preferido"
+        }
+    },
+    "d4": {
+        "businessSettings": "Configuraci\u00f3n comercial",
+        "preferredCommunicationLanguage": "Idioma de comunicaci\u00f3n preferido",
+        "service": "Servicio",
+        "selectService": "Selecciona un servicio",
+        "category": "Categor\u00eda",
+        "managerEffort": "Estimaci\u00f3n de esfuerzo, horas-persona",
+        "pastDeadline": "La fecha ya pas\u00f3",
+        "inactiveBusinessReference": "El Servicio o la Categor\u00eda vinculados est\u00e1n inactivos. Selecciona un Servicio activo antes de recalcular."
+    },
+    "business": {
+        "eyebrow": "Configuraci\u00f3n del CRM",
+        "title": "Configuraci\u00f3n comercial",
+        "subtitle": "Categor\u00edas, servicios, econom\u00eda objetivo y reglas de atractivo.",
+        "loading": "Cargando configuraci\u00f3n comercial...",
+        "error": "No se pudo cargar o guardar la configuraci\u00f3n.",
+        "categories": "Categor\u00edas",
+        "services": "Servicios",
+        "category": "Categor\u00eda",
+        "scoring": "Pesos de atractivo y escala de valor comercial",
+        "scale": "Proporci\u00f3n \u2192 puntuaci\u00f3n",
+        "addCategory": "A\u00f1adir categor\u00eda",
+        "addService": "A\u00f1adir servicio",
+        "activate": "Activar",
+        "deactivate": "Desactivar",
+        "fields": {
+            "name_ru": "Nombre en ruso",
+            "name_en": "Nombre en ingl\u00e9s",
+            "name_es": "Nombre en espa\u00f1ol",
+            "target_hourly_rate": "Tarifa objetivo, EUR/hora-persona",
+            "target_effort": "Esfuerzo objetivo, horas-persona",
+            "service_fit_weight": "Ajuste al servicio, %",
+            "commercial_value_weight": "Valor comercial, %",
+            "lead_quality_weight": "Calidad del lead, %",
+            "feasibility_weight": "Viabilidad, %"
+        }
+    },
+    "leadScoring": {
+        "title": "Atractivo",
+        "run": "Calcular atractivo",
+        "recalculate": "Recalcular",
+        "loading": "Cargando atractivo...",
+        "error": "No se pudo completar el c\u00e1lculo de atractivo.",
+        "failed": "El \u00faltimo c\u00e1lculo fall\u00f3 de forma segura. El resultado exitoso anterior sigue disponible.",
+        "closed": "No se puede iniciar un nuevo c\u00e1lculo para negocios cerrados.",
+        "empty": "El atractivo a\u00fan no se ha calculado.",
+        "outdated": "Puede no coincidir con los datos actuales",
+        "fresh": "Resultado actual",
+        "missing": "Datos faltantes",
+        "security": "Advertencia de seguridad",
+        "suggestion": "Categor\u00eda sugerida",
+        "language": "Idioma del an\u00e1lisis",
+        "status": {
+            "QUEUED": "En cola...",
+            "RUNNING": "Calculando..."
+        },
+        "factors": {
+            "serviceFit": "Ajuste al servicio",
+            "commercialValue": "Valor comercial",
+            "leadQuality": "Calidad del lead",
+            "feasibility": "Viabilidad"
+        },
+        "missingItems": {
+            "BUDGET": "No se indic\u00f3 el presupuesto",
+            "DESIRED_DEADLINE": "No se indic\u00f3 la fecha deseada"
+        }
+    },
+    "dealPrediction": {
+        "title": "Probabilidad de \u00e9xito",
+        "run": "Calcular probabilidad",
+        "recalculate": "Recalcular",
+        "loading": "Cargando pron\u00f3stico...",
+        "error": "No se pudo completar la predicci\u00f3n del negocio.",
+        "failed": "La \u00faltima predicci\u00f3n fall\u00f3 de forma segura. El resultado exitoso anterior sigue disponible.",
+        "closed": "No se puede iniciar una nueva predicci\u00f3n para negocios cerrados.",
+        "empty": "La probabilidad de \u00e9xito a\u00fan no se ha calculado.",
+        "outdated": "Puede no coincidir con los datos actuales",
+        "fresh": "Resultado actual",
+        "probability": "Probabilidad de ganar",
+        "confidence": "Confianza en la evidencia",
+        "confidenceHelp": "La confianza mide la suficiencia, actualidad y consistencia de la evidencia de CRM, no la calidad del negocio: una probabilidad alta puede tener confianza baja y viceversa.",
+        "positive": "Se\u00f1ales positivas",
+        "risks": "Riesgos",
+        "missing": "Contexto faltante",
+        "security": "Advertencia de seguridad",
+        "language": "Idioma del an\u00e1lisis",
+        "status": {
+            "QUEUED": "En cola...",
+            "RUNNING": "Calculando..."
+        },
+        "confidenceValues": {
+            "LOW": "Baja",
+            "MEDIUM": "Media",
+            "HIGH": "Alta"
+        }
+    },
+    "nextBestAction": {
+        "title": "Siguiente mejor acci\u00f3n",
+        "run": "Obtener recomendaciones",
+        "recalculate": "Actualizar recomendaciones",
+        "loading": "Cargando recomendaciones...",
+        "error": "No se pudo completar la siguiente mejor acci\u00f3n. Es posible que un administrador haya desactivado la IA.",
+        "failed": "El \u00faltimo intento fall\u00f3 de forma segura. El resultado exitoso anterior sigue disponible.",
+        "closed": "No hay nuevas recomendaciones para negocios cerrados.",
+        "empty": "A\u00fan no se han generado recomendaciones.",
+        "waiting": "Esperando a que finalicen el atractivo inicial y la predicci\u00f3n del negocio...",
+        "outdated": "Puede no coincidir con los datos actuales",
+        "fresh": "Recomendaciones actuales",
+        "advisory": "Las recomendaciones son solo consultivas. Ning\u00fan registro del CRM ni acci\u00f3n externa cambia autom\u00e1ticamente.",
+        "timing": "Momento recomendado",
+        "security": "Advertencia de seguridad",
+        "language": "Idioma del an\u00e1lisis",
+        "status": {
+            "QUEUED": "En cola...",
+            "RUNNING": "Generando recomendaciones..."
+        },
+        "priorities": {
+            "LOW": "Prioridad baja",
+            "MEDIUM": "Prioridad media",
+            "HIGH": "Prioridad alta"
+        }
+    },
+    "employees": {
+        "title": "Empleados",
+        "name": "Nombre",
+        "email": "Correo electr\u00f3nico",
+        "password": "Contrase\u00f1a temporal",
+        "role": "Rol",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "create": "Crear empleado",
+        "edit": "Editar nombre",
+        "activate": "Activar",
+        "deactivate": "Desactivar",
+        "loading": "Cargando empleados...",
+        "empty": "No hay empleados",
+        "created": "Empleado creado.",
+        "updated": "Empleado actualizado.",
+        "roles": {
+            "ADMIN": "Administrador",
+            "MANAGER": "Gestor"
+        },
+        "errors": {
+            "duplicate": "Ya existe un empleado con este correo.",
+            "adminSafety": "Debe quedar al menos un administrador activo. No puedes quitar tu propio acceso.",
+            "generic": "No se pudo completar la operaci\u00f3n del empleado."
+        }
+    },
+    "auth": {
+        "internalAccess": "Acceso del personal",
+        "title": "Iniciar sesi\u00f3n en VILEORUF CRM",
+        "subtitle": "Usa tu cuenta de empleado del estudio.",
+        "email": "Correo electr\u00f3nico",
+        "password": "Contrase\u00f1a",
+        "signIn": "Iniciar sesi\u00f3n",
+        "signingIn": "Iniciando sesi\u00f3n...",
+        "loading": "Comprobando tu sesi\u00f3n...",
+        "logout": "Cerrar sesi\u00f3n",
+        "backToHome": "Volver al inicio",
+        "signingOut": "Cerrando sesi\u00f3n...",
+        "currentUser": "Empleado actual",
+        "errors": {
+            "invalidCredentials": "Correo electr\u00f3nico o contrase\u00f1a incorrectos.",
+            "unavailable": "No se pudo conectar con el servidor. Int\u00e9ntalo de nuevo."
+        }
+    },
+    "inbox": {"title":"Bandeja sin identificar","subtitle":"Mensajes entrantes que requieren asignaci\u00f3n manual a un cliente existente.","loading":"Cargando mensajes entrantes...","selectClient":"Cliente","clientPlaceholder":"Selecciona un cliente existente","link":"Vincular con cliente","empty":{"title":"La cola est\u00e1 vac\u00eda","description":"No hay mensajes entrantes que requieran vinculaci\u00f3n manual."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"No se pudo cargar la cola entrante.","clientRequired":"Primero selecciona un cliente existente.","link":"No se pudo vincular el mensaje con el cliente. Int\u00e9ntalo de nuevo."}},
+    "integrations": {
+        "title": "Integraciones",
+        "subtitle": "Conexiones corporativas y estado seguro.",
+        "loading": "Cargando la configuraci\u00f3n de integraciones...",
+        "error": "No se pudo cargar la configuraci\u00f3n de integraciones.",
+        "notConfigured": "Sin configurar",
+        "connectedNoAccount": "Cuenta corporativa de Google conectada",
+        "lastSuccess": "Última actividad correcta: {{value}}",
+        "providers": {
+            "GMAIL": "Gmail",
+            "TELEGRAM": "Telegram",
+            "GOOGLE_CALENDAR": "Google Calendar",
+            "WHATSAPP": "WhatsApp"
+        },
+        "status": {
+            "DISCONNECTED": "Desconectado",
+            "CONNECTING": "Conectando...",
+            "CONNECTED": "Conectado",
+            "ERROR": "Se requiere reconexi\u00f3n"
+        },
+        "inbound": {
+            "sync": "Sincronizar Gmail",
+            "running": "La sincronizaci\u00f3n de Gmail est\u00e1 en curso...",
+            "error": "La sincronizaci\u00f3n de Gmail termin\u00f3 con un error seguro.",
+            "lastSuccess": "Última sincronización entrante: {{value}}"
+        },
+        "telegram": {
+            "validate": "Validar bot de Telegram",
+            "validating": "Validando bot de Telegram..."
+        },
+        "calendar": {"reusesGoogle":"Usa la conexión corporativa de Google indicada arriba."},
+        "whatsapp": {"status":"Aplazado / deuda técnica","deferred":"WhatsApp Business Cloud API está aplazado hasta completar el MVP actual. No está configurado ni operativo en esta versión."},
+        "errorCodes": {"AUTH_REQUIRED":"Se requiere autenticación o reconexión.","INVALID_CONFIGURATION":"La configuración del proveedor requiere atención del administrador.","PERMISSION_DENIED":"El proveedor rechazó esta operación.","INVALID_RECIPIENT":"El destinatario del proveedor no es válido.","RATE_LIMITED":"Se alcanzó el límite del proveedor. Inténtalo más tarde.","PROVIDER_UNAVAILABLE":"El proveedor no está disponible temporalmente.","PROVIDER_ERROR":"El proveedor no pudo completar la operación de forma segura.","generic":"La integración requiere atención del administrador."},
+        "oauth": {
+            "connect": "Conectar Google",
+            "reconnect": "Reconectar",
+            "disconnect": "Desconectar",
+            "opening": "Abriendo Google...",
+            "disconnecting": "Desconectando...",
+            "success": "La conexi\u00f3n de Google se guard\u00f3 correctamente.",
+            "error": "No se pudo completar la conexi\u00f3n de Google. Revisa la configuraci\u00f3n y vuelve a conectar.",
+            "actionError": "No se pudo iniciar o cambiar la conexi\u00f3n de Google."
+        }
+    },
+    "telegram": {
+        "send": "Enviar por Telegram",
+        "message": "Mensaje de Telegram",
+        "sending": "Enviando...",
+        "pending": "Mensaje aceptado para env\u00edo. Esperando la confirmaci\u00f3n de Telegram.",
+        "sent": "Enviado",
+        "error": "No se pudo enviar el mensaje de Telegram.",
+        "unknown": "No se pudo confirmar el resultado de la entrega.",
+        "recipientNotLinked": "El cliente no tiene un destinatario de Telegram vinculado.",
+        "integrationUnavailable": "Telegram no est\u00e1 disponible actualmente.",
+        "unavailable": "Telegram no est\u00e1 disponible porque el destinatario no est\u00e1 vinculado o la integraci\u00f3n no est\u00e1 conectada."
+    },
+    "aiSettings": {
+        "title": "Configuraci\u00f3n de IA",
+        "subtitle": "Controles de ejecuci\u00f3n para nuevas operaciones de IA. Los secretos t\u00e9cnicos nunca se muestran aqu\u00ed.",
+        "loading": "Cargando configuraci\u00f3n de IA...",
+        "error": "No se pudo cargar o guardar la configuraci\u00f3n de IA.",
+        "saved": "Configuraci\u00f3n de IA guardada.",
+        "enabled": "IA activada",
+        "enabledHelp": "Controla la creaci\u00f3n de nuevas operaciones de IA. El historial y el trabajo aceptado siguen disponibles.",
+        "automatic": "An\u00e1lisis autom\u00e1tico de nuevos acuerdos",
+        "automaticHelp": "Solo se aplica a acuerdos futuros. No procesa acuerdos existentes de forma retrospectiva.",
+        "analysisModel": "Modelo de an\u00e1lisis",
+        "analysisHelp": "Se usa para atractivo, predicci\u00f3n y siguiente mejor acci\u00f3n.",
+        "emailModel": "Modelo de correo",
+        "emailHelp": "Se usa solo para generar borradores de correo.",
+        "defaultModel": "Predeterminado: {{model}} (restablecer override)",
+        "effective": "Efectivo: {{model}}",
+        "dpValidity": "Validez de predicci\u00f3n, d\u00edas",
+        "nbaValidity": "Validez de siguiente acci\u00f3n, d\u00edas",
+        "validityHelp": "1\u2013365 d\u00edas. Solo afecta la comprobaci\u00f3n diferida y no recalcula resultados."
+    },
+    "aiHistory": {
+        "title": "Historial de IA",
+        "dealTitle": "Historial de IA del acuerdo",
+        "subtitle": "Historial de solo lectura de operaciones de IA validadas.",
+        "loading": "Cargando historial de IA...",
+        "error": "No se pudo cargar el historial de IA.",
+        "empty": "No hay operaciones de IA coincidentes.",
+        "all": "Todos",
+        "function": "Funci\u00f3n",
+        "technicalStatus": "Estado t\u00e9cnico",
+        "deal": "Acuerdo",
+        "freshness": "Vigencia",
+        "fresh": "Datos actuales",
+        "outdated": "Posiblemente desactualizado",
+        "current": "\u00daltimo resultado exitoso",
+        "currentOnly": "Solo \u00faltimos exitosos",
+        "apply": "Aplicar filtros",
+        "created": "Creado",
+        "started": "Iniciado",
+        "completed": "Completado",
+        "model": "Modelo",
+        "language": "Idioma",
+        "duration": "Duraci\u00f3n",
+        "attempts": "Intentos",
+        "usageTokens": "Tokens usados",
+        "invalidHistoricalResult": "El resultado hist\u00f3rico no se puede mostrar de forma segura.",
+        "functions": {
+            "LEAD_SCORING": "Atractivo",
+            "DEAL_PREDICTION": "Probabilidad de \u00e9xito",
+            "NEXT_BEST_ACTION": "Siguiente mejor acci\u00f3n",
+            "EMAIL_DRAFT": "Generaci\u00f3n de correo"
+        },
+        "status": {
+            "QUEUED": "En cola",
+            "RUNNING": "En curso",
+            "SUCCESS": "Exitoso",
+            "FAILED": "Fallido"
+        },
+        "errors": {
+            "PROVIDER_TIMEOUT": "Tiempo de espera del proveedor agotado",
+            "PROVIDER_UNAVAILABLE": "Proveedor no disponible",
+            "INVALID_STRUCTURED_RESPONSE": "Respuesta estructurada no v\u00e1lida",
+            "CONFIGURATION_ERROR": "Error de configuraci\u00f3n",
+            "unknown": "La operaci\u00f3n de IA fall\u00f3"
+        }
+    },
+    "emailDraft": {
+        "title": "Borrador de correo",
+        "generate": "Generar borrador",
+        "noAutoSend": "No se env\u00eda nada autom\u00e1ticamente. El env\u00edo requiere confirmaci\u00f3n expl\u00edcita del empleado.",
+        "send": "Enviar",
+        "sending": "Enviando...",
+        "sent": "Enviado",
+        "confirmSend": "\u00bfEnviar este correo a {{recipient}} con el asunto \u00ab{{subject}}\u00bb?",
+        "sendFailed": "No se pudo enviar el correo. El borrador se conserv\u00f3.",
+        "recipientMissing": "El cliente no tiene una direcci\u00f3n de correo v\u00e1lida para el env\u00edo.",
+        "copyAll": "Copiar todo",
+        "unknownOutcome": "No se pudo confirmar la entrega. Revisa Gmail antes de enviar de nuevo.",
+        "purpose": "Prop\u00f3sito",
+        "purposeRequired": "Indica el prop\u00f3sito para generar un borrador.",
+        "instructions": "Instrucciones adicionales para IA (opcional)",
+        "nba": "Siguiente mejor acci\u00f3n seleccionada (opcional)",
+        "noNba": "No usar recomendaci\u00f3n",
+        "nbaOutdated": "posiblemente desactualizada",
+        "loading": "Cargando borradores...",
+        "failed": "La \u00faltima generaci\u00f3n de correo fall\u00f3 de forma segura.",
+        "status": {
+            "QUEUED": "En cola...",
+            "RUNNING": "Generando borrador..."
+        },
+        "generated": "Propuesta generada",
+        "contextChanged": "Los datos de CRM cambiaron mientras se generaba este borrador. Rev\u00edsalo antes de guardarlo.",
+        "subject": "Asunto",
+        "body": "Cuerpo",
+        "security": "Advertencia de seguridad",
+        "saveAs": "Editar y guardar borrador",
+        "newManual": "Nuevo borrador manual",
+        "newDraft": "Nuevo borrador",
+        "editDraft": "Editar borrador",
+        "language": "Idioma",
+        "required": "El asunto, el cuerpo y el prop\u00f3sito son obligatorios.",
+        "copySubject": "Copiar asunto",
+        "copyBody": "Copiar cuerpo",
+        "copyError": "No se pudo copiar el texto.",
+        "delete": "Eliminar",
+        "confirmDelete": "\u00bfEliminar este borrador de correo?"
+    },
+    "calendar": {
+        "title": "Eventos del calendario",
+        "loading": "Cargando eventos del calendario...",
+        "empty": "A\u00fan no hay eventos de calendario vinculados.",
+        "error": "No se pudieron cargar los eventos del calendario de forma segura.",
+        "open": "Abrir en Google Calendar",
+        "create": {
+            "title": "Crear evento de calendario",
+            "open": "Crear evento",
+            "fields": {
+                "title": "T\u00edtulo",
+                "description": "Descripci\u00f3n",
+                "start": "Inicio",
+                "end": "Fin",
+                "timezone": "Zona horaria"
+            },
+            "submit": "Crear evento",
+            "submitting": "Creando evento...",
+            "close": "Cerrar formulario",
+            "accepted": "El evento fue aceptado para sincronizaci\u00f3n. Esperando la confirmaci\u00f3n de Google Calendar.",
+            "error": "No se pudo crear el evento de calendario. Revisa los datos e int\u00e9ntalo de nuevo.",
+            "validation": {
+                "title": "Indica un t\u00edtulo para el evento.",
+                "start": "Indica la hora de inicio.",
+                "end": "Indica la hora de finalizaci\u00f3n.",
+                "range": "La hora de finalizaci\u00f3n debe ser posterior a la de inicio.",
+                "timezone": "Indica una zona horaria IANA v\u00e1lida."
+            }
+        },
+        "update": {
+            "title": "Editar evento de calendario",
+            "open": "Editar evento",
+            "submit": "Guardar cambios",
+            "submitting": "Guardando cambios...",
+            "error": "No se pudo actualizar el evento de calendario. Revisa los datos e int\u00e9ntalo de nuevo.",
+            "conflict": "Este evento no se puede actualizar ahora. Actualiza la lista e int\u00e9ntalo de nuevo."
+        },
+        "cancel": {
+            "title": "Cancelar evento del calendario",
+            "open": "Cancelar evento",
+            "confirmation": "Este evento se cancelar\u00e1 en Google Calendar. Confirma la cancelaci\u00f3n.",
+            "confirm": "Confirmar cancelaci\u00f3n",
+            "submitting": "Cancelando evento...",
+            "error": "No se pudo cancelar el evento del calendario. Su estado no ha cambiado.",
+            "uncertain": "No se pudo confirmar la cancelaci\u00f3n en Google Calendar. Comprueba Google Calendar antes de intentarlo de nuevo."
+        },
+        "status": {
+            "PENDING": "Pendiente de sincronizaci\u00f3n",
+            "SYNCED": "Sincronizado",
+            "ERROR": "Error de sincronizaci\u00f3n",
+            "CANCELLED": "Cancelado"
+        }
     }
-  }
 }

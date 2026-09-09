@@ -1,111 +1,705 @@
 {
-  "product": {
-    "name": "VILEORUF CRM",
-    "kind": "Sales management system",
-    "subtitle": "The frontend foundation is ready for further development.",
-    "subtitleAuthenticated": "The protected workspace is ready. CRM modules will be added in the next stage."
-  },
-  "status": {
-    "frontend": {
-      "label": "Frontend status",
-      "ready": "Running"
-    },
-    "backend": {
-      "label": "Backend status",
-      "checking": "Checking connection",
-      "available": "Available",
-      "unavailable": "Unavailable"
-    }
-  },
-  "language": {
-    "label": "Language",
-    "ru": "Русский",
-    "en": "English",
-    "es": "Español"
-  },
-  "common": {"retry":"Retry","save":"Save","saving":"Saving...","close":"Close","resetDefault":"Reset to default ({{value}})"},
-  "crm": {"navigation":{"label":"CRM navigation","dashboard":"Dashboard","clients":"Clients","deals":"Deals","pipeline":"Pipeline","tasks":"Tasks","aiHistory":"AI History","upcoming":"Soon"},"sidebar":{"workspace":"Workspace"}},
-  "clients": {"title":"Clients","subtitle":"Contacts and companies in your CRM.","create":"Add client","edit":"Edit client","loading":"Loading clients...","statusLabel":"Status","createdAt":"Created","fields":{"name":"Name or company","company":"Company","contact_person":"Contact person","email":"Email","phone":"Phone","telegram":"Telegram","whatsapp":"WhatsApp","lead_source":"Lead source","notes":"Notes"},"status":{"CUSTOMER":"Customer","CLIENT":"Client"},"empty":{"title":"No clients yet","description":"Add your first client to start working in CRM.","action":"Add client"},"errors":{"load":"Could not load clients.","save":"Could not save changes. Please try again."},"validation":{"nameRequired":"Enter a name or company."},"pagination":{"label":"Client pagination","previous":"Previous","next":"Next","page":"Page {{page}}"},"permissions":{"admin":"Administrators can work with all clients."}},
-  "deals": {"title":"Deals","subtitle":"Projects and sales opportunities in your CRM.","create":"Add deal","edit":"Edit deal","details":"Deal details","loading":"Loading deals...","selectClient":"Select a client","selectStage":"Select a stage","unassigned":"Unassigned","unknownReference":"Unavailable","readonly":"This deal is available in read-only mode.","transition":"Move to stage","move":"Move","fields":{"name":"Deal name","description":"Description","client":"Client","stage":"Stage","estimated_budget":"Estimated budget","deadline":"Deadline","probability":"Probability","responsible":"Responsible"},"stages":{"newLead":"New Lead","contact":"Contact","qualification":"Qualification","proposal":"Proposal","negotiation":"Negotiation","won":"Won","lost":"Lost"},"empty":{"title":"No deals yet","description":"Add your first deal to start working with the pipeline.","action":"Add deal"},"errors":{"load":"Could not load deals or reference data.","save":"Could not save the deal. Please try again.","transition":"Could not move the deal. Please try again."},"validation":{"nameRequired":"Enter a deal name."},"pagination":{"label":"Deal pagination","previous":"Previous","next":"Next","page":"Page {{page}}"}},
-  "tasks": {"title":"Tasks","subtitle":"Operational work for the CRM team.","create":"New task","edit":"Edit task","details":"Task details","complete":"Complete task","loading":"Loading tasks...","unknownReference":"Unavailable","fields":{"title":"Title","description":"Description","dueAt":"Due date and time","status":"Status","responsible":"Responsible","client":"Client","deal":"Deal"},"status":{"OPEN":"Open","COMPLETED":"Completed","OVERDUE":"Overdue"},"filters":{"allStatuses":"All statuses","allEmployees":"All employees","allClients":"All clients","allDeals":"All deals","apply":"Apply filters","reset":"Reset"},"associations":{"none":"None"},"empty":{"title":"No tasks found","description":"Create a task or adjust the filters.","action":"New task"},"pagination":{"label":"Task pagination","previous":"Previous","next":"Next","page":"Page {{page}}"},"validation":{"titleRequired":"Enter a task title."},"permissions":{"readonly":"This task is available in read-only mode."},"errors":{"load":"Could not load tasks.","save":"Could not save the task. Please try again.","complete":"Could not complete the task. Please try again.","forbidden":"You do not have permission to change this task.","notFound":"The task or a linked record is no longer available.","validation":"Check the task details and try again."}},
-  "dashboard": {"eyebrow":"Operational overview","greeting":"Hello, {{name}}","subtitle":"Focus on the work that needs attention now.","unknownEmployee":"Unavailable employee","tasks":{"title":"Tasks requiring attention","subtitle":"Open tasks, ordered by due date.","viewAll":"View all tasks","loading":"Loading open tasks...","empty":"No open tasks require attention.","error":"Could not load tasks."},"communications":{"title":"Recent communications","subtitle":"Latest recorded CRM contacts.","loading":"Loading recent communications...","empty":"No communications recorded yet.","error":"Could not load communications."},"quick":{"title":"Quick access"}},
-  "communications": {"title":"Communication history","clientSubtitle":"All recorded contacts with this client.","dealSubtitle":"Contacts linked to this deal.","create":"Add communication","submit":"Save communication","loading":"Loading communication history...","loadingMore":"Loading...","loadMore":"Load more","empty":"No communications yet.","fields":{"channel":"Channel","direction":"Direction","occurredAt":"Date and time","content":"Message"},"channels":{"EMAIL":"Email","TELEGRAM":"Telegram","WHATSAPP":"WhatsApp","MANUAL":"Manual","OTHER":"Other"},"directions":{"INCOMING":"Incoming","OUTGOING":"Outgoing"},"validation":{"contentRequired":"Enter the communication message."},"errors":{"load":"Could not load communication history.","save":"Could not save the communication. Please try again.","forbidden":"You do not have permission to add a communication to this deal.","contextMissing":"The client or deal is no longer available.","validation":"Check the communication data and try again."},"permissions":{"dealCreateForbidden":"You can view the history, but cannot add communications to this deal."}},
-  "pipeline": {"title":"Pipeline","subtitle":"All deals across sales stages.","boardLabel":"Pipeline board","loading":"Loading pipeline...","dealCount":"{{count}} deals","move":"Move","targetStage":"Target stage","readonly":"Read only","readonlyHint":"You do not have permission to move this deal","cardMoveHint":"Drag or use the Move action","empty":{"title":"There are no deals in the pipeline","description":"Create a deal on the Deals page to see it here."},"errors":{"load":"Could not load the pipeline or reference data.","transition":"Could not move the deal. Pipeline data was refreshed."}},
-  "public": {"eyebrow":"VILEORUF Studio","title":"Tell us about your project","subtitle":"Leave your contact details and a short brief — we will get in touch.","login":"Employee login","send":"Send request","sending":"Sending...","error":"Could not send the request. Please try again.","servicesError":"Could not load services. Please refresh the page.","success":{"title":"Thank you!","description":"Your request was sent. We will contact you.","again":"Send another request"},"fields":{"name":"Name or company","contact_person":"Contact person","email":"Email","phone":"Phone","telegram":"Telegram","whatsapp":"WhatsApp","company":"Company","deal_name":"Project name","description":"Description","estimated_budget":"Estimated budget","deadline":"Preferred deadline","service_id":"Service","preferred_communication_language":"Preferred communication language"}},
-  "d4": {"businessSettings":"Business settings","preferredCommunicationLanguage":"Preferred communication language","service":"Service","selectService":"Select a service","category":"Category","managerEffort":"Manager effort estimate, person-hours","pastDeadline":"Past deadline","inactiveBusinessReference":"The linked Service or Category is inactive. Select an active Service before recalculating."},
-  "business": {"eyebrow":"CRM configuration","title":"Business settings","subtitle":"Categories, services, target economics, and Lead Scoring rules.","loading":"Loading business configuration...","error":"Could not load or save business configuration.","categories":"Categories","services":"Services","category":"Category","scoring":"Lead Scoring weights and Commercial Value scale","scale":"Ratio → score scale","addCategory":"Add category","addService":"Add service","activate":"Activate","deactivate":"Deactivate","fields":{"name_ru":"Russian name","name_en":"English name","name_es":"Spanish name","target_hourly_rate":"Target hourly rate, EUR/person-hour","target_effort":"Target effort, person-hours","service_fit_weight":"Service Fit, %","commercial_value_weight":"Commercial Value, %","lead_quality_weight":"Lead Quality, %","feasibility_weight":"Feasibility, %"}},
-  "leadScoring": {"title":"Lead Scoring","run":"Run Lead Scoring","recalculate":"Recalculate","loading":"Loading Lead Scoring...","error":"Could not complete the Lead Scoring operation.","failed":"The latest calculation failed safely. A previous successful result remains available.","closed":"New Lead Scoring is unavailable for closed Deals.","empty":"Lead Scoring has not been calculated yet.","outdated":"Possibly does not match current data","fresh":"Current result","missing":"Missing data","security":"Security warning","suggestion":"Suggested Category","language":"Analysis language","status":{"QUEUED":"Queued...","RUNNING":"Calculating..."},"factors":{"serviceFit":"Service Fit","commercialValue":"Commercial Value","leadQuality":"Lead Quality","feasibility":"Feasibility"},"missingItems":{"BUDGET":"Budget is not provided","DESIRED_DEADLINE":"Desired deadline is not provided"}},
-  "dealPrediction": {"title":"Deal Prediction","run":"Run prediction","recalculate":"Recalculate","loading":"Loading prediction...","error":"Could not complete Deal Prediction.","failed":"The latest prediction failed safely. A previous successful result remains available.","closed":"New prediction is unavailable for closed Deals.","empty":"Deal Prediction has not been calculated yet.","outdated":"Possibly does not match current data","fresh":"Current result","probability":"Probability of winning","confidence":"Evidence confidence","confidenceHelp":"Confidence measures the sufficiency, recency and consistency of CRM evidence. It does not measure Deal quality: a high probability can have low confidence, and the reverse is also possible.","positive":"Positive signals","risks":"Risks","missing":"Missing context","security":"Security warning","language":"Analysis language","status":{"QUEUED":"Queued...","RUNNING":"Calculating..."},"confidenceValues":{"LOW":"Low","MEDIUM":"Medium","HIGH":"High"}},
-  "nextBestAction": {"title":"Next Best Action","run":"Get recommendations","recalculate":"Update recommendations","loading":"Loading recommendations...","error":"Could not complete Next Best Action. AI may be disabled by an administrator.","failed":"The latest recommendation attempt failed safely. A previous successful result remains available.","closed":"New recommendations are unavailable for closed Deals.","empty":"No recommendations have been generated yet.","waiting":"Waiting for the initial Lead Scoring and Deal Prediction to finish...","outdated":"Possibly does not match current data","fresh":"Current recommendations","advisory":"Recommendations are advisory only. No CRM record or external action is changed automatically.","timing":"Recommended timing","security":"Security warning","language":"Analysis language","status":{"QUEUED":"Queued...","RUNNING":"Generating recommendations..."},"priorities":{"LOW":"Low priority","MEDIUM":"Medium priority","HIGH":"High priority"}},
-  "employees": {"title":"Employees","name":"Name","email":"Email","password":"Temporary password","role":"Role","active":"Active","inactive":"Inactive","create":"Create employee","edit":"Edit name","activate":"Activate","deactivate":"Deactivate","loading":"Loading employees...","empty":"No employees","created":"Employee created.","updated":"Employee updated.","roles":{"ADMIN":"Administrator","MANAGER":"Manager"},"errors":{"duplicate":"An employee with this email already exists.","adminSafety":"At least one active administrator must remain. You cannot remove your own access.","generic":"Could not complete the employee operation."}},
-  "auth": {
-    "internalAccess": "Staff access",
-    "title": "Sign in to VILEORUF CRM",
-    "subtitle": "Use your studio employee account.",
-    "email": "Email",
-    "password": "Password",
-    "signIn": "Sign in",
-    "signingIn": "Signing in...",
-    "loading": "Checking your session...",
-    "logout": "Sign out",
-    "backToHome": "Back to home",
-    "signingOut": "Signing out...",
-    "currentUser": "Current employee",
-    "errors": {
-      "invalidCredentials": "Invalid email or password.",
-      "unavailable": "Could not reach the server. Please try again."
-    }
-  },
-  "integrations":{"title":"Integrations","subtitle":"Corporate integration connections and safe status.","loading":"Loading integration settings...","error":"Could not load integration settings.","notConfigured":"Not configured","connectedNoAccount":"Corporate Google account connected","providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"status":{"DISCONNECTED":"Disconnected","CONNECTING":"Connecting","CONNECTED":"Connected","ERROR":"Reconnect required"},"inbound":{"sync":"Sync Gmail","running":"Gmail synchronization is running...","error":"Gmail synchronization ended with a safe error."},"telegram":{"validate":"Validate Telegram Bot","validating":"Validating Telegram Bot..."},"oauth":{"connect":"Connect Google","reconnect":"Reconnect","disconnect":"Disconnect","opening":"Opening Google...","disconnecting":"Disconnecting...","success":"Google connection was saved successfully.","error":"Google connection could not be completed. Check the configuration and reconnect.","actionError":"Could not start or change the Google connection."}},
-  "telegram":{"send":"Send via Telegram","message":"Telegram message","sending":"Sending...","pending":"Message accepted for sending. Waiting for Telegram confirmation.","sent":"Sent","error":"Could not send the Telegram message.","unknown":"The delivery result could not be confirmed.","recipientNotLinked":"The client has no linked Telegram recipient.","integrationUnavailable":"Telegram is currently unavailable.","unavailable":"Telegram is unavailable because the recipient is not linked or the integration is not connected."},
-  "aiSettings": {
-    "title":"AI Settings","subtitle":"Runtime controls for new AI operations. Technical secrets are never shown here.","loading":"Loading AI settings...","error":"Could not load or save AI settings.","saved":"AI settings saved.","enabled":"AI Enabled","enabledHelp":"Controls creation of new AI operations. History and accepted work remain available.","automatic":"Automatic analysis for new Deals","automaticHelp":"Applies only to future Deals. It does not backfill existing Deals.","analysisModel":"Analysis model","analysisHelp":"Used for Lead Scoring, Deal Prediction and Next Best Action.","emailModel":"Email model","emailHelp":"Used only for AI Email Draft generation.","defaultModel":"Default: {{model}} (reset override)","effective":"Effective: {{model}}","dpValidity":"Deal Prediction validity, days","nbaValidity":"Next Best Action validity, days","validityHelp":"1–365 days. Changes affect lazy freshness only and do not recalculate results."
-  },
-  "aiHistory": {
-    "title":"AI History","dealTitle":"Deal AI History","subtitle":"Read-only history of validated AI operations.","loading":"Loading AI history...","error":"Could not load AI history.","empty":"No matching AI operations.","all":"All","function":"Function","technicalStatus":"Technical status","deal":"Deal","freshness":"Freshness","fresh":"Current data","outdated":"Possibly outdated","current":"Latest successful result","currentOnly":"Latest successful only","apply":"Apply filters","created":"Created","started":"Started","completed":"Completed","model":"Model","language":"Language","duration":"Duration","attempts":"Attempts","usageTokens":"Tokens used","invalidHistoricalResult":"The stored historical result cannot be displayed safely.","functions":{"LEAD_SCORING":"Lead Scoring","DEAL_PREDICTION":"Deal Prediction","NEXT_BEST_ACTION":"Next Best Action","EMAIL_DRAFT":"Email generation"},"status":{"QUEUED":"Queued","RUNNING":"Running","SUCCESS":"Success","FAILED":"Failed"},"errors":{"PROVIDER_TIMEOUT":"Provider timeout","PROVIDER_UNAVAILABLE":"Provider unavailable","INVALID_STRUCTURED_RESPONSE":"Invalid structured response","CONFIGURATION_ERROR":"Configuration error","unknown":"AI operation failed"}
-  },
-  "emailDraft": {
-    "title":"Email Draft","generate":"Generate draft","noAutoSend":"Nothing is sent automatically. Sending requires explicit employee confirmation.","send":"Send","sending":"Sending...","sent":"Sent","confirmSend":"Send this email to {{recipient}} with subject “{{subject}}”?","sendFailed":"The email could not be sent. The draft was preserved.","recipientMissing":"The client has no valid email address for sending.","copyAll":"Copy all","unknownOutcome":"Delivery could not be confirmed. Check Gmail before sending again.","purpose":"Purpose","purposeRequired":"Purpose is required to generate a draft.","instructions":"Additional AI instructions (optional)","nba":"Selected Next Best Action (optional)","noNba":"Do not use a recommendation","nbaOutdated":"possibly outdated","loading":"Loading email drafts...","failed":"The latest email generation failed safely.","status":{"QUEUED":"Queued...","RUNNING":"Generating draft..."},"generated":"Generated proposal","contextChanged":"CRM data changed while this draft was being generated. Review it before saving.","subject":"Subject","body":"Body","security":"Security warning","saveAs":"Edit and save as draft","newManual":"New manual draft","newDraft":"New draft","editDraft":"Edit draft","language":"Language","required":"Subject, body and purpose are required.","copySubject":"Copy subject","copyBody":"Copy body","copyError":"Could not copy the text.","delete":"Delete","confirmDelete":"Delete this email draft?"
-  },
-  "calendar": {
-    "title": "Calendar events",
-    "loading": "Loading calendar events...",
-    "empty": "There are no linked calendar events yet.",
-    "error": "Calendar events could not be loaded safely.",
-    "open": "Open in Google Calendar",
-    "create": {
-      "title": "Create calendar event",
-      "open": "Create event",
-      "fields": {"title": "Title", "description": "Description", "start": "Start", "end": "End", "timezone": "Time zone"},
-      "submit": "Create event",
-      "submitting": "Creating event...",
-      "close": "Close form",
-      "accepted": "The event was accepted for synchronization. Waiting for Google Calendar confirmation.",
-      "error": "The calendar event could not be created. Check the details and try again.",
-      "validation": {"title": "Enter an event title.", "start": "Enter a start time.", "end": "Enter an end time.", "range": "The end time must be later than the start time.", "timezone": "Enter a valid IANA time zone."}
-    },
-    "update": {
-      "title": "Edit calendar event",
-      "open": "Edit event",
-      "submit": "Save changes",
-      "submitting": "Saving changes...",
-      "error": "The calendar event could not be updated. Check the details and try again.",
-      "conflict": "This event cannot be updated right now. Refresh the list and try again."
-    },
-    "cancel": {
-      "title": "Cancel calendar event",
-      "open": "Cancel event",
-      "confirmation": "This event will be cancelled in Google Calendar. Confirm cancellation.",
-      "confirm": "Confirm cancellation",
-      "submitting": "Cancelling event...",
-      "error": "The calendar event could not be cancelled. Its state was not changed.",
-      "uncertain": "Cancellation could not be confirmed in Google Calendar. Check Google Calendar before trying again."
+    "product": {
+        "name": "VILEORUF CRM",
+        "kind": "Sales management system",
+        "subtitle": "The frontend foundation is ready for further development.",
+        "subtitleAuthenticated": "The protected workspace is ready. CRM modules will be added in the next stage."
     },
     "status": {
-      "PENDING": "Pending synchronization",
-      "SYNCED": "Synchronized",
-      "ERROR": "Synchronization error",
-      "CANCELLED": "Cancelled"
+        "frontend": {
+            "label": "Frontend status",
+            "ready": "Running"
+        },
+        "backend": {
+            "label": "Backend status",
+            "checking": "Checking connection",
+            "available": "Available",
+            "unavailable": "Unavailable"
+        }
+    },
+    "language": {
+        "label": "Language",
+        "ru": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439",
+        "en": "English",
+        "es": "Espa\u00f1ol"
+    },
+    "common": {
+        "retry": "Retry",
+        "save": "Save",
+        "saving": "Saving...",
+        "close": "Close",
+        "resetDefault": "Reset to default ({{value}})"
+    },
+    "crm": {
+        "navigation": {
+            "label": "CRM navigation",
+            "dashboard": "Dashboard",
+            "clients": "Clients",
+            "deals": "Deals",
+            "pipeline": "Pipeline",
+            "tasks": "Tasks",
+            "aiHistory": "AI History",
+            "inbox": "Inbox",
+            "upcoming": "Soon"
+        },
+        "sidebar": {
+            "workspace": "Workspace"
+        }
+    },
+    "clients": {
+        "title": "Clients",
+        "subtitle": "Contacts and companies in your CRM.",
+        "create": "Add client",
+        "edit": "Edit client",
+        "loading": "Loading clients...",
+        "statusLabel": "Status",
+        "createdAt": "Created",
+        "fields": {
+            "name": "Name or company",
+            "company": "Company",
+            "contact_person": "Contact person",
+            "email": "Email",
+            "phone": "Phone",
+            "telegram": "Telegram",
+            "whatsapp": "WhatsApp",
+            "lead_source": "Lead source",
+            "notes": "Notes"
+        },
+        "status": {
+            "CUSTOMER": "Customer",
+            "CLIENT": "Client"
+        },
+        "empty": {
+            "title": "No clients yet",
+            "description": "Add your first client to start working in CRM.",
+            "action": "Add client"
+        },
+        "errors": {
+            "load": "Could not load clients.",
+            "save": "Could not save changes. Please try again."
+        },
+        "validation": {
+            "nameRequired": "Enter a name or company."
+        },
+        "pagination": {
+            "label": "Client pagination",
+            "previous": "Previous",
+            "next": "Next",
+            "page": "Page {{page}}"
+        },
+        "permissions": {
+            "admin": "Administrators can work with all clients."
+        }
+    },
+    "deals": {
+        "title": "Deals",
+        "subtitle": "Projects and sales opportunities in your CRM.",
+        "create": "Add deal",
+        "edit": "Edit deal",
+        "details": "Deal details",
+        "loading": "Loading deals...",
+        "selectClient": "Select a client",
+        "selectStage": "Select a stage",
+        "unassigned": "Unassigned",
+        "unknownReference": "Unavailable",
+        "readonly": "This deal is available in read-only mode.",
+        "transition": "Move to stage",
+        "move": "Move",
+        "fields": {
+            "name": "Deal name",
+            "description": "Description",
+            "client": "Client",
+            "stage": "Stage",
+            "estimated_budget": "Estimated budget",
+            "deadline": "Deadline",
+            "probability": "Probability",
+            "responsible": "Responsible"
+        },
+        "stages": {
+            "newLead": "New Lead",
+            "contact": "Contact",
+            "qualification": "Qualification",
+            "proposal": "Proposal",
+            "negotiation": "Negotiation",
+            "won": "Won",
+            "lost": "Lost"
+        },
+        "empty": {
+            "title": "No deals yet",
+            "description": "Add your first deal to start working with the pipeline.",
+            "action": "Add deal"
+        },
+        "errors": {
+            "load": "Could not load deals or reference data.",
+            "save": "Could not save the deal. Please try again.",
+            "transition": "Could not move the deal. Please try again."
+        },
+        "validation": {
+            "nameRequired": "Enter a deal name."
+        },
+        "pagination": {
+            "label": "Deal pagination",
+            "previous": "Previous",
+            "next": "Next",
+            "page": "Page {{page}}"
+        }
+    },
+    "tasks": {
+        "title": "Tasks",
+        "subtitle": "Operational work for the CRM team.",
+        "create": "New task",
+        "edit": "Edit task",
+        "details": "Task details",
+        "complete": "Complete task",
+        "loading": "Loading tasks...",
+        "unknownReference": "Unavailable",
+        "fields": {
+            "title": "Title",
+            "description": "Description",
+            "dueAt": "Due date and time",
+            "status": "Status",
+            "responsible": "Responsible",
+            "client": "Client",
+            "deal": "Deal"
+        },
+        "status": {
+            "OPEN": "Open",
+            "COMPLETED": "Completed",
+            "OVERDUE": "Overdue"
+        },
+        "filters": {
+            "allStatuses": "All statuses",
+            "allEmployees": "All employees",
+            "allClients": "All clients",
+            "allDeals": "All deals",
+            "apply": "Apply filters",
+            "reset": "Reset"
+        },
+        "associations": {
+            "none": "None"
+        },
+        "empty": {
+            "title": "No tasks found",
+            "description": "Create a task or adjust the filters.",
+            "action": "New task"
+        },
+        "pagination": {
+            "label": "Task pagination",
+            "previous": "Previous",
+            "next": "Next",
+            "page": "Page {{page}}"
+        },
+        "validation": {
+            "titleRequired": "Enter a task title."
+        },
+        "permissions": {
+            "readonly": "This task is available in read-only mode."
+        },
+        "errors": {
+            "load": "Could not load tasks.",
+            "save": "Could not save the task. Please try again.",
+            "complete": "Could not complete the task. Please try again.",
+            "forbidden": "You do not have permission to change this task.",
+            "notFound": "The task or a linked record is no longer available.",
+            "validation": "Check the task details and try again."
+        }
+    },
+    "dashboard": {
+        "eyebrow": "Operational overview",
+        "greeting": "Hello, {{name}}",
+        "subtitle": "Focus on the work that needs attention now.",
+        "unknownEmployee": "Unavailable employee",
+        "tasks": {
+            "title": "Tasks requiring attention",
+            "subtitle": "Open tasks, ordered by due date.",
+            "viewAll": "View all tasks",
+            "loading": "Loading open tasks...",
+            "empty": "No open tasks require attention.",
+            "error": "Could not load tasks."
+        },
+        "communications": {
+            "title": "Recent communications",
+            "subtitle": "Latest recorded CRM contacts.",
+            "loading": "Loading recent communications...",
+            "empty": "No communications recorded yet.",
+            "error": "Could not load communications."
+        },
+        "quick": {
+            "title": "Quick access"
+        }
+    },
+    "communications": {
+        "title": "Communication history",
+        "clientSubtitle": "All recorded contacts with this client.",
+        "dealSubtitle": "Contacts linked to this deal.",
+        "create": "Add communication",
+        "submit": "Save communication",
+        "loading": "Loading communication history...",
+        "loadingMore": "Loading...",
+        "loadMore": "Load more",
+        "empty": "No communications yet.",
+        "fields": {
+            "channel": "Channel",
+            "direction": "Direction",
+            "occurredAt": "Date and time",
+            "content": "Message"
+        },
+        "channels": {
+            "EMAIL": "Email",
+            "TELEGRAM": "Telegram",
+            "WHATSAPP": "WhatsApp",
+            "MANUAL": "Manual",
+            "OTHER": "Other"
+        },
+        "directions": {
+            "INCOMING": "Incoming",
+            "OUTGOING": "Outgoing"
+        },
+        "validation": {
+            "contentRequired": "Enter the communication message."
+        },
+        "errors": {
+            "load": "Could not load communication history.",
+            "save": "Could not save the communication. Please try again.",
+            "forbidden": "You do not have permission to add a communication to this deal.",
+            "contextMissing": "The client or deal is no longer available.",
+            "validation": "Check the communication data and try again."
+        },
+        "permissions": {
+            "dealCreateForbidden": "You can view the history, but cannot add communications to this deal."
+        }
+    },
+    "pipeline": {
+        "title": "Pipeline",
+        "subtitle": "All deals across sales stages.",
+        "boardLabel": "Pipeline board",
+        "loading": "Loading pipeline...",
+        "dealCount": "{{count}} deals",
+        "move": "Move",
+        "targetStage": "Target stage",
+        "readonly": "Read only",
+        "readonlyHint": "You do not have permission to move this deal",
+        "cardMoveHint": "Drag or use the Move action",
+        "empty": {
+            "title": "There are no deals in the pipeline",
+            "description": "Create a deal on the Deals page to see it here."
+        },
+        "errors": {
+            "load": "Could not load the pipeline or reference data.",
+            "transition": "Could not move the deal. Pipeline data was refreshed."
+        }
+    },
+    "public": {
+        "eyebrow": "VILEORUF Studio",
+        "title": "Tell us about your project",
+        "subtitle": "Leave your contact details and a short brief \u2014 we will get in touch.",
+        "login": "Employee login",
+        "send": "Send request",
+        "sending": "Sending...",
+        "error": "Could not send the request. Please try again.",
+        "servicesError": "Could not load services. Please refresh the page.",
+        "success": {
+            "title": "Thank you!",
+            "description": "Your request was sent. We will contact you.",
+            "again": "Send another request"
+        },
+        "fields": {
+            "name": "Name or company",
+            "contact_person": "Contact person",
+            "email": "Email",
+            "phone": "Phone",
+            "telegram": "Telegram",
+            "whatsapp": "WhatsApp",
+            "company": "Company",
+            "deal_name": "Project name",
+            "description": "Description",
+            "estimated_budget": "Estimated budget",
+            "deadline": "Preferred deadline",
+            "service_id": "Service",
+            "preferred_communication_language": "Preferred communication language"
+        }
+    },
+    "d4": {
+        "businessSettings": "Business settings",
+        "preferredCommunicationLanguage": "Preferred communication language",
+        "service": "Service",
+        "selectService": "Select a service",
+        "category": "Category",
+        "managerEffort": "Manager effort estimate, person-hours",
+        "pastDeadline": "Past deadline",
+        "inactiveBusinessReference": "The linked Service or Category is inactive. Select an active Service before recalculating."
+    },
+    "business": {
+        "eyebrow": "CRM configuration",
+        "title": "Business settings",
+        "subtitle": "Categories, services, target economics, and Lead Scoring rules.",
+        "loading": "Loading business configuration...",
+        "error": "Could not load or save business configuration.",
+        "categories": "Categories",
+        "services": "Services",
+        "category": "Category",
+        "scoring": "Lead Scoring weights and Commercial Value scale",
+        "scale": "Ratio \u2192 score scale",
+        "addCategory": "Add category",
+        "addService": "Add service",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "fields": {
+            "name_ru": "Russian name",
+            "name_en": "English name",
+            "name_es": "Spanish name",
+            "target_hourly_rate": "Target hourly rate, EUR/person-hour",
+            "target_effort": "Target effort, person-hours",
+            "service_fit_weight": "Service Fit, %",
+            "commercial_value_weight": "Commercial Value, %",
+            "lead_quality_weight": "Lead Quality, %",
+            "feasibility_weight": "Feasibility, %"
+        }
+    },
+    "leadScoring": {
+        "title": "Lead Scoring",
+        "run": "Run Lead Scoring",
+        "recalculate": "Recalculate",
+        "loading": "Loading Lead Scoring...",
+        "error": "Could not complete the Lead Scoring operation.",
+        "failed": "The latest calculation failed safely. A previous successful result remains available.",
+        "closed": "New Lead Scoring is unavailable for closed Deals.",
+        "empty": "Lead Scoring has not been calculated yet.",
+        "outdated": "Possibly does not match current data",
+        "fresh": "Current result",
+        "missing": "Missing data",
+        "security": "Security warning",
+        "suggestion": "Suggested Category",
+        "language": "Analysis language",
+        "status": {
+            "QUEUED": "Queued...",
+            "RUNNING": "Calculating..."
+        },
+        "factors": {
+            "serviceFit": "Service Fit",
+            "commercialValue": "Commercial Value",
+            "leadQuality": "Lead Quality",
+            "feasibility": "Feasibility"
+        },
+        "missingItems": {
+            "BUDGET": "Budget is not provided",
+            "DESIRED_DEADLINE": "Desired deadline is not provided"
+        }
+    },
+    "dealPrediction": {
+        "title": "Deal Prediction",
+        "run": "Run prediction",
+        "recalculate": "Recalculate",
+        "loading": "Loading prediction...",
+        "error": "Could not complete Deal Prediction.",
+        "failed": "The latest prediction failed safely. A previous successful result remains available.",
+        "closed": "New prediction is unavailable for closed Deals.",
+        "empty": "Deal Prediction has not been calculated yet.",
+        "outdated": "Possibly does not match current data",
+        "fresh": "Current result",
+        "probability": "Probability of winning",
+        "confidence": "Evidence confidence",
+        "confidenceHelp": "Confidence measures the sufficiency, recency and consistency of CRM evidence. It does not measure Deal quality: a high probability can have low confidence, and the reverse is also possible.",
+        "positive": "Positive signals",
+        "risks": "Risks",
+        "missing": "Missing context",
+        "security": "Security warning",
+        "language": "Analysis language",
+        "status": {
+            "QUEUED": "Queued...",
+            "RUNNING": "Calculating..."
+        },
+        "confidenceValues": {
+            "LOW": "Low",
+            "MEDIUM": "Medium",
+            "HIGH": "High"
+        }
+    },
+    "nextBestAction": {
+        "title": "Next Best Action",
+        "run": "Get recommendations",
+        "recalculate": "Update recommendations",
+        "loading": "Loading recommendations...",
+        "error": "Could not complete Next Best Action. AI may be disabled by an administrator.",
+        "failed": "The latest recommendation attempt failed safely. A previous successful result remains available.",
+        "closed": "New recommendations are unavailable for closed Deals.",
+        "empty": "No recommendations have been generated yet.",
+        "waiting": "Waiting for the initial Lead Scoring and Deal Prediction to finish...",
+        "outdated": "Possibly does not match current data",
+        "fresh": "Current recommendations",
+        "advisory": "Recommendations are advisory only. No CRM record or external action is changed automatically.",
+        "timing": "Recommended timing",
+        "security": "Security warning",
+        "language": "Analysis language",
+        "status": {
+            "QUEUED": "Queued...",
+            "RUNNING": "Generating recommendations..."
+        },
+        "priorities": {
+            "LOW": "Low priority",
+            "MEDIUM": "Medium priority",
+            "HIGH": "High priority"
+        }
+    },
+    "employees": {
+        "title": "Employees",
+        "name": "Name",
+        "email": "Email",
+        "password": "Temporary password",
+        "role": "Role",
+        "active": "Active",
+        "inactive": "Inactive",
+        "create": "Create employee",
+        "edit": "Edit name",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "loading": "Loading employees...",
+        "empty": "No employees",
+        "created": "Employee created.",
+        "updated": "Employee updated.",
+        "roles": {
+            "ADMIN": "Administrator",
+            "MANAGER": "Manager"
+        },
+        "errors": {
+            "duplicate": "An employee with this email already exists.",
+            "adminSafety": "At least one active administrator must remain. You cannot remove your own access.",
+            "generic": "Could not complete the employee operation."
+        }
+    },
+    "auth": {
+        "internalAccess": "Staff access",
+        "title": "Sign in to VILEORUF CRM",
+        "subtitle": "Use your studio employee account.",
+        "email": "Email",
+        "password": "Password",
+        "signIn": "Sign in",
+        "signingIn": "Signing in...",
+        "loading": "Checking your session...",
+        "logout": "Sign out",
+        "backToHome": "Back to home",
+        "signingOut": "Signing out...",
+        "currentUser": "Current employee",
+        "errors": {
+            "invalidCredentials": "Invalid email or password.",
+            "unavailable": "Could not reach the server. Please try again."
+        }
+    },
+    "inbox": {"title":"Unmatched inbox","subtitle":"Inbound messages that need manual assignment to an existing client.","loading":"Loading inbound messages...","selectClient":"Client","clientPlaceholder":"Select an existing client","link":"Link to client","empty":{"title":"The queue is empty","description":"No inbound messages need manual linking."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"Could not load the inbound queue.","clientRequired":"Select an existing client first.","link":"Could not link the message to the client. Try again."}},
+    "integrations": {
+        "title": "Integrations",
+        "subtitle": "Corporate integration connections and safe status.",
+        "loading": "Loading integration settings...",
+        "error": "Could not load integration settings.",
+        "notConfigured": "Not configured",
+        "connectedNoAccount": "Corporate Google account connected",
+        "lastSuccess": "Last successful activity: {{value}}",
+        "providers": {
+            "GMAIL": "Gmail",
+            "TELEGRAM": "Telegram",
+            "GOOGLE_CALENDAR": "Google Calendar",
+            "WHATSAPP": "WhatsApp"
+        },
+        "status": {
+            "DISCONNECTED": "Disconnected",
+            "CONNECTING": "Connecting",
+            "CONNECTED": "Connected",
+            "ERROR": "Reconnect required"
+        },
+        "inbound": {
+            "sync": "Sync Gmail",
+            "running": "Gmail synchronization is running...",
+            "error": "Gmail synchronization ended with a safe error.",
+            "lastSuccess": "Last inbound synchronization: {{value}}"
+        },
+        "telegram": {
+            "validate": "Validate Telegram Bot",
+            "validating": "Validating Telegram Bot..."
+        },
+        "calendar": {"reusesGoogle": "Uses the corporate Google connection shown above."},
+        "whatsapp": {"status": "Deferred / technical debt", "deferred": "WhatsApp Business Cloud API is deferred until the current MVP is complete. It is not configured or operational in this release."},
+        "errorCodes": {"AUTH_REQUIRED":"Authentication or reconnection is required.","INVALID_CONFIGURATION":"The provider configuration needs administrator attention.","PERMISSION_DENIED":"The provider denied this operation.","INVALID_RECIPIENT":"The provider recipient is not valid.","RATE_LIMITED":"The provider rate limit was reached. Try again later.","PROVIDER_UNAVAILABLE":"The provider is temporarily unavailable.","PROVIDER_ERROR":"The provider could not complete the operation safely.","generic":"The integration needs administrator attention."},
+        "oauth": {
+            "connect": "Connect Google",
+            "reconnect": "Reconnect",
+            "disconnect": "Disconnect",
+            "opening": "Opening Google...",
+            "disconnecting": "Disconnecting...",
+            "success": "Google connection was saved successfully.",
+            "error": "Google connection could not be completed. Check the configuration and reconnect.",
+            "actionError": "Could not start or change the Google connection."
+        }
+    },
+    "telegram": {
+        "send": "Send via Telegram",
+        "message": "Telegram message",
+        "sending": "Sending...",
+        "pending": "Message accepted for sending. Waiting for Telegram confirmation.",
+        "sent": "Sent",
+        "error": "Could not send the Telegram message.",
+        "unknown": "The delivery result could not be confirmed.",
+        "recipientNotLinked": "The client has no linked Telegram recipient.",
+        "integrationUnavailable": "Telegram is currently unavailable.",
+        "unavailable": "Telegram is unavailable because the recipient is not linked or the integration is not connected."
+    },
+    "aiSettings": {
+        "title": "AI Settings",
+        "subtitle": "Runtime controls for new AI operations. Technical secrets are never shown here.",
+        "loading": "Loading AI settings...",
+        "error": "Could not load or save AI settings.",
+        "saved": "AI settings saved.",
+        "enabled": "AI Enabled",
+        "enabledHelp": "Controls creation of new AI operations. History and accepted work remain available.",
+        "automatic": "Automatic analysis for new Deals",
+        "automaticHelp": "Applies only to future Deals. It does not backfill existing Deals.",
+        "analysisModel": "Analysis model",
+        "analysisHelp": "Used for Lead Scoring, Deal Prediction and Next Best Action.",
+        "emailModel": "Email model",
+        "emailHelp": "Used only for AI Email Draft generation.",
+        "defaultModel": "Default: {{model}} (reset override)",
+        "effective": "Effective: {{model}}",
+        "dpValidity": "Deal Prediction validity, days",
+        "nbaValidity": "Next Best Action validity, days",
+        "validityHelp": "1\u2013365 days. Changes affect lazy freshness only and do not recalculate results."
+    },
+    "aiHistory": {
+        "title": "AI History",
+        "dealTitle": "Deal AI History",
+        "subtitle": "Read-only history of validated AI operations.",
+        "loading": "Loading AI history...",
+        "error": "Could not load AI history.",
+        "empty": "No matching AI operations.",
+        "all": "All",
+        "function": "Function",
+        "technicalStatus": "Technical status",
+        "deal": "Deal",
+        "freshness": "Freshness",
+        "fresh": "Current data",
+        "outdated": "Possibly outdated",
+        "current": "Latest successful result",
+        "currentOnly": "Latest successful only",
+        "apply": "Apply filters",
+        "created": "Created",
+        "started": "Started",
+        "completed": "Completed",
+        "model": "Model",
+        "language": "Language",
+        "duration": "Duration",
+        "attempts": "Attempts",
+        "usageTokens": "Tokens used",
+        "invalidHistoricalResult": "The stored historical result cannot be displayed safely.",
+        "functions": {
+            "LEAD_SCORING": "Lead Scoring",
+            "DEAL_PREDICTION": "Deal Prediction",
+            "NEXT_BEST_ACTION": "Next Best Action",
+            "EMAIL_DRAFT": "Email generation"
+        },
+        "status": {
+            "QUEUED": "Queued",
+            "RUNNING": "Running",
+            "SUCCESS": "Success",
+            "FAILED": "Failed"
+        },
+        "errors": {
+            "PROVIDER_TIMEOUT": "Provider timeout",
+            "PROVIDER_UNAVAILABLE": "Provider unavailable",
+            "INVALID_STRUCTURED_RESPONSE": "Invalid structured response",
+            "CONFIGURATION_ERROR": "Configuration error",
+            "unknown": "AI operation failed"
+        }
+    },
+    "emailDraft": {
+        "title": "Email Draft",
+        "generate": "Generate draft",
+        "noAutoSend": "Nothing is sent automatically. Sending requires explicit employee confirmation.",
+        "send": "Send",
+        "sending": "Sending...",
+        "sent": "Sent",
+        "confirmSend": "Send this email to {{recipient}} with subject \u201c{{subject}}\u201d?",
+        "sendFailed": "The email could not be sent. The draft was preserved.",
+        "recipientMissing": "The client has no valid email address for sending.",
+        "copyAll": "Copy all",
+        "unknownOutcome": "Delivery could not be confirmed. Check Gmail before sending again.",
+        "purpose": "Purpose",
+        "purposeRequired": "Purpose is required to generate a draft.",
+        "instructions": "Additional AI instructions (optional)",
+        "nba": "Selected Next Best Action (optional)",
+        "noNba": "Do not use a recommendation",
+        "nbaOutdated": "possibly outdated",
+        "loading": "Loading email drafts...",
+        "failed": "The latest email generation failed safely.",
+        "status": {
+            "QUEUED": "Queued...",
+            "RUNNING": "Generating draft..."
+        },
+        "generated": "Generated proposal",
+        "contextChanged": "CRM data changed while this draft was being generated. Review it before saving.",
+        "subject": "Subject",
+        "body": "Body",
+        "security": "Security warning",
+        "saveAs": "Edit and save as draft",
+        "newManual": "New manual draft",
+        "newDraft": "New draft",
+        "editDraft": "Edit draft",
+        "language": "Language",
+        "required": "Subject, body and purpose are required.",
+        "copySubject": "Copy subject",
+        "copyBody": "Copy body",
+        "copyError": "Could not copy the text.",
+        "delete": "Delete",
+        "confirmDelete": "Delete this email draft?"
+    },
+    "calendar": {
+        "title": "Calendar events",
+        "loading": "Loading calendar events...",
+        "empty": "There are no linked calendar events yet.",
+        "error": "Calendar events could not be loaded safely.",
+        "open": "Open in Google Calendar",
+        "create": {
+            "title": "Create calendar event",
+            "open": "Create event",
+            "fields": {
+                "title": "Title",
+                "description": "Description",
+                "start": "Start",
+                "end": "End",
+                "timezone": "Time zone"
+            },
+            "submit": "Create event",
+            "submitting": "Creating event...",
+            "close": "Close form",
+            "accepted": "The event was accepted for synchronization. Waiting for Google Calendar confirmation.",
+            "error": "The calendar event could not be created. Check the details and try again.",
+            "validation": {
+                "title": "Enter an event title.",
+                "start": "Enter a start time.",
+                "end": "Enter an end time.",
+                "range": "The end time must be later than the start time.",
+                "timezone": "Enter a valid IANA time zone."
+            }
+        },
+        "update": {
+            "title": "Edit calendar event",
+            "open": "Edit event",
+            "submit": "Save changes",
+            "submitting": "Saving changes...",
+            "error": "The calendar event could not be updated. Check the details and try again.",
+            "conflict": "This event cannot be updated right now. Refresh the list and try again."
+        },
+        "cancel": {
+            "title": "Cancel calendar event",
+            "open": "Cancel event",
+            "confirmation": "This event will be cancelled in Google Calendar. Confirm cancellation.",
+            "confirm": "Confirm cancellation",
+            "submitting": "Cancelling event...",
+            "error": "The calendar event could not be cancelled. Its state was not changed.",
+            "uncertain": "Cancellation could not be confirmed in Google Calendar. Check Google Calendar before trying again."
+        },
+        "status": {
+            "PENDING": "Pending synchronization",
+            "SYNCED": "Synchronized",
+            "ERROR": "Synchronization error",
+            "CANCELLED": "Cancelled"
+        }
     }
-  }
 }

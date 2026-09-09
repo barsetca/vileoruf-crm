@@ -69,6 +69,8 @@ D5.4e.1 — CalendarEvent Cancel Backend + Provider Lifecycle: DONE / backend ve
 
 D5.4e.2 — CalendarEvent Cancel UI + Single Controlled Live Provider Verification: DONE / LIVE BROWSER + PROVIDER VERIFIED. `CalendarEventsSection` now provides localized explicit Cancel only for `SYNCED`, with a small in-place confirmation, one-submission disabling and safe failure/uncertain messaging; it refreshes the bounded current context only after the synchronous backend response. A retained synthetic Client-only event was cancelled once through the authenticated browser: exactly one bodyless `POST /calendar-events/{id}/cancel` returned `200`; the existing Google OAuth-backed adapter performed its one confirmed provider DELETE and the same historical row became `CANCELLED`. It remains visible through browser and authorized by-id/context reads, while Edit and Cancel are absent. PostgreSQL evidence preserved title/content/times/timezone, Client-only links, provider identity, one CalendarEvent row, nine Communications and Client `CUSTOMER`; no PENDING transition, cancel Celery task/message, replacement, retry or replay occurred. The temporary browser/admin fixture was cleaned up. D5.4e — DONE. D5.4 — DONE.
 
+D5.5 — WhatsApp Business Cloud API: **ОТЛОЖЕНО / ТЕХНИЧЕСКИЙ ДОЛГ**. Реализация намеренно перенесена до завершения текущего MVP, поскольку первоначальный 7-дневный срок уже превышен. WhatsApp не исключён из продукта: после MVP он остаётся необходимой интеграцией для реального использования CRM. Утверждённая архитектура `docs/DAY5_INTEGRATIONS_CONTRACT.md` сохраняется без изменений: только WhatsApp Business Platform / Cloud API, без consumer/personal workaround; при возврате должны быть переиспользованы `IntegrationConnection`, `ExternalMessage`, `Communication`, очередь `integrations` Celery/Redis, webhook boundary, Client matching/manual unmatched linking, idempotency, adapter/error boundaries и Integration Settings foundation. Существующая WhatsApp foundation не удаляется и не заменяется временным решением. D5.6 завершена; D5.7 — следующий этап, Day 5 не завершён.
+
 ## Overall deadline
 7-day MVP implementation plan.
 
@@ -198,7 +200,9 @@ None.
 - [x] D5.2c Gmail Inbound Synchronization — DONE / LIVE VERIFIED.
 - [x] D5.3 Telegram — DONE / LIVE PROVIDER VERIFIED.
 - [x] D5.4 Google Calendar — DONE / LIVE VERIFIED: OAuth reuse, CalendarEvent create/update/cancel lifecycle, contextual Client/Deal/Task presentation and entry points, bounded create/update polling, live provider update and one controlled live browser/provider cancellation are verified. Historical CRM events remain preserved; no full CRM calendar/import/recurrence scope was added.
-- [ ] D5.5 WhatsApp or documented external limitation — NOT STARTED.
+- [ ] D5.5 WhatsApp Business Cloud API — ОТЛОЖЕНО / ТЕХНИЧЕСКИЙ ДОЛГ: реализация перенесена после текущего MVP из-за превышения первоначального 7-дневного графика; это не отмена продукта и не разрешение на consumer/personal workaround. D5.5 возвращается после завершения текущего MVP.
+- [x] D5.6 Unified Integration UX + Hardening — DONE / VERIFIED: D5.6a Unified Unmatched Inbox, D5.6b Integration UX + Security Reconciliation и D5.6c Retry / Idempotency Hardening Regression завершены. Focused PostgreSQL regression подтверждает Gmail/Telegram/Calendar exactly-once, terminal-state и safe retry semantics; Day 5 не отмечен COMPLETE. Следующий этап — D5.7 Final Day 5 Regression / Runtime / Provider / Browser Verification + Documentation Closure.
+- [x] D5.7 Final Day 5 Regression / Runtime / Provider / Browser Verification + Documentation Closure — DONE / VERIFIED: canonical full PostgreSQL regression, Alembic head/current/check, backend compile, Node 24 production build, RU/EN/ES JSON, runtime health, Celery `ai`/`integrations`, security audit and documentation closure passed. Historical Gmail/Telegram/Google Calendar live evidence remains valid; no new provider mutation was performed. **Day 5 — Integrations: COMPLETE WITH DEFERRED TECHNICAL DEBT.** D5.5 WhatsApp remains intentionally deferred until after MVP; Day 6 is next.
 
 ### Day 6 — Analytics / UX / i18n
 - [ ] Analytics.
@@ -268,7 +272,7 @@ Authentication, employee management and Day 2 CRM Core are implemented through p
 - Restricted development CORS and frontend-to-backend `/health` connectivity verified.
 - Backend pytest, frontend build, npm audit and browser runtime checks passed; npm audit reported 0 vulnerabilities.
 - Development/demo seed strategy remains production-restricted; separate explicit system bootstraps install the seven required stages and the minimal fixed-UUID `Другое`/`Общий запрос` business catalog.
-- Employee management, end-to-end authentication, CRM Core, Communications/Tasks/Dashboard, D4.1–D4.7, D5.1 Integration Foundation, D5.2 Gmail and D5.3 Telegram are verified. Redis is used as the Celery broker/result backend and for fail-open ephemeral manual AI launch counters, never authentication or persistent settings. D4.7 passed its complete 237-test PostgreSQL regression, Alembic/static checks, frontend build, runtime health, Redis limiter API boundary, and controlled two-call real OpenAI provider/Celery smoke. Chromium confirmed public-form validation/submission, unauthenticated protection, and authenticated ADMIN/MANAGER login/logout, Day 4 UI, ownership and settings denial through temporary synthetic users that were fully removed afterward. D5.3 passed the 264-test PostgreSQL regression, Alembic/static checks, frontend build/locales and integrations-queue registration, then completed live Bot connection, webhook, inbound/manual/automatic matching and outbound provider verification. The earlier controlled valid-webhook/separate-worker fake-provider smoke limitation is not a blocker after actual live verification. Google Calendar and WhatsApp remain unimplemented.
+- Employee management, end-to-end authentication, CRM Core, Communications/Tasks/Dashboard, D4.1–D4.7, D5.1 Integration Foundation, D5.2 Gmail, D5.3 Telegram and D5.4 Google Calendar are verified. Redis is used as the Celery broker/result backend and for fail-open ephemeral manual AI launch counters, never authentication or persistent settings. D4.7 passed its complete 237-test PostgreSQL regression, Alembic/static checks, frontend build, runtime health, Redis limiter API boundary, and controlled two-call real OpenAI provider/Celery smoke. Chromium confirmed public-form validation/submission, unauthenticated protection, and authenticated ADMIN/MANAGER login/logout, Day 4 UI, ownership and settings denial through temporary synthetic users that were fully removed afterward. D5.3 passed the 264-test PostgreSQL regression, Alembic/static checks, frontend build/locales and integrations-queue registration, then completed live Bot connection, webhook, inbound/manual/automatic matching and outbound provider verification. The earlier controlled valid-webhook/separate-worker fake-provider smoke limitation is not a blocker after actual live verification. D5.5 WhatsApp is deferred technical debt after the current MVP, not removed from product scope; D5.6 is next.
 
 ## DECISIONS / CHANGES LOG
 - Initial architecture: modular monolith.
@@ -307,13 +311,25 @@ Authentication, employee management and Day 2 CRM Core are implemented through p
 - D3.6 uses `/crm` as the bounded operational home screen. It requests the first five OPEN Tasks in backend due-date order and the first five recent Communications in backend newest-first order, loading sections independently. Global counts, Pipeline counts, aggregation/page crawling, charts, analytics and `/dashboard/summary` were explicitly excluded; the Dashboard is not Day 6 Reporting.
 
 ## LAST CODEX RESULT
-Task: D5.4e.1 — CalendarEvent Cancel Backend + Provider Lifecycle.
-Result: DONE / LIVE BROWSER + PROVIDER VERIFIED; D5.4e and D5.4 are DONE.
-Files modified: Calendar frontend service/section and RU/EN/ES locale files; no backend/migration change in D5.4e.2.
+Task: D5.6c Retry / Idempotency Hardening Regression.
+Result: DONE / VERIFIED. Focused PostgreSQL regression passed; D5.6a/b/c together close approved D5.6 scope. D5.5 remains ОТЛОЖЕНО / ТЕХНИЧЕСКИЙ ДОЛГ, Day 5 remains open, and D5.7 is next.
+
+### D5.6a — Unified Unmatched Inbox
+
+Result: DONE / VERIFIED. Защищённый `/crm/inbox` выводит ограниченную newest-first очередь только входящих `ExternalMessage` без Client и Communication, показывает безопасные provider/channel/sender/time/content поля и даёт MANAGER/ADMIN выбрать только существующего Client. Новый `GET /inbox/external-messages` нужен потому, что прежний Telegram endpoint выполнял лишь link одной записи, но не безопасный provider-neutral list; Telegram linking переиспользует существующие правила stable identity. Повторный link создаёт ровно одну `Communication(INCOMING)` и не создаёт Client или Deal. Миграция не требуется. PostgreSQL: 13 focused D5.6a + Telegram regression tests passed; Node 24 frontend build и RU/EN/ES JSON validation passed. Headless Chromium verified synthetic Telegram Inbox → existing Client → disappearance without reload → one normal Client timeline communication; fixtures removed. Provider operations were not performed. D5.6 remains IN PROGRESS; next is D5.6b.
+
+### D5.6b — Integration UX + Security Reconciliation
+
+Result: DONE / VERIFIED. Settings UX теперь согласованно показывает безопасные connection/error/last-activity states Gmail, Telegram и Google Calendar; Calendar явно использует corporate Google connection. WhatsApp честно показан как `ОТЛОЖЕНО / ТЕХНИЧЕСКИЙ ДОЛГ`, без fake error или provider controls. Исправлен SPA role guard, чтобы MANAGER при client-side переходе не мог остаться на ADMIN settings route; backend ADMIN-only boundary не менялся и подтверждён. No schema/migration/provider workflow changes. PostgreSQL focused security/regression: 11 passed; Node 24 build, RU/EN/ES validation, diff check и authenticated ADMIN/MANAGER headless browser smoke passed. Browser также подтвердил Inbox и ordinary Clients route при безопасно unavailable Telegram context. Fixtures removed; provider operations were not performed. D5.6 remains IN PROGRESS; next is D5.6c.
+
+### D5.6c — Retry / Idempotency Hardening Regression
+
+Result: DONE / VERIFIED. Production lifecycle code did not require a defect fix. New Celery routing/autoretry regression coverage and reused PostgreSQL lifecycle tests confirmed Gmail inbound/outbound, Telegram inbound/manual-link/outbound and Calendar create/update/cancel exactly-once and terminal-state semantics: `34 passed in 13.08s`. No provider operation, browser check, frontend change, schema change or migration occurred. D5.6 is DONE / VERIFIED; Day 5 remains open and D5.7 is next.
+Files modified: source-of-truth documentation only; no product code, configuration, schema, migration or test change.
 Dependencies: None.
-Tests/checks: Node 24 production build, RU/EN/ES cancel locale validation, harness compile/import, exactly one browser POST and provider-confirmed DELETE, PostgreSQL before/after, authorized historical reads and diff check passed.
-Known issues/blockers: the approved cancel model retains its documented narrow concurrent-call limitation without a persistent operation state; no retry/replay was performed.
-Next recommended step: D5.5 only under a separate approved task; do not repeat the completed provider deletion.
+Tests/checks: documentation consistency search across affected source-of-truth documents and `git diff --check` passed; runtime/provider/browser checks intentionally not run for documentation-only work.
+Known issues/blockers: none. The established WhatsApp Business Platform / Cloud API architecture remains future technical debt and must not be replaced by consumer/personal WhatsApp.
+Next recommended step: D5.6 Unified Integration UX + Hardening; do not begin it automatically.
 
 ## UPDATE TEMPLATE
 
