@@ -24,6 +24,7 @@
         "es": "Espa\u00f1ol"
     },
     "common": {
+        "cancel": "Cancel",
         "retry": "Retry",
         "save": "Save",
         "saving": "Saving...",
@@ -40,6 +41,9 @@
             "tasks": "Tasks",
             "aiHistory": "AI History",
             "inbox": "Inbox",
+            "analytics": "Analytics",
+            "openMenu": "Open menu",
+            "closeMenu": "Close menu",
             "upcoming": "Soon"
         },
         "sidebar": {
@@ -96,6 +100,7 @@
         "subtitle": "Projects and sales opportunities in your CRM.",
         "create": "Add deal",
         "edit": "Edit deal",
+        "actionEdit": "Edit",
         "details": "Deal details",
         "loading": "Loading deals...",
         "selectClient": "Select a client",
@@ -112,6 +117,7 @@
             "stage": "Stage",
             "estimated_budget": "Estimated budget",
             "deadline": "Deadline",
+            "attractiveness": "Attractiveness",
             "probability": "Probability",
             "responsible": "Responsible"
         },
@@ -275,6 +281,7 @@
         "boardLabel": "Pipeline board",
         "loading": "Loading pipeline...",
         "dealCount": "{{count}} deals",
+        "emptyStage": "There are no deals in this stage yet.",
         "move": "Move",
         "targetStage": "Target stage",
         "readonly": "Read only",
@@ -298,6 +305,14 @@
         "sending": "Sending...",
         "error": "Could not send the request. Please try again.",
         "servicesError": "Could not load services. Please refresh the page.",
+        "consent": {
+            "prefix": "I give my ",
+            "link": "consent to the processing of personal data",
+            "acknowledgmentPrefix": "By clicking “Submit request”, you confirm that you have read the ",
+            "privacyLink": "Personal Data Processing Policy",
+            "acknowledgmentSuffix": ".",
+            "required": "Consent to the processing of personal data is required to send the request."
+        },
         "success": {
             "title": "Thank you!",
             "description": "Your request was sent. We will contact you.",
@@ -335,11 +350,19 @@
         "subtitle": "Categories, services, target economics, and Lead Scoring rules.",
         "loading": "Loading business configuration...",
         "error": "Could not load or save business configuration.",
+        "mutationError": "Could not save the changes. Your entered data was preserved; check it and try again.",
         "categories": "Categories",
         "services": "Services",
         "category": "Category",
         "scoring": "Lead Scoring weights and Commercial Value scale",
         "scale": "Ratio \u2192 score scale",
+        "ratio": "Ratio",
+        "score": "Score",
+        "effortDays": "{{value}} days",
+        "effortDays_one": "{{value}} day",
+        "effortDays_few": "{{value}} days",
+        "effortDays_many": "{{value}} days",
+        "effortDays_other": "{{value}} days",
         "addCategory": "Add category",
         "addService": "Add service",
         "activate": "Activate",
@@ -485,7 +508,7 @@
             "unavailable": "Could not reach the server. Please try again."
         }
     },
-    "inbox": {"title":"Unmatched inbox","subtitle":"Inbound messages that need manual assignment to an existing client.","loading":"Loading inbound messages...","selectClient":"Client","clientPlaceholder":"Select an existing client","link":"Link to client","empty":{"title":"The queue is empty","description":"No inbound messages need manual linking."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"Could not load the inbound queue.","clientRequired":"Select an existing client first.","link":"Could not link the message to the client. Try again."}},
+    "inbox": {"title":"Unmatched inbox","subtitle":"Inbound messages that need manual assignment to an existing client.","loading":"Loading inbound messages...","selectDeal":"Deal","dealPlaceholder":"No deal","dealClient":"Deal client","selectClient":"Client","clientPlaceholder":"Select an existing client","link":"Link message","empty":{"title":"The queue is empty","description":"No inbound messages need manual linking."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"Could not load the inbound queue.","clientRequired":"Select a deal or existing client first.","link":"Could not link the message. Try again."}},
     "integrations": {
         "title": "Integrations",
         "subtitle": "Corporate integration connections and safe status.",
@@ -610,6 +633,7 @@
     },
     "emailDraft": {
         "title": "Email Draft",
+        "aiGeneration": "Generate with AI",
         "generate": "Generate draft",
         "noAutoSend": "Nothing is sent automatically. Sending requires explicit employee confirmation.",
         "send": "Send",
@@ -618,7 +642,7 @@
         "confirmSend": "Send this email to {{recipient}} with subject \u201c{{subject}}\u201d?",
         "sendFailed": "The email could not be sent. The draft was preserved.",
         "recipientMissing": "The client has no valid email address for sending.",
-        "copyAll": "Copy all",
+        "copyAll": "Copy",
         "unknownOutcome": "Delivery could not be confirmed. Check Gmail before sending again.",
         "purpose": "Purpose",
         "purposeRequired": "Purpose is required to generate a draft.",
@@ -627,6 +651,8 @@
         "noNba": "Do not use a recommendation",
         "nbaOutdated": "possibly outdated",
         "loading": "Loading email drafts...",
+        "loadError": "Email drafts could not be loaded safely.",
+        "empty": "There are no saved drafts yet. You can create one manually.",
         "failed": "The latest email generation failed safely.",
         "status": {
             "QUEUED": "Queued...",
@@ -638,9 +664,10 @@
         "body": "Body",
         "security": "Security warning",
         "saveAs": "Edit and save as draft",
-        "newManual": "New manual draft",
+        "newManual": "Create manually",
         "newDraft": "New draft",
         "editDraft": "Edit draft",
+        "editAction": "Edit",
         "language": "Language",
         "required": "Subject, body and purpose are required.",
         "copySubject": "Copy subject",
@@ -701,5 +728,29 @@
             "ERROR": "Synchronization error",
             "CANCELLED": "Cancelled"
         }
-    }
+    },
+    "archive": {"active":"Active", "archived":"Archived", "archiveClient":"Archive client", "restoreClient":"Restore client", "archiveDeal":"Archive", "restoreDeal":"Restore", "confirm":"Archive", "restore":"Restore", "confirmClient":"The client will leave the active CRM flow. History is retained.", "restoreConfirmClient":"Restore this client to the active CRM flow?", "confirmDeal":"The deal will leave the active CRM flow. History is retained.", "restoreConfirmDeal":"Restore this deal to the active CRM flow?", "error":"The archive action could not be completed."},
+    "dealRelated": {"title":"Related data", "request":"Request data", "communications":"Communications", "email":"Email", "tasks":"Tasks", "calendar":"Calendar", "noRequest":"There is no original public request for this deal.", "fields":{"name":"Name", "contact_person":"Contact person", "company":"Company", "email":"Email", "phone":"Phone", "telegram":"Telegram", "whatsapp":"WhatsApp", "preferred_communication_language":"Communication language", "deal_name":"Deal", "description":"Description", "estimated_budget":"Budget", "deadline":"Deadline", "created_at":"Request date"}},
+    "analytics": {
+        "title": "Sales analytics",
+        "subtitle": "A current CRM-wide summary based on business data.",
+        "loading": "Loading analytics...",
+        "error": "Analytics could not be loaded safely.",
+        "helpLabel": "About {{title}}",
+        "kpis": {
+            "clientsTotal": {"title": "CRM records", "help": "All Client records in CRM."},
+            "customer": {"title": "CUSTOMER", "help": "Client records without a successfully completed Won deal."},
+            "client": {"title": "CLIENT", "help": "Client records with at least one successfully completed Won deal."},
+            "dealsTotal": {"title": "Total deals", "help": "All Deal records, regardless of their current stage."},
+            "active": {"title": "Active deals", "help": "Deals whose current stage is neither Won nor Lost."},
+            "won": {"title": "Won", "help": "Deals currently in the Won stage."},
+            "lost": {"title": "Lost", "help": "Deals currently in the Lost stage."},
+            "pipelineValue": {"title": "Active Pipeline value", "help": "Sum of estimated budgets of active deals. Won and Lost are excluded; a deal without a budget counts but adds zero. This is not a confirmed payment."},
+            "wonValue": {"title": "Won deal value", "help": "Sum of estimated budgets of deals currently in Won. This is not payment received or accounting revenue."},
+            "conversion": {"title": "Closed-deal conversion", "help": "Won / (Won + Lost) × 100%. Active deals are excluded. A dash means there are no closed deals yet."}
+        },
+        "breakdown": {"title": "Pipeline stages", "help": "All persisted pipeline stages in their configured order. Value is the sum of estimated budgets and may be zero.", "stage": "Stage", "deals": "Deals", "value": "Estimated value"},
+        "charts": {"empty": "There is not enough historical data for this chart.", "created": {"title": "Created deals by month", "help": "Number of deals created in each calendar month. It measures new deal flow, not active deals in that month."}, "firstWon": {"title": "Won deals by month", "help": "Deals are counted in the month of their first successful Won transition. Repeated Won transitions do not move them. Historical deals without a known first-Won date may be absent."}}
+    },
+    "p1_7": {"read":"Read", "assign":"Link to deal", "detach":"Unlink from deal", "dealPlaceholder":"Select a deal", "actionError":"Could not update the communication.", "all":"All", "select":"Select", "deleteSelected":"Delete selected ({{count}})", "confirmDelete":"Delete selected messages ({{count}})?", "deleteError":"Could not delete selected messages.", "unread":"Unread messages — {{count}}", "unreadSubtitle":"Incoming messages from known clients awaiting an explicit mark.", "unreadCount":"{{count}} unread", "openClient":"Open client", "noUnread":"No unread messages.", "unmatched":"Unmatched incoming", "unmatchedSubtitle":"Messages without a recognized client.", "openInbox":"Open Inbox"}, "p1_7a":{"from":"From","subject":"Subject","telegramFallback":"Telegram sender"}
 }

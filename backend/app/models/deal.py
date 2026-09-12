@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from backend.app.models.email_draft import EmailDraft
     from backend.app.models.user import User
     from backend.app.models.business import Service
+    from backend.app.models.public_request import PublicRequest
 
 
 class Deal(Base):
@@ -67,6 +68,10 @@ class Deal(Base):
         default=utc_now,
         server_default=func.now(),
     )
+    first_won_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -85,3 +90,4 @@ class Deal(Base):
     ai_analyses: Mapped[list["AIAnalysis"]] = relationship(back_populates="deal")
     email_drafts: Mapped[list["EmailDraft"]] = relationship(back_populates="deal")
     service: Mapped["Service | None"] = relationship(back_populates="deals")
+    public_request: Mapped["PublicRequest | None"] = relationship(back_populates="deal", uselist=False)

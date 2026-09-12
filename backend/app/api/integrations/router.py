@@ -47,7 +47,7 @@ def disconnect_google(session: Annotated[Session, Depends(get_db)], admin: Annot
 def sync_gmail(session: Annotated[Session, Depends(get_db)], admin: Annotated[User, Depends(require_admin)]):
     try:
         request_gmail_inbound_sync(session)
-        sync_gmail_inbound.delay()
+        sync_gmail_inbound.delay(trigger="manual")
         return GmailSyncStartResponse(status="RUNNING")
     except GmailInboundError as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Gmail inbound synchronization is unavailable") from error

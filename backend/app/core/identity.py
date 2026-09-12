@@ -1,4 +1,7 @@
-def normalize_email(email: str) -> str:
-    """Normalize employee login identifiers at controlled input boundaries."""
+def normalize_email(email: str | None) -> str | None:
+    """Return the canonical CRM email identity, or None for an absent value."""
 
-    return email.strip().lower()
+    if email is None:
+        return None
+    normalized = email.strip().lower()
+    return normalized or None

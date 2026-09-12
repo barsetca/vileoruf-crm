@@ -24,6 +24,7 @@
         "es": "Espa\u00f1ol"
     },
     "common": {
+        "cancel": "Cancelar",
         "retry": "Reintentar",
         "save": "Guardar",
         "saving": "Guardando...",
@@ -40,6 +41,9 @@
             "tasks": "Tareas",
             "aiHistory": "Historial de IA",
             "inbox": "Bandeja de entrada",
+            "analytics": "Analítica",
+            "openMenu": "Abrir menú",
+            "closeMenu": "Cerrar menú",
             "upcoming": "Pr\u00f3ximamente"
         },
         "sidebar": {
@@ -96,6 +100,7 @@
         "subtitle": "Proyectos y oportunidades comerciales de tu CRM.",
         "create": "A\u00f1adir negocio",
         "edit": "Editar negocio",
+        "actionEdit": "Editar",
         "details": "Detalles del negocio",
         "loading": "Cargando negocios...",
         "selectClient": "Selecciona un cliente",
@@ -112,6 +117,7 @@
             "stage": "Etapa",
             "estimated_budget": "Presupuesto estimado",
             "deadline": "Fecha l\u00edmite",
+            "attractiveness": "Atractivo",
             "probability": "Probabilidad",
             "responsible": "Responsable"
         },
@@ -275,6 +281,7 @@
         "boardLabel": "Tablero del embudo",
         "loading": "Cargando embudo...",
         "dealCount": "{{count}} negocios",
+        "emptyStage": "A\u00fan no hay negocios en esta etapa.",
         "move": "Mover",
         "targetStage": "Etapa de destino",
         "readonly": "Solo lectura",
@@ -298,6 +305,14 @@
         "sending": "Enviando...",
         "error": "No se pudo enviar la solicitud. Int\u00e9ntalo de nuevo.",
         "servicesError": "No se pudieron cargar los servicios. Actualiza la p\u00e1gina e int\u00e9ntalo de nuevo.",
+        "consent": {
+            "prefix": "Doy mi ",
+            "link": "consentimiento para el tratamiento de datos personales",
+            "acknowledgmentPrefix": "Al hacer clic en «Enviar solicitud», confirmas que has leído la ",
+            "privacyLink": "Política de tratamiento de datos personales",
+            "acknowledgmentSuffix": ".",
+            "required": "Debes dar tu consentimiento para el tratamiento de datos personales para enviar la solicitud."
+        },
         "success": {
             "title": "\u00a1Gracias!",
             "description": "Tu solicitud fue enviada. Nos pondremos en contacto.",
@@ -335,11 +350,19 @@
         "subtitle": "Categor\u00edas, servicios, econom\u00eda objetivo y reglas de atractivo.",
         "loading": "Cargando configuraci\u00f3n comercial...",
         "error": "No se pudo cargar o guardar la configuraci\u00f3n.",
+        "mutationError": "No se pudieron guardar los cambios. Los datos introducidos se conservaron; rev\u00edsalos e int\u00e9ntalo de nuevo.",
         "categories": "Categor\u00edas",
         "services": "Servicios",
         "category": "Categor\u00eda",
         "scoring": "Pesos de atractivo y escala de valor comercial",
         "scale": "Proporci\u00f3n \u2192 puntuaci\u00f3n",
+        "ratio": "Proporci\u00f3n",
+        "score": "Puntuaci\u00f3n",
+        "effortDays": "{{value}} d\u00edas",
+        "effortDays_one": "{{value}} d\u00eda",
+        "effortDays_few": "{{value}} d\u00edas",
+        "effortDays_many": "{{value}} d\u00edas",
+        "effortDays_other": "{{value}} d\u00edas",
         "addCategory": "A\u00f1adir categor\u00eda",
         "addService": "A\u00f1adir servicio",
         "activate": "Activar",
@@ -485,7 +508,7 @@
             "unavailable": "No se pudo conectar con el servidor. Int\u00e9ntalo de nuevo."
         }
     },
-    "inbox": {"title":"Bandeja sin identificar","subtitle":"Mensajes entrantes que requieren asignaci\u00f3n manual a un cliente existente.","loading":"Cargando mensajes entrantes...","selectClient":"Cliente","clientPlaceholder":"Selecciona un cliente existente","link":"Vincular con cliente","empty":{"title":"La cola est\u00e1 vac\u00eda","description":"No hay mensajes entrantes que requieran vinculaci\u00f3n manual."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"No se pudo cargar la cola entrante.","clientRequired":"Primero selecciona un cliente existente.","link":"No se pudo vincular el mensaje con el cliente. Int\u00e9ntalo de nuevo."}},
+    "inbox": {"title":"Bandeja sin identificar","subtitle":"Mensajes entrantes que requieren asignaci\u00f3n manual a un cliente existente.","loading":"Cargando mensajes entrantes...","selectDeal":"Operación","dealPlaceholder":"Sin operación","dealClient":"Cliente de la operación","selectClient":"Cliente","clientPlaceholder":"Selecciona un cliente existente","link":"Vincular mensaje","empty":{"title":"La cola est\u00e1 vac\u00eda","description":"No hay mensajes entrantes que requieran vinculaci\u00f3n manual."},"providers":{"GMAIL":"Gmail","TELEGRAM":"Telegram","GOOGLE_CALENDAR":"Google Calendar","WHATSAPP":"WhatsApp"},"errors":{"load":"No se pudo cargar la cola entrante.","clientRequired":"Selecciona una operación o cliente existente.","link":"No se pudo vincular el mensaje. Int\u00e9ntalo de nuevo."}},
     "integrations": {
         "title": "Integraciones",
         "subtitle": "Conexiones corporativas y estado seguro.",
@@ -610,6 +633,7 @@
     },
     "emailDraft": {
         "title": "Borrador de correo",
+        "aiGeneration": "Generar con IA",
         "generate": "Generar borrador",
         "noAutoSend": "No se env\u00eda nada autom\u00e1ticamente. El env\u00edo requiere confirmaci\u00f3n expl\u00edcita del empleado.",
         "send": "Enviar",
@@ -618,7 +642,7 @@
         "confirmSend": "\u00bfEnviar este correo a {{recipient}} con el asunto \u00ab{{subject}}\u00bb?",
         "sendFailed": "No se pudo enviar el correo. El borrador se conserv\u00f3.",
         "recipientMissing": "El cliente no tiene una direcci\u00f3n de correo v\u00e1lida para el env\u00edo.",
-        "copyAll": "Copiar todo",
+        "copyAll": "Copiar",
         "unknownOutcome": "No se pudo confirmar la entrega. Revisa Gmail antes de enviar de nuevo.",
         "purpose": "Prop\u00f3sito",
         "purposeRequired": "Indica el prop\u00f3sito para generar un borrador.",
@@ -627,6 +651,8 @@
         "noNba": "No usar recomendaci\u00f3n",
         "nbaOutdated": "posiblemente desactualizada",
         "loading": "Cargando borradores...",
+        "loadError": "No se pudieron cargar los borradores de forma segura.",
+        "empty": "A\u00fan no hay borradores guardados. Puedes crear uno manualmente.",
         "failed": "La \u00faltima generaci\u00f3n de correo fall\u00f3 de forma segura.",
         "status": {
             "QUEUED": "En cola...",
@@ -638,9 +664,10 @@
         "body": "Cuerpo",
         "security": "Advertencia de seguridad",
         "saveAs": "Editar y guardar borrador",
-        "newManual": "Nuevo borrador manual",
+        "newManual": "Crear manualmente",
         "newDraft": "Nuevo borrador",
         "editDraft": "Editar borrador",
+        "editAction": "Editar",
         "language": "Idioma",
         "required": "El asunto, el cuerpo y el prop\u00f3sito son obligatorios.",
         "copySubject": "Copiar asunto",
@@ -701,5 +728,29 @@
             "ERROR": "Error de sincronizaci\u00f3n",
             "CANCELLED": "Cancelado"
         }
-    }
+    },
+    "archive": {"active":"Activos", "archived":"Archivados", "archiveClient":"Archivar cliente", "restoreClient":"Restaurar cliente", "archiveDeal":"Archivar", "restoreDeal":"Restaurar", "confirm":"Archivar", "restore":"Restaurar", "confirmClient":"El cliente saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmClient":"¿Restaurar este cliente al flujo CRM activo?", "confirmDeal":"La operación saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmDeal":"¿Restaurar esta operación al flujo CRM activo?", "error":"No se pudo completar el archivado."},
+    "dealRelated": {"title":"Datos relacionados", "request":"Datos de solicitud", "communications":"Comunicaciones", "email":"Correo", "tasks":"Tareas", "calendar":"Calendario", "noRequest":"No hay una solicitud pública original para esta operación.", "fields":{"name":"Nombre", "contact_person":"Persona de contacto", "company":"Empresa", "email":"Correo", "phone":"Teléfono", "telegram":"Telegram", "whatsapp":"WhatsApp", "preferred_communication_language":"Idioma de comunicación", "deal_name":"Operación", "description":"Descripción", "estimated_budget":"Presupuesto", "deadline":"Fecha límite", "created_at":"Fecha de solicitud"}},
+    "analytics": {
+        "title": "Analítica de ventas",
+        "subtitle": "Resumen actual de todo el CRM basado en datos de negocio.",
+        "loading": "Cargando analítica...",
+        "error": "No se pudo cargar la analítica de forma segura.",
+        "helpLabel": "Información sobre {{title}}",
+        "kpis": {
+            "clientsTotal": {"title": "Registros de CRM", "help": "Todos los registros Client del CRM."},
+            "customer": {"title": "CUSTOMER", "help": "Registros Client sin una operación Won completada correctamente."},
+            "client": {"title": "CLIENT", "help": "Registros Client con al menos una operación Won completada."},
+            "dealsTotal": {"title": "Total de operaciones", "help": "Todos los registros Deal, independientemente de su etapa actual."},
+            "active": {"title": "Operaciones activas", "help": "Operaciones cuya etapa actual no es Won ni Lost."},
+            "won": {"title": "Won", "help": "Operaciones que actualmente están en la etapa Won."},
+            "lost": {"title": "Lost", "help": "Operaciones que actualmente están en la etapa Lost."},
+            "pipelineValue": {"title": "Valor del Pipeline activo", "help": "Suma de presupuestos estimados de operaciones activas. Won y Lost se excluyen; una operación sin presupuesto cuenta pero suma cero. No es un pago confirmado."},
+            "wonValue": {"title": "Valor de operaciones ganadas", "help": "Suma de presupuestos estimados de operaciones que ahora están en Won. No representa pagos recibidos ni ingresos contables."},
+            "conversion": {"title": "Conversión de operaciones cerradas", "help": "Won / (Won + Lost) × 100%. Las operaciones activas se excluyen. Un guion indica que aún no hay operaciones cerradas."}
+        },
+        "breakdown": {"title": "Etapas del Pipeline", "help": "Todas las etapas persistidas en su orden configurado. El valor es la suma de presupuestos estimados y puede ser cero.", "stage": "Etapa", "deals": "Operaciones", "value": "Valor estimado"},
+        "charts": {"empty": "No hay suficientes datos históricos para este gráfico.", "created": {"title": "Operaciones creadas por mes", "help": "Número de operaciones creadas en cada mes calendario. Mide el flujo de nuevas operaciones, no las activas de ese mes."}, "firstWon": {"title": "Operaciones ganadas por mes", "help": "Las operaciones se cuentan en el mes de su primera transición exitosa a Won. Las transiciones Won repetidas no las desplazan. Las históricas sin fecha conocida pueden faltar."}}
+    },
+    "p1_7": {"read":"Leído", "assign":"Vincular a operación", "detach":"Desvincular de operación", "dealPlaceholder":"Seleccione una operación", "actionError":"No se pudo actualizar la comunicación.", "all":"Todos", "select":"Seleccionar", "deleteSelected":"Eliminar seleccionados ({{count}})", "confirmDelete":"¿Eliminar los mensajes seleccionados ({{count}})?", "deleteError":"No se pudieron eliminar los mensajes seleccionados.", "unread":"Mensajes no leídos — {{count}}", "unreadSubtitle":"Entrantes de clientes conocidos pendientes de una marca explícita.", "unreadCount":"{{count}} no leídos", "openClient":"Abrir cliente", "noUnread":"No hay mensajes no leídos.", "unmatched":"Entrantes sin asignar", "unmatchedSubtitle":"Mensajes sin cliente reconocido.", "openInbox":"Abrir Inbox"}, "p1_7a":{"from":"De","subject":"Asunto","telegramFallback":"Remitente de Telegram"}
 }

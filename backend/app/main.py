@@ -21,6 +21,7 @@ from backend.app.api.integrations.router import router as integrations_router
 from backend.app.api.integrations.telegram_webhook import router as telegram_webhook_router
 from backend.app.api.calendar_events import router as calendar_events_router
 from backend.app.api.inbox import router as inbox_router
+from backend.app.api.analytics import router as analytics_router
 from backend.app.core.config import get_frontend_settings
 
 
@@ -54,6 +55,7 @@ app.include_router(integrations_router)
 app.include_router(telegram_webhook_router)
 app.include_router(calendar_events_router)
 app.include_router(inbox_router)
+app.include_router(analytics_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)

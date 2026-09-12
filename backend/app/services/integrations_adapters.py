@@ -5,6 +5,7 @@ from email.message import EmailMessage
 from email.utils import parseaddr, parsedate_to_datetime
 from enum import Enum
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 import httpx
 class ProviderErrorCode(str,Enum): AUTH_REQUIRED="AUTH_REQUIRED"; INVALID_CONFIGURATION="INVALID_CONFIGURATION"; PERMISSION_DENIED="PERMISSION_DENIED"; INVALID_RECIPIENT="INVALID_RECIPIENT"; RATE_LIMITED="RATE_LIMITED"; PROVIDER_UNAVAILABLE="PROVIDER_UNAVAILABLE"; PROVIDER_ERROR="PROVIDER_ERROR"
@@ -96,7 +97,8 @@ def cancel_google_calendar_event(*, access_token: str, provider_event_id: str) -
 
 
 def _google_calendar_event_payload(*, title: str, description: str | None, start_at: datetime, end_at: datetime, timezone_name: str) -> dict:
-    payload={"summary": title, "start": {"dateTime": start_at.isoformat(), "timeZone": timezone_name}, "end": {"dateTime": end_at.isoformat(), "timeZone": timezone_name}}
+    event_timezone = ZoneInfo(timezone_name)
+    payload={"summary": title, "start": {"dateTime": start_at.astimezone(event_timezone).isoformat(), "timeZone": timezone_name}, "end": {"dateTime": end_at.astimezone(event_timezone).isoformat(), "timeZone": timezone_name}}
     if description is not None: payload["description"] = description
     return payload
 

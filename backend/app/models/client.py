@@ -3,7 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum as SqlEnum, String, Text, Uuid, func
+from sqlalchemy import Boolean, DateTime, Enum as SqlEnum, Index, String, Text, Uuid, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base import Base
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from backend.app.models.communication import Communication
     from backend.app.models.deal import Deal
     from backend.app.models.task import Task
+    from backend.app.models.public_request import PublicRequest
 
 
 class ClientStatus(str, Enum):
@@ -29,6 +30,14 @@ class PreferredCommunicationLanguage(str, Enum):
 
 class Client(Base):
     __tablename__ = "clients"
+    __table_args__ = (
+        Index(
+            "uq_clients_normalized_email",
+            func.lower(func.btrim("email")),
+            unique=True,
+            postgresql_where=text("email IS NOT NULL AND btrim(email) <> ''"),
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -53,6 +62,12 @@ class Client(Base):
         default=PreferredCommunicationLanguage.RU,
         server_default=PreferredCommunicationLanguage.RU.value,
     )
+    # Nullable so CRM records created before the public-consent boundary remain valid.
+    personal_data_consent: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    personal_data_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    personal_data_consent_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    privacy_policy_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -69,3 +84,4 @@ class Client(Base):
     deals: Mapped[list["Deal"]] = relationship(back_populates="client")
     communications: Mapped[list["Communication"]] = relationship(back_populates="client")
     tasks: Mapped[list["Task"]] = relationship(back_populates="client")
+    public_requests: Mapped[list["PublicRequest"]] = relationship(back_populates="client")

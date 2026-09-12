@@ -5,8 +5,12 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import {
   CommunicationApiError,
   createCommunication,
+  assignCommunicationDeal,
+  detachCommunicationDeal,
   listCommunications,
+  markCommunicationRead,
 } from "../services/communications.js";
+import { listDeals } from "../services/deals.js";
 import { sendTelegram } from "../services/integrations.js";
 import { getClient } from "../services/clients.js";
 import { getTelegramAvailability } from "../services/integrations.js";
@@ -51,6 +55,8 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
   const [telegramRequestKey, setTelegramRequestKey] = useState(null);
   const [telegramState, setTelegramState] = useState("idle");
   const [telegramAvailable, setTelegramAvailable] = useState(false);
+  const [clientDeals, setClientDeals] = useState([]);
+  const [assigning, setAssigning] = useState({});
 
   useEffect(() => {
     let active = true;
@@ -60,6 +66,15 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
       .catch(() => { if (active) setTelegramAvailable(false); });
     return () => { active = false; };
   }, [accessToken, clientId]);
+
+  useEffect(() => {
+    if (dealId) return;
+    const controller = new AbortController();
+    listDeals(accessToken, { limit: 100, offset: 0 }, controller.signal)
+      .then((items) => setClientDeals(items.filter((item) => item.client_id === clientId)))
+      .catch(() => setClientDeals([]));
+    return () => controller.abort();
+  }, [accessToken, clientId, dealId]);
 
   const load = useCallback((nextOffset = 0, append = false) => {
     const controller = new AbortController();
@@ -122,6 +137,17 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
     }
   }
 
+  async function action(communication, type, targetDealId = null) {
+    setAssigning((previous) => ({ ...previous, [communication.id]: type }));
+    try {
+      if (type === "read") await markCommunicationRead(accessToken, communication.id);
+      if (type === "assign") await assignCommunicationDeal(accessToken, communication.id, targetDealId);
+      if (type === "detach") await detachCommunicationDeal(accessToken, communication.id);
+      load();
+    } catch { setFormError(t("p1_7.actionError")); }
+    finally { setAssigning((previous) => ({ ...previous, [communication.id]: "" })); }
+  }
+
   const locale = i18n.resolvedLanguage ?? "ru";
   const hasMore = communications.length > 0 && communications.length % PAGE_SIZE === 0;
   const telegramSendAvailable = telegramAvailable && canCreate;
@@ -133,7 +159,7 @@ function CommunicationTimeline({ clientId, dealId = null, canCreate = true }) {
     {state === "loading" && <div className="timeline-state"><span className="loading-spinner" aria-hidden="true" /><p>{t("communications.loading")}</p></div>}
     {state === "error" && <div className="timeline-state"><p className="form-error">{t("communications.errors.load")}</p><button className="secondary-button" type="button" onClick={() => load()}>{t("common.retry")}</button></div>}
     {state === "ready" && communications.length === 0 && <div className="timeline-state"><p>{t("communications.empty")}</p></div>}
-    {state !== "loading" && state !== "error" && communications.length > 0 && <ol className="communication-list">{communications.map((communication) => <li key={communication.id} className="communication-item"><div className="communication-item-meta"><span className="stage-badge">{t(`communications.channels.${communication.channel}`)}</span><span>{t(`communications.directions.${communication.direction}`)}</span><time dateTime={communication.occurred_at}>{formatDateTime(communication.occurred_at, locale)}</time></div><p>{communication.content}</p></li>)}</ol>}
+    {state !== "loading" && state !== "error" && communications.length > 0 && <ol className="communication-list">{communications.map((communication) => <li key={communication.id} className="communication-item"><div className="communication-item-meta"><span className="stage-badge">{t(`communications.channels.${communication.channel}`)}</span><span>{t(`communications.directions.${communication.direction}`)}</span><time dateTime={communication.occurred_at}>{formatDateTime(communication.occurred_at, locale)}</time></div><p>{communication.content}</p>{communication.direction === "INCOMING" && <div className="button-group">{communication.read_at ? <span className="readonly-note">✓ {t("p1_7.read")}</span> : <button className="secondary-button" type="button" disabled={assigning[communication.id]} onClick={() => action(communication, "read")}>{t("p1_7.read")}</button>}{dealId ? <button className="secondary-button" type="button" disabled={assigning[communication.id]} onClick={() => action(communication, "detach")}>{t("p1_7.detach")}</button> : communication.deal_id ? <button className="secondary-button" type="button" disabled={assigning[communication.id]} onClick={() => action(communication, "detach")}>{t("p1_7.detach")}</button> : <label className="field"><span>{t("p1_7.assign")}</span><select defaultValue="" disabled={assigning[communication.id]} onChange={(event) => { if (event.target.value) action(communication, "assign", event.target.value); }}><option value="">{t("p1_7.dealPlaceholder")}</option>{clientDeals.map((deal) => <option key={deal.id} value={deal.id}>{deal.name}</option>)}</select></label>}</div>}</li>)}</ol>}
     {state !== "error" && hasMore && <button className="secondary-button timeline-load-more" type="button" disabled={state === "loading-more"} onClick={() => load(offset + PAGE_SIZE, true)}>{t(state === "loading-more" ? "communications.loadingMore" : "communications.loadMore")}</button>}
     {canCreate ? <form className="communication-form" onSubmit={submit}>
       <h3>{t("communications.create")}</h3>

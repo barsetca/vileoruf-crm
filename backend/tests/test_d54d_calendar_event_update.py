@@ -123,8 +123,10 @@ def test_google_adapter_updates_existing_provider_event_with_patch(monkeypatch):
     def patch(url, **kwargs):
         captured["url"]=url; captured.update(kwargs); return Response()
     monkeypatch.setattr(integrations_adapters.httpx,"patch",patch)
-    result=integrations_adapters.update_google_calendar_event(access_token="synthetic",provider_event_id="provider/event",title="Updated",description="body",start_at=datetime(2030,1,1,10,tzinfo=timezone.utc),end_at=datetime(2030,1,1,11,tzinfo=timezone.utc),timezone_name="UTC")
+    result=integrations_adapters.update_google_calendar_event(access_token="synthetic",provider_event_id="provider/event",title="Updated",description="body",start_at=datetime(2026,9,10,10,tzinfo=timezone.utc),end_at=datetime(2026,9,10,11,tzinfo=timezone.utc),timezone_name="Europe/Madrid")
     assert captured["url"].endswith("/events/provider%2Fevent") and captured["json"]["summary"]=="Updated"
+    assert captured["json"]["start"] == {"dateTime":"2026-09-10T12:00:00+02:00","timeZone":"Europe/Madrid"}
+    assert captured["json"]["end"] == {"dateTime":"2026-09-10T13:00:00+02:00","timeZone":"Europe/Madrid"}
     assert result.external_url=="https://calendar.test/updated"
 
 

@@ -6,3 +6,12 @@ __pycache__/
 history/
 frontend/node_modules/
 frontend/dist/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+~$*.docx
+.d7*-compose.override.yml

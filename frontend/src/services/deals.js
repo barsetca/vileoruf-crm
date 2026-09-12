@@ -26,12 +26,13 @@ async function request(path, accessToken, options = {}) {
 }
 
 
-export function listDeals(accessToken, { limit, offset }, signal) {
-  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+export function listDeals(accessToken, { limit, offset, archived = false }, signal) {
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset), archived: String(archived) });
   return request(`/deals?${query}`, accessToken, { signal });
 }
 
 export const getDeal = (accessToken, dealId) => request(`/deals/${dealId}`, accessToken);
+export const getDealPublicRequest = (accessToken, dealId) => request(`/deals/${dealId}/public-request`, accessToken);
 export const createDeal = (accessToken, payload) => request("/deals", accessToken, {
   method: "POST",
   body: JSON.stringify(payload),
@@ -44,3 +45,5 @@ export const transitionDeal = (accessToken, dealId, stageId) => request(`/deals/
   method: "POST",
   body: JSON.stringify({ stage_id: stageId }),
 });
+export const archiveDeal = (accessToken, dealId) => request(`/deals/${dealId}/archive`, accessToken, { method: "POST" });
+export const restoreDeal = (accessToken, dealId) => request(`/deals/${dealId}/restore`, accessToken, { method: "POST" });

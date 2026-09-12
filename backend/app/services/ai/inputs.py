@@ -49,6 +49,37 @@ def deterministic_input_fingerprint(payload: dict[str, Any]) -> str:
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
+def bounded_communication_context(items: list[Any], cap: int) -> tuple[list[dict[str, str]], bool]:
+    """Return newest-first current-Deal Communication context within a text cap."""
+
+    used = 0
+    result: list[dict[str, str]] = []
+    for item in items:
+        content = item.content or ""
+        if used + len(content) > cap:
+            remaining = max(0, cap - used)
+            if remaining:
+                result.append(
+                    {
+                        "channel": item.channel.value,
+                        "direction": item.direction.value,
+                        "occurred_at": item.occurred_at.isoformat(),
+                        "content": content[:remaining],
+                    }
+                )
+            return result, True
+        result.append(
+            {
+                "channel": item.channel.value,
+                "direction": item.direction.value,
+                "occurred_at": item.occurred_at.isoformat(),
+                "content": content,
+            }
+        )
+        used += len(content)
+    return result, False
+
+
 def build_compact_snapshot(
     source: dict[str, Any],
     *,

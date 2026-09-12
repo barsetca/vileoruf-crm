@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, aliased, joinedload
 from backend.app.core.config import AIInfrastructureSettings, get_ai_infrastructure_settings
 from backend.app.models import AIAnalysis, AIAnalysisStatus, AIFunctionType, AIResultLanguage, Communication, Deal, PipelineStage, Service, Task, TaskStatus, User, UserRole
 from backend.app.schemas.ai import DealPredictionAIResult
-from backend.app.services.ai.inputs import deterministic_input_fingerprint
+from backend.app.services.ai.inputs import bounded_communication_context, deterministic_input_fingerprint
 from backend.app.services.ai.model_settings import resolve_ai_models
 from backend.app.services.ai.operations import RetryPolicy, create_queued_analysis, execute_analysis, mark_queued_analysis_dispatch_failed, utc_now
 from backend.app.services.ai.provider import AIProvider, ProviderFailure, StructuredProviderRequest
@@ -150,15 +150,7 @@ def _lazy_freshness(session: Session, deal: Deal, *, commit: bool = True) -> Non
 
 
 def _bounded_communications(items: list[Communication], cap: int) -> tuple[list[dict[str, str]], bool]:
-    used = 0; result = []; truncated = False
-    for item in items:
-        content = item.content or ""
-        if used + len(content) > cap:
-            remaining = max(0, cap - used)
-            if remaining: result.append({"channel": item.channel.value, "direction": item.direction.value, "occurred_at": item.occurred_at.isoformat(), "content": content[:remaining]})
-            truncated = True; break
-        result.append({"channel": item.channel.value, "direction": item.direction.value, "occurred_at": item.occurred_at.isoformat(), "content": content}); used += len(content)
-    return result, truncated
+    return bounded_communication_context(items, cap)
 
 
 def _task_indicators(tasks: list[Task], now: datetime) -> dict[str, Any]:

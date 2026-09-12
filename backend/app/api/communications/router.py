@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.api.dependencies import get_current_user
 from backend.app.db.session import get_db
 from backend.app.models import User
-from backend.app.schemas.communications import CommunicationCreate, CommunicationResponse
+from backend.app.schemas.communications import CommunicationCreate, CommunicationResponse, IncomingCommunicationSummary, UnreadCommunicationClient
 from backend.app.services.communications import (
     CommunicationClientNotFoundError,
     CommunicationCreateForbiddenError,
@@ -18,10 +18,32 @@ from backend.app.services.communications import (
     create_communication,
     get_communication,
     list_communications,
+    mark_communication_read,
+    assign_communication_deal,
+    detach_communication_deal,
+    unread_communications_summary,
+    CommunicationMutationError,
 )
 
 
 router = APIRouter(prefix="/communications", tags=["communications"])
+
+
+@router.get("/incoming-summary", response_model=IncomingCommunicationSummary)
+async def get_incoming_summary(session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
+    try:
+        count, groups = unread_communications_summary(session)
+        return IncomingCommunicationSummary(
+            unread_count=count,
+            clients=[UnreadCommunicationClient(
+                client_id=client.id, client_name=client.name,
+                channels=list(dict.fromkeys(item.channel for item in items)), unread_count=len(items),
+                deal_id=items[0].deal_id if len({item.deal_id for item in items}) == 1 else None,
+                deal_name=items[0].deal.name if len({item.deal_id for item in items}) == 1 and items[0].deal_id else None,
+            ) for client, items in groups],
+        )
+    except Exception as error:
+        raise _persistence_error() from error
 
 
 @router.post("", response_model=CommunicationResponse, status_code=status.HTTP_201_CREATED)
@@ -82,6 +104,36 @@ async def get_communication_by_id(
         return get_communication(session, communication_id=communication_id)
     except CommunicationNotFoundError as error:
         raise HTTPException(status_code=404, detail="Communication not found") from error
+    except CommunicationPersistenceError as error:
+        raise _persistence_error() from error
+
+
+@router.post("/{communication_id}/read", response_model=CommunicationResponse)
+async def post_read(communication_id: UUID, session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
+    return _mutate(lambda: mark_communication_read(session, communication_id=communication_id, current_user=current_user))
+
+
+@router.post("/{communication_id}/assign-deal", response_model=CommunicationResponse)
+async def post_assign_deal(communication_id: UUID, deal_id: UUID, session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
+    return _mutate(lambda: assign_communication_deal(session, communication_id=communication_id, deal_id=deal_id, current_user=current_user))
+
+
+@router.post("/{communication_id}/detach-deal", response_model=CommunicationResponse)
+async def post_detach_deal(communication_id: UUID, session: Annotated[Session, Depends(get_db)], current_user: Annotated[User, Depends(get_current_user)]):
+    return _mutate(lambda: detach_communication_deal(session, communication_id=communication_id, current_user=current_user))
+
+
+def _mutate(operation):
+    try:
+        return operation()
+    except CommunicationNotFoundError as error:
+        raise HTTPException(status_code=404, detail="Incoming communication not found") from error
+    except CommunicationDealClientMismatchError as error:
+        raise HTTPException(status_code=422, detail="Deal does not belong to communication client") from error
+    except CommunicationCreateForbiddenError as error:
+        raise HTTPException(status_code=403, detail="Communication operation is not permitted") from error
+    except CommunicationMutationError as error:
+        raise HTTPException(status_code=422, detail="Communication context is unavailable") from error
     except CommunicationPersistenceError as error:
         raise _persistence_error() from error
 

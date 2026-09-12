@@ -19,6 +19,7 @@ export default function CalendarEventsSection({ clientId, dealId, taskId, refres
   const [cancelState, setCancelState] = useState("idle");
   const [cancelError, setCancelError] = useState("");
   const [updateRefreshKey, setUpdateRefreshKey] = useState(0);
+  const [readRefreshKey, setReadRefreshKey] = useState(0);
   const attempts = useRef(0);
   const context = useMemo(() => ({ client_id: clientId, deal_id: dealId, task_id: taskId }), [clientId, dealId, taskId]);
   const contextKey = `${clientId ?? ""}:${dealId ?? ""}:${taskId ?? ""}`;
@@ -56,7 +57,7 @@ export default function CalendarEventsSection({ clientId, dealId, taskId, refres
       active = false;
       controller.abort();
     };
-  }, [accessToken, context, contextKey, hasValidContext, refreshKey, updateRefreshKey]);
+  }, [accessToken, context, contextKey, hasValidContext, refreshKey, updateRefreshKey, readRefreshKey]);
 
   useEffect(() => {
     if (!hasValidContext || state !== "ready" || !hasPending || attempts.current >= MAX_PENDING_POLL_ATTEMPTS) return undefined;
@@ -104,7 +105,7 @@ export default function CalendarEventsSection({ clientId, dealId, taskId, refres
 
   return <section className="content-surface">
     <h3>{t("calendar.title")}</h3>
-    {state === "loading" ? <p>{t("calendar.loading")}</p> : state === "error" ? <p className="form-error">{t("calendar.error")}</p> : items.length === 0 ? <p>{t("calendar.empty")}</p> : items.map((event) => <article key={event.id} data-testid={`calendar-event-${event.id}`}>
+    {state === "loading" ? <p>{t("calendar.loading")}</p> : state === "error" ? <div className="state-panel"><p className="form-error">{t("calendar.error")}</p><button className="secondary-button" type="button" onClick={() => setReadRefreshKey((value) => value + 1)}>{t("common.retry")}</button></div> : items.length === 0 ? <p>{t("calendar.empty")}</p> : items.map((event) => <article key={event.id} data-testid={`calendar-event-${event.id}`}>
       <strong>{event.title}</strong>
       <p>{formatDateTime(event.start_at)} — {formatDateTime(event.end_at)} · {event.timezone}</p>
       <span className="status-note">{t(`calendar.status.${event.status}`)}</span>

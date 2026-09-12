@@ -54,6 +54,7 @@ class Communication(Base):
     status: Mapped[CommunicationStatus] = mapped_column(
         SqlEnum(CommunicationStatus, name="communication_status"), nullable=False
     )
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     client: Mapped["Client"] = relationship(back_populates="communications")
     deal: Mapped["Deal | None"] = relationship(back_populates="communications")

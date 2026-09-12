@@ -75,7 +75,9 @@ def test_d42_input_validation_and_past_date_rules():
     with pytest.raises(ValidationError): DealCreate(client_id=uuid4(), stage_id=uuid4(), name="Deal", deadline=yesterday)
     with pytest.raises(ValidationError): DealUpdate(deadline=yesterday)
     with pytest.raises(ValidationError): DealUpdate(manager_effort_estimate=0)
-    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4(), deadline=yesterday)
+    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4(), deadline=yesterday, personal_data_consent=True)
+    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4())
+    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4(), personal_data_consent=1)
 
 
 def test_weight_and_scale_validation_is_backend_authoritative():

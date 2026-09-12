@@ -37,6 +37,7 @@ def test_inbound_exact_match_unmatched_link_and_dedup(isolated_database):
         r=_records(session)
         first=telegram.process_telegram_update(session,_update())
         assert first.status is ExternalMessageStatus.RECEIVED and first.client_id==r.client.id and first.communication_id
+        assert session.get(Communication, first.communication_id).read_at is None
         assert telegram.process_telegram_update(session,_update()).id==first.id
         assert len(list(session.scalars(select(Communication))))==1
         unmatched=telegram.process_telegram_update(session,_update(9002,2002))
@@ -57,6 +58,7 @@ def test_outbound_confirmed_failure_and_unknown(isolated_database,monkeypatch):
         pending, _=telegram.request_telegram_send(session,client_id=r.client.id,deal_id=None,content="outbound",idempotency_key="existing-test-request-key",current_user=r.admin)
         sent=telegram.execute_telegram_send(session,external_message_id=pending.id)
         assert sent.status is ExternalMessageStatus.SENT and sent.communication_id
+        assert session.get(Communication, sent.communication_id).read_at is None
         assert telegram.execute_telegram_send(session,external_message_id=pending.id).id==sent.id
         assert len(list(session.scalars(select(Communication))))==1
 

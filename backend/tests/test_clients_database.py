@@ -145,10 +145,7 @@ def test_clients_api_end_to_end_on_postgresql(
                     "email": "shared-client@example.test",
                 },
             )
-            assert manager_created.status_code == 201
-            second = manager_created.json()
-            assert second["status"] == "CUSTOMER"
-            assert second["email"] == first["email"]
+            assert manager_created.status_code == 409
 
             for payload in (
                 {"name": "Lifecycle Bypass", "status": "CLIENT"},
@@ -162,28 +159,15 @@ def test_clients_api_end_to_end_on_postgresql(
                     await client.post("/clients", headers=admin_headers, json=payload)
                 ).status_code == 422
 
-            admin_get = await client.get(
-                f"/clients/{second['id']}", headers=admin_headers
-            )
             manager_get = await client.get(
                 f"/clients/{first['id']}", headers=manager_headers
             )
-            assert admin_get.status_code == 200
             assert manager_get.status_code == 200
 
             listing = await client.get("/clients", headers=manager_headers)
             assert listing.status_code == 200
-            assert [item["id"] for item in listing.json()] == [
-                second["id"],
-                first["id"],
-            ]
-            assert (
-                await client.get("/clients?limit=1", headers=admin_headers)
-            ).json()[0]["id"] == second["id"]
-            offset_page = await client.get(
-                "/clients?limit=1&offset=1", headers=admin_headers
-            )
-            assert [item["id"] for item in offset_page.json()] == [first["id"]]
+            assert [item["id"] for item in listing.json()] == [first["id"]]
+            assert (await client.get("/clients?limit=1", headers=admin_headers)).json()[0]["id"] == first["id"]
 
             for query in ("limit=0", "limit=101", "offset=-1"):
                 assert (
@@ -238,7 +222,7 @@ def test_clients_api_end_to_end_on_postgresql(
                 )
             ).status_code == 405
 
-            return UUID(first["id"]), UUID(second["id"])
+            return UUID(first["id"]), UUID(first["id"])
 
     first_id, second_id = asyncio.run(flow())
 
@@ -249,6 +233,6 @@ def test_clients_api_end_to_end_on_postgresql(
         assert first.status is ClientStatus.CUSTOMER
         assert second.status is ClientStatus.CUSTOMER
         assert first.contact_person == "Updated Contact"
-        assert session.scalar(select(func.count()).select_from(Client)) == 2
+        assert session.scalar(select(func.count()).select_from(Client)) == 1
         assert session.scalar(select(func.count()).select_from(Deal)) == 0
         assert session.scalar(select(func.count()).select_from(PipelineStage)) == 0

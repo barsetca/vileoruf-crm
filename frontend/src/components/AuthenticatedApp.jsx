@@ -14,6 +14,7 @@ import AISettingsPage from "./AISettingsPage.jsx";
 import AIHistoryPage from "./AIHistoryPage.jsx";
 import IntegrationSettingsPage from "./IntegrationSettingsPage.jsx";
 import InboxPage from "./InboxPage.jsx";
+import AnalyticsPage from "./AnalyticsPage.jsx";
 
 function AuthenticatedApp() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ function AuthenticatedApp() {
   const pathname = location.pathname;
 
   useEffect(() => {
-    if (!["/crm", "/crm/clients", "/crm/deals", "/crm/pipeline", "/crm/tasks", "/crm/ai-history", "/crm/inbox", "/crm/settings/business", "/crm/settings/ai", "/crm/settings/integrations"].includes(pathname) || (["/crm/settings/business", "/crm/settings/ai", "/crm/settings/integrations"].includes(pathname) && user.role !== "ADMIN")) {
+    if (!["/crm", "/crm/clients", "/crm/deals", "/crm/pipeline", "/crm/tasks", "/crm/ai-history", "/crm/inbox", "/crm/analytics", "/crm/employees", "/crm/settings/business", "/crm/settings/ai", "/crm/settings/integrations"].includes(pathname) || (["/crm/employees", "/crm/settings/business", "/crm/settings/ai", "/crm/settings/integrations"].includes(pathname) && user.role !== "ADMIN")) {
       window.history.replaceState({}, "", "/crm");
       setLocation({ pathname: "/crm", search: "" });
     }
@@ -38,8 +39,7 @@ function AuthenticatedApp() {
   }
 
   return <CrmShell pathname={pathname} onNavigate={navigate}>
-    {pathname === "/crm" ? <DashboardPage onNavigate={navigate} /> : pathname === "/crm/deals" ? <DealsPage initialDealId={new URLSearchParams(location.search).get("deal")} /> : pathname === "/crm/pipeline" ? <PipelinePage onOpenDeal={(dealId) => navigate(`/crm/deals?deal=${dealId}`)} /> : pathname === "/crm/tasks" ? <TasksPage /> : pathname === "/crm/ai-history" ? <AIHistoryPage /> : pathname === "/crm/inbox" ? <InboxPage /> : pathname === "/crm/settings/business" ? <BusinessSettingsPage /> : pathname === "/crm/settings/ai" ? <AISettingsPage /> : pathname === "/crm/settings/integrations" ? <IntegrationSettingsPage /> : <ClientsPage />}
-    {user.role === "ADMIN" && <details className="admin-tools"><summary>{t("employees.title")}</summary><EmployeeManagement /></details>}
+    {pathname === "/crm" ? <DashboardPage onNavigate={navigate} /> : pathname === "/crm/deals" ? <DealsPage initialDealId={new URLSearchParams(location.search).get("deal")} /> : pathname === "/crm/pipeline" ? <PipelinePage onOpenDeal={(dealId) => navigate(`/crm/deals?deal=${dealId}`)} /> : pathname === "/crm/tasks" ? <TasksPage /> : pathname === "/crm/ai-history" ? <AIHistoryPage /> : pathname === "/crm/inbox" ? <InboxPage /> : pathname === "/crm/analytics" ? <AnalyticsPage /> : pathname === "/crm/employees" ? <><section className="page-header"><div><p className="eyebrow">{t("employees.title")}</p><h1>{t("employees.title")}</h1></div></section><EmployeeManagement /></> : pathname === "/crm/settings/business" ? <BusinessSettingsPage /> : pathname === "/crm/settings/ai" ? <AISettingsPage /> : pathname === "/crm/settings/integrations" ? <IntegrationSettingsPage /> : <ClientsPage initialClientId={new URLSearchParams(location.search).get("client")} />}
   </CrmShell>;
 }
 

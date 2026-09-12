@@ -112,6 +112,29 @@ services:
       redis:
         condition: service_healthy
 
+  celery_beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vileoruf_app}:${POSTGRES_PASSWORD:-vileoruf_dev_password}@postgres:5432/${POSTGRES_DB:-vileoruf_crm}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: ${CELERY_TASK_ALWAYS_EAGER:-false}
+      CELERY_TASK_EAGER_PROPAGATES: ${CELERY_TASK_EAGER_PROPAGATES:-true}
+    command: >-
+      python -m celery -A backend.app.workers.celery_app:celery_app beat
+      --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    user: "65534:65534"
+    volumes:
+      - .:/app
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   frontend:
     build:
       context: frontend

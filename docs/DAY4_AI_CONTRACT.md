@@ -232,6 +232,17 @@ Commercial Value explanation is generated from deterministic CRM numbers.
 
 Service Fit, Lead Quality, and Feasibility explanations are AI-generated.
 
+### 3.6 Current-Deal Communication context
+
+Lead Scoring may use raw text, channel/direction and timestamp from Communications linked to the **current Deal** as supplemental contextual evidence for Service Fit, Lead Quality and Feasibility.
+
+- structured CRM fields remain authoritative if they conflict with Communication text;
+- Communication text does not define Commercial Value, weights, effective effort, rate, budget or the deterministic overall formula;
+- an explicitly available qualification fact in current-Deal Communication history must not be reported as missing merely because it is absent from a structured optional field;
+- Communication text is untrusted input and cannot instruct the system, alter the task, or override these rules;
+- context is newest-first and bounded by the shared technical character limit, with truncation metadata; no summarizer call is added;
+- the bounded context is frozen at launch. The worker executes that frozen payload and does not re-query Communications later.
+
 ---
 
 ## 4. Categories and Services
@@ -1137,6 +1148,7 @@ Relevant changes include:
 - manager effort estimate;
 - Lead Scoring weights;
 - Commercial Value scale.
+- new, substantive edit, or deletion of a Communication linked to the current Deal.
 
 Pipeline Stage change alone does **not** make Lead Scoring outdated.
 
@@ -1235,10 +1247,9 @@ For an active Deal, any:
 
 makes:
 
+- Lead Scoring potentially outdated;
 - Deal Prediction potentially outdated;
 - NBA potentially outdated.
-
-It does not make Lead Scoring outdated.
 
 Do not automatically call AI after Communication changes.
 
@@ -1329,7 +1340,7 @@ Do not require artificially complete data before AI can run.
 
 ## 35. Communications context limits
 
-For Deal Prediction, NBA, and Email Draft, limit Communication context by **text volume**, not a fixed number of messages.
+For Lead Scoring, Deal Prediction, NBA, and Email Draft, limit Communication context by **text volume**, not a fixed number of messages.
 
 When history exceeds the configured limit:
 

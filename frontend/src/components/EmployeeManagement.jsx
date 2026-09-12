@@ -28,11 +28,10 @@ function EmployeeManagement() {
     catch (error) { setMessage(t(error.status === 409 ? "employees.errors.adminSafety" : "employees.errors.generic")); }
   }
 
-  if (state === "loading") return <section className="employees-panel"><h2>{t("employees.title")}</h2><p>{t("employees.loading")}</p></section>;
-  if (state === "error") return <section className="employees-panel"><h2>{t("employees.title")}</h2><p className="form-error">{t("employees.errors.generic")}</p></section>;
+  if (state === "loading") return <section className="employees-panel"><p>{t("employees.loading")}</p></section>;
+  if (state === "error") return <section className="employees-panel"><p className="form-error">{t("employees.errors.generic")}</p><button className="secondary-button" type="button" onClick={load}>{t("common.retry")}</button></section>;
 
-  return <section className="employees-panel" aria-labelledby="employees-title">
-    <h2 id="employees-title">{t("employees.title")}</h2>
+  return <section className="employees-panel">
     <form className="employee-form" onSubmit={submit}>
       <input aria-label={t("employees.name")} placeholder={t("employees.name")} value={form.display_name} onChange={e=>setForm({...form,display_name:e.target.value})} required />
       <input aria-label={t("employees.email")} placeholder={t("employees.email")} type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} required />

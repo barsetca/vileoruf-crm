@@ -13,6 +13,7 @@ from backend.app.models.user import utc_now
 
 if TYPE_CHECKING:
     from backend.app.models.deal import Deal
+    from backend.app.models.public_request import PublicRequest
 
 
 class Category(Base):
@@ -49,6 +50,7 @@ class Service(Base):
 
     category: Mapped[Category] = relationship(back_populates="services")
     deals: Mapped[list["Deal"]] = relationship(back_populates="service")
+    public_requests: Mapped[list["PublicRequest"]] = relationship(back_populates="service")
 
 
 class LeadScoringSettings(Base):

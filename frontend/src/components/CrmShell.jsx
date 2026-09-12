@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -8,6 +9,8 @@ import LanguageSwitcher from "./LanguageSwitcher.jsx";
 function CrmShell({ children, pathname, onNavigate }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useEffect(() => { setMobileNavOpen(false); }, [pathname]);
   async function handleLogout() {
     await logout();
     window.history.replaceState({}, "", "/");
@@ -21,7 +24,11 @@ function CrmShell({ children, pathname, onNavigate }) {
           <img className="brand-logo" src={logoUrl} alt="" />
           <span>VILEORUF</span>
         </button>
-        <nav className="crm-nav">
+        <button className="crm-menu-button secondary-button" type="button" aria-expanded={mobileNavOpen} aria-controls="crm-navigation" onClick={() => setMobileNavOpen((value) => !value)}>
+          <span aria-hidden="true">{mobileNavOpen ? "×" : "☰"}</span>
+          {t(`crm.navigation.${mobileNavOpen ? "closeMenu" : "openMenu"}`)}
+        </button>
+        <nav id="crm-navigation" className={`crm-nav ${mobileNavOpen ? "is-open" : ""}`}>
           <button className={`crm-nav-item ${pathname === "/crm" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm")}><span aria-hidden="true">⌂</span>{t("crm.navigation.dashboard")}</button>
           <button className={`crm-nav-item ${pathname === "/crm/clients" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/clients")}>
             <span aria-hidden="true">◫</span>{t("crm.navigation.clients")}
@@ -31,9 +38,11 @@ function CrmShell({ children, pathname, onNavigate }) {
           <button className={`crm-nav-item ${pathname === "/crm/tasks" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/tasks")}><span aria-hidden="true">✓</span>{t("crm.navigation.tasks")}</button>
           <button className={`crm-nav-item ${pathname === "/crm/ai-history" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/ai-history")}><span aria-hidden="true">◎</span>{t("crm.navigation.aiHistory")}</button>
           <button className={`crm-nav-item ${pathname === "/crm/inbox" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/inbox")}><span aria-hidden="true">✉</span>{t("crm.navigation.inbox")}</button>
+          <button className={`crm-nav-item ${pathname === "/crm/analytics" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/analytics")}><span aria-hidden="true">◔</span>{t("crm.navigation.analytics")}</button>
           {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/business" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/business")}><span aria-hidden="true">⚙</span>{t("d4.businessSettings")}</button>}
           {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/ai" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/ai")}><span aria-hidden="true">⚙</span>{t("aiSettings.title")}</button>}
           {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/settings/integrations" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/settings/integrations")}><span aria-hidden="true">⚙</span>{t("integrations.title")}</button>}
+          {user.role === "ADMIN" && <button className={`crm-nav-item ${pathname === "/crm/employees" ? "is-active" : ""}`} type="button" onClick={() => onNavigate("/crm/employees")}><span aria-hidden="true">♙</span>{t("employees.title")}</button>}
         </nav>
         <div className="crm-sidebar-footer">
           <p>{t("crm.sidebar.workspace")}</p>

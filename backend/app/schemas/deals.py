@@ -30,9 +30,15 @@ class DealResponse(BaseModel):
     estimated_budget: Decimal | None
     deadline: date | None
     probability: int | None
+    latest_lead_scoring_score: Decimal | None = None
+    latest_lead_scoring_is_outdated: bool | None = None
+    latest_deal_prediction_probability: int | None = None
+    latest_deal_prediction_is_outdated: bool | None = None
     manager_effort_estimate: Decimal | None
     created_at: datetime
+    first_won_at: datetime | None
     updated_at: datetime
+    archived_at: datetime | None
 
 
 class DealCreate(BaseModel):

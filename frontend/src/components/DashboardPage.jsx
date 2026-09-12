@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthContext.jsx";
-import { listCommunications } from "../services/communications.js";
+import { getIncomingCommunicationSummary, listCommunications } from "../services/communications.js";
+import { getInboxSummary } from "../services/inbox.js";
 import { listEmployeeReferences } from "../services/referenceData.js";
 import { listTasks } from "../services/tasks.js";
 
@@ -25,6 +26,8 @@ function DashboardPage({ onNavigate }) {
   const [communications, setCommunications] = useState([]);
   const [tasksState, setTasksState] = useState("loading");
   const [communicationsState, setCommunicationsState] = useState("loading");
+  const [incoming, setIncoming] = useState(null);
+  const [inbox, setInbox] = useState(null);
   const locale = i18n.resolvedLanguage ?? "ru";
 
   const loadTasks = useCallback(() => {
@@ -58,12 +61,22 @@ function DashboardPage({ onNavigate }) {
     return () => controller.abort();
   }, [loadCommunications]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    Promise.all([getIncomingCommunicationSummary(accessToken, controller.signal), getInboxSummary(accessToken, controller.signal)])
+      .then(([summary, unmatched]) => { setIncoming(summary); setInbox(unmatched); })
+      .catch(() => { setIncoming({ unread_count: 0, clients: [] }); setInbox({ email: 0, telegram: 0 }); });
+    return () => controller.abort();
+  }, [accessToken]);
+
   const employeeLabels = useMemo(() => new Map(employees.map((employee) => [employee.id, employee.display_name])), [employees]);
   const isOverdue = (task) => task.status === "OPEN" && new Date(task.due_at) < new Date();
 
   return <>
     <section className="page-header dashboard-header"><div><p className="eyebrow">{t("dashboard.eyebrow")}</p><h1>{t("dashboard.greeting", { name: user.display_name })}</h1><p>{t("dashboard.subtitle")}</p></div></section>
     <section className="dashboard-grid">
+      <section className="content-surface dashboard-section"><header className="dashboard-section-header"><div><h2>{t("p1_7.unread", { count: incoming?.unread_count ?? 0 })}</h2><p>{t("p1_7.unreadSubtitle")}</p></div></header>{incoming && (incoming.clients.length ? <ol className="dashboard-list">{incoming.clients.map((item) => <li key={item.client_id}><div><strong>{item.client_name}</strong><p>{item.channels.map((channel) => t(`communications.channels.${channel}`)).join(" · ")} · {t("p1_7.unreadCount", { count: item.unread_count })}</p></div><button className="secondary-button" onClick={() => onNavigate(`/crm/clients?client=${item.client_id}`)}>{t("p1_7.openClient")}</button></li>)}</ol> : <p>{t("p1_7.noUnread")}</p>)}</section>
+      <section className="content-surface dashboard-section"><header className="dashboard-section-header"><div><h2>{t("p1_7.unmatched")}</h2><p>{t("p1_7.unmatchedSubtitle")}</p></div><button className="text-button" onClick={() => onNavigate("/crm/inbox")}>{t("p1_7.openInbox")}</button></header>{inbox && <p>Email — {inbox.email}<br />Telegram — {inbox.telegram}</p>}</section>
       <section className="content-surface dashboard-section" aria-live="polite"><header className="dashboard-section-header"><div><h2>{t("dashboard.tasks.title")}</h2><p>{t("dashboard.tasks.subtitle")}</p></div><button className="text-button" type="button" onClick={() => onNavigate("/crm/tasks")}>{t("dashboard.tasks.viewAll")}</button></header>
         {tasksState === "loading" && <div className="dashboard-state"><span className="loading-spinner" aria-hidden="true" /><p>{t("dashboard.tasks.loading")}</p></div>}
         {tasksState === "error" && <div className="dashboard-state"><p className="form-error">{t("dashboard.tasks.error")}</p><button className="secondary-button" type="button" onClick={loadTasks}>{t("common.retry")}</button></div>}

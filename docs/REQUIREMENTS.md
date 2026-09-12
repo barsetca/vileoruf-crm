@@ -113,13 +113,8 @@ Implementation priority for the 7-day MVP:
 External API limitations, credentials, verification or provider access may constrain live integration. Do not fake a successful live integration. If blocked externally, implement the adapter/interface and document the limitation.
 
 ## 6. Analytics and reporting
-MVP analytics should cover useful sales metrics such as:
-- lead/deal counts;
-- deals by pipeline stage;
-- pipeline value;
-- conversion;
-- won/lost deals;
-- revenue/deal forecast where supported by available data.
+
+Day 6 MVP Analytics contract is [`DAY6_ANALYTICS_CONTRACT.md`](DAY6_ANALYTICS_CONTRACT.md). It approves protected CRM-wide `/crm/analytics`, deterministic read-time PostgreSQL aggregation, client/deal counts, persisted-stage breakdown, active Pipeline value, won-deal budget value, closed-deal conversion and two monthly Deal charts. AI weighted forecast, payment/accounting revenue, custom reporting and BI are excluded from this MVP.
 
 ## 7. Internationalization (mandatory)
 Languages:

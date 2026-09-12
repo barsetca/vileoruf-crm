@@ -7,5 +7,7 @@ async function request(path, accessToken, options = {}) {
   return body;
 }
 
-export const listInboxMessages = (accessToken, signal) => request("/inbox/external-messages?limit=25&offset=0", accessToken, { signal });
-export const linkInboxMessage = (accessToken, messageId, clientId) => request(`/inbox/external-messages/${messageId}/link`, accessToken, { method: "POST", body: JSON.stringify({ client_id: clientId }) });
+export const listInboxMessages = (accessToken, signal, channel = "") => request(`/inbox/external-messages?limit=25&offset=0${channel ? `&channel=${channel}` : ""}`, accessToken, { signal });
+export const linkInboxMessage = (accessToken, messageId, clientId, dealId = null) => request(`/inbox/external-messages/${messageId}/link`, accessToken, { method: "POST", body: JSON.stringify({ client_id: clientId, deal_id: dealId }) });
+export const getInboxSummary = (accessToken, signal) => request("/inbox/summary", accessToken, { signal });
+export const bulkDeleteInboxMessages = (accessToken, ids) => request("/inbox/external-messages/bulk-delete", accessToken, { method: "POST", body: JSON.stringify({ external_message_ids: ids }) });

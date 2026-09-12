@@ -28,8 +28,8 @@ async function request(path, accessToken, options = {}) {
 }
 
 
-export function listClients(accessToken, { limit, offset }, signal) {
-  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+export function listClients(accessToken, { limit, offset, archived = false }, signal) {
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset), archived: String(archived) });
   return request(`/clients?${query}`, accessToken, { signal });
 }
 
@@ -42,3 +42,5 @@ export const updateClient = (accessToken, clientId, payload) => request(`/client
   method: "PATCH",
   body: JSON.stringify(payload),
 });
+export const archiveClient = (accessToken, clientId) => request(`/clients/${clientId}/archive`, accessToken, { method: "POST" });
+export const restoreClient = (accessToken, clientId) => request(`/clients/${clientId}/restore`, accessToken, { method: "POST" });

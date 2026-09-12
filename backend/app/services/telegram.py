@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 from backend.app.core.config import get_telegram_settings
 from backend.app.models import Client, Communication, CommunicationChannel, CommunicationDirection, CommunicationStatus, Deal, ExternalMessage, ExternalMessageStatus, IntegrationConnection, IntegrationConnectionStatus, IntegrationProvider, User, UserRole
 from backend.app.models.user import utc_now
+from backend.app.services.ai.deal_prediction import invalidate_latest_deal_prediction
+from backend.app.services.ai.next_best_action import invalidate_latest_next_best_action
+from backend.app.services.business import invalidate_latest_lead_scoring
 from backend.app.services.integrations_adapters import GmailAdapterError, ProviderErrorCode, RetryClass, send_telegram_message, validate_telegram_bot
 
 class TelegramError(ValueError):
@@ -41,22 +44,32 @@ def process_telegram_update(session: Session, update: dict) -> ExternalMessage |
     identity=str(sender["id"])
     clients=list(session.scalars(select(Client).where(Client.telegram_provider_user_id==identity)))
     client=clients[0] if len(clients)==1 else None
-    external=ExternalMessage(integration_connection_id=connection.id,provider=IntegrationProvider.TELEGRAM,provider_message_id=provider_id,provider_thread_id=str(chat["id"]),client_id=client.id if client else None,direction="INCOMING",status=ExternalMessageStatus.RECEIVED,sender_identifier=identity,recipient_identifier=str(chat["id"]),content=message["text"],provider_created_at=utc_now(),received_at=utc_now())
+    external=ExternalMessage(integration_connection_id=connection.id,provider=IntegrationProvider.TELEGRAM,provider_message_id=provider_id,provider_thread_id=str(chat["id"]),client_id=client.id if client else None,direction="INCOMING",status=ExternalMessageStatus.RECEIVED,sender_identifier=identity,recipient_identifier=str(chat["id"]),content=message["text"],sender_username=sender.get("username") if isinstance(sender.get("username"),str) else None,sender_first_name=sender.get("first_name") if isinstance(sender.get("first_name"),str) else None,sender_last_name=sender.get("last_name") if isinstance(sender.get("last_name"),str) else None,provider_created_at=utc_now(),received_at=utc_now())
     session.add(external)
     if client:
         comm=Communication(client_id=client.id,deal_id=None,channel=CommunicationChannel.TELEGRAM,direction=CommunicationDirection.INCOMING,content=message["text"],occurred_at=utc_now(),status=CommunicationStatus.RECORDED); session.add(comm); session.flush(); external.communication_id=comm.id
     try: session.commit(); session.refresh(external); return external
     except IntegrityError: session.rollback(); return session.scalar(select(ExternalMessage).where(ExternalMessage.integration_connection_id==connection.id,ExternalMessage.provider_message_id==provider_id))
 
-def link_telegram_message(session: Session, *, external_message_id: UUID, client_id: UUID, current_user: User) -> ExternalMessage:
-    message=session.get(ExternalMessage,external_message_id); client=session.get(Client,client_id)
+def link_telegram_message(session: Session, *, external_message_id: UUID, client_id: UUID | None = None, deal_id: UUID | None = None, current_user: User) -> ExternalMessage:
+    message=session.get(ExternalMessage,external_message_id); client=session.get(Client,client_id) if client_id else None
+    deal = session.get(Deal, deal_id) if deal_id else None
+    if deal_id:
+        if not deal or deal.archived_at is not None or deal.client.archived_at is not None: raise TelegramError(ProviderErrorCode.INVALID_RECIPIENT)
+        if current_user.role is UserRole.MANAGER and deal.responsible_user_id != current_user.id: raise TelegramForbiddenError(ProviderErrorCode.PERMISSION_DENIED)
+        client = deal.client
     if not message or message.provider is not IntegrationProvider.TELEGRAM or message.direction!="INCOMING" or not client: raise TelegramError(ProviderErrorCode.INVALID_RECIPIENT)
     if message.communication_id: return message
     if client.telegram_provider_user_id and client.telegram_provider_user_id != message.sender_identifier: raise TelegramError(ProviderErrorCode.INVALID_RECIPIENT)
     duplicate=session.scalar(select(Client).where(Client.telegram_provider_user_id==message.sender_identifier,Client.id!=client.id))
     if duplicate: raise TelegramError(ProviderErrorCode.INVALID_RECIPIENT)
-    client.telegram_provider_user_id=message.sender_identifier; message.client_id=client.id
-    comm=Communication(client_id=client.id,deal_id=None,channel=CommunicationChannel.TELEGRAM,direction=CommunicationDirection.INCOMING,content=message.content,occurred_at=message.provider_created_at or utc_now(),status=CommunicationStatus.RECORDED); session.add(comm); session.flush(); message.communication_id=comm.id; session.commit(); session.refresh(message); return message
+    client.telegram_provider_user_id=message.sender_identifier; message.client_id=client.id; message.deal_id=deal.id if deal else None
+    comm=Communication(client_id=client.id,deal_id=deal.id if deal else None,channel=CommunicationChannel.TELEGRAM,direction=CommunicationDirection.INCOMING,content=message.content,occurred_at=message.provider_created_at or utc_now(),status=CommunicationStatus.RECORDED); session.add(comm); session.flush(); message.communication_id=comm.id
+    if deal is not None:
+        invalidate_latest_lead_scoring(session, deal_id=deal.id)
+        invalidate_latest_deal_prediction(session, deal_id=deal.id)
+        invalidate_latest_next_best_action(session, deal_id=deal.id)
+    session.commit(); session.refresh(message); return message
 
 def request_telegram_send(session: Session, *, client_id: UUID, deal_id: UUID|None, content: str, idempotency_key: str, current_user: User) -> tuple[ExternalMessage, bool]:
     client=session.get(Client,client_id)

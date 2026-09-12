@@ -2,12 +2,15 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.api.dependencies import get_current_user
+from backend.app.api.dependencies import get_current_user, require_admin
 from backend.app.db.session import get_db
-from backend.app.models import User
+from backend.app.models import User, UserRole
 from backend.app.schemas.deals import DealCreate, DealResponse, DealTransition, DealUpdate
+from backend.app.schemas.public_requests import PublicRequestSnapshotResponse
+from backend.app.models import PublicRequest
 from backend.app.services.deals import (
     DealClientNotFoundError,
     DealEditForbiddenError,
@@ -20,8 +23,10 @@ from backend.app.services.deals import (
     ResponsibleAssignmentForbiddenError,
     ResponsibleUserNotFoundError,
     create_deal,
+    archive_deal,
     get_deal,
     list_deals,
+    restore_deal,
     transition_deal,
     update_deal,
 )
@@ -76,9 +81,12 @@ async def get_deals(
     current_user: Annotated[User, Depends(get_current_user)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
+    archived: bool = False,
 ):
     try:
-        return list_deals(session, limit=limit, offset=offset)
+        if archived and current_user.role.value != "ADMIN":
+            raise HTTPException(status_code=403, detail="Administrator access required")
+        return list_deals(session, limit=limit, offset=offset, archived=archived)
     except DealPersistenceError as error:
         raise _persistence_error() from error
 
@@ -90,11 +98,29 @@ async def get_deal_by_id(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     try:
-        return get_deal(session, deal_id=deal_id)
+        deal = get_deal(session, deal_id=deal_id)
+        if deal.archived_at is not None and current_user.role is not UserRole.ADMIN:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Deal not found")
+        return deal
     except DealNotFoundError as error:
         raise HTTPException(status_code=404, detail="Deal not found") from error
     except DealPersistenceError as error:
         raise _persistence_error() from error
+
+
+@router.get("/{deal_id}/public-request", response_model=PublicRequestSnapshotResponse | None)
+async def get_deal_public_request(
+    deal_id: UUID,
+    session: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    try:
+        deal = get_deal(session, deal_id=deal_id)
+        if deal.archived_at is not None and current_user.role is not UserRole.ADMIN:
+            raise HTTPException(status_code=404, detail="Deal not found")
+        return session.scalar(select(PublicRequest).where(PublicRequest.deal_id == deal.id))
+    except DealNotFoundError as error:
+        raise HTTPException(status_code=404, detail="Deal not found") from error
 
 
 @router.patch("/{deal_id}", response_model=DealResponse)
@@ -105,6 +131,9 @@ async def patch_deal(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     try:
+        existing = get_deal(session, deal_id=deal_id)
+        if existing.archived_at is not None and current_user.role is not UserRole.ADMIN:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Deal not found")
         return update_deal(
             session,
             deal_id=deal_id,
@@ -145,6 +174,20 @@ def _persistence_error() -> HTTPException:
     )
 
 
+@router.post("/{deal_id}/archive", response_model=DealResponse)
+async def post_deal_archive(deal_id: UUID, session: Annotated[Session, Depends(get_db)], _: Annotated[User, Depends(require_admin)]):
+    try: return archive_deal(session, deal_id=deal_id)
+    except DealNotFoundError as error: raise HTTPException(status_code=404, detail="Deal not found") from error
+    except DealPersistenceError as error: raise _persistence_error() from error
+
+
+@router.post("/{deal_id}/restore", response_model=DealResponse)
+async def post_deal_restore(deal_id: UUID, session: Annotated[Session, Depends(get_db)], _: Annotated[User, Depends(require_admin)]):
+    try: return restore_deal(session, deal_id=deal_id)
+    except DealNotFoundError as error: raise HTTPException(status_code=404, detail="Deal not found") from error
+    except DealPersistenceError as error: raise _persistence_error() from error
+
+
 @router.post("/{deal_id}/transition", response_model=DealResponse)
 async def post_deal_transition(
     deal_id: UUID,
@@ -153,6 +196,9 @@ async def post_deal_transition(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     try:
+        existing = get_deal(session, deal_id=deal_id)
+        if existing.archived_at is not None:
+            raise DealNotFoundError
         return transition_deal(
             session,
             deal_id=deal_id,

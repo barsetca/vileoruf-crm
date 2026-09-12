@@ -25,6 +25,21 @@ class CommunicationResponse(BaseModel):
     content: str
     occurred_at: datetime
     status: CommunicationStatus
+    read_at: datetime | None
+
+
+class UnreadCommunicationClient(BaseModel):
+    client_id: UUID
+    client_name: str
+    channels: list[CommunicationChannel]
+    unread_count: int
+    deal_id: UUID | None = None
+    deal_name: str | None = None
+
+
+class IncomingCommunicationSummary(BaseModel):
+    unread_count: int
+    clients: list[UnreadCommunicationClient]
 
 
 class CommunicationCreate(BaseModel):

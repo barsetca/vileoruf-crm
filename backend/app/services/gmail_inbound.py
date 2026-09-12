@@ -10,6 +10,7 @@ from backend.app.models import Client, Communication, CommunicationChannel, Comm
 from backend.app.models.user import utc_now
 from backend.app.services.ai.deal_prediction import invalidate_latest_deal_prediction
 from backend.app.services.ai.next_best_action import invalidate_latest_next_best_action
+from backend.app.services.business import invalidate_latest_lead_scoring
 from backend.app.services.google_oauth import GoogleOAuthError, get_google_access_token
 from backend.app.services.integrations_adapters import GmailAdapterError, GmailInboundMessage, ProviderErrorCode, get_gmail_inbound_message, list_gmail_inbound_message_ids
 
@@ -26,13 +27,18 @@ class GmailInboundError(ValueError):
 
 
 def request_gmail_inbound_sync(session: Session) -> IntegrationConnection:
-    connection = _gmail_connection(session)
-    _ensure_usable(connection)
+    connection = get_usable_gmail_inbound_connection(session)
     if connection.inbound_sync_status != "RUNNING":
         connection.inbound_sync_status = "RUNNING"
         connection.inbound_sync_error_code = None
         session.commit()
         session.refresh(connection)
+    return connection
+
+
+def get_usable_gmail_inbound_connection(session: Session) -> IntegrationConnection:
+    connection = _gmail_connection(session)
+    _ensure_usable(connection)
     return connection
 
 
@@ -79,6 +85,8 @@ def process_gmail_inbound_message(session: Session, *, connection: IntegrationCo
     if existing is not None:
         return existing
     client = _exact_client(session, inbound.sender)
+    if client is None:
+        client = _thread_client(session, connection=connection, thread_id=inbound.provider_thread_id)
     deal = _thread_deal(session, connection=connection, client_id=client.id if client else None, thread_id=inbound.provider_thread_id)
     message = ExternalMessage(integration_connection_id=connection.id, provider=IntegrationProvider.GMAIL, provider_message_id=inbound.provider_message_id, provider_thread_id=inbound.provider_thread_id, client_id=client.id if client else None, deal_id=deal.id if deal else None, direction="INCOMING", status=ExternalMessageStatus.RECEIVED, sender_identifier=inbound.sender, recipient_identifier=inbound.recipient, subject=inbound.subject or None, content=inbound.content, provider_created_at=inbound.provider_created_at, received_at=utc_now())
     session.add(message)
@@ -88,6 +96,7 @@ def process_gmail_inbound_message(session: Session, *, connection: IntegrationCo
         session.flush()
         message.communication_id = communication.id
         if deal is not None:
+            invalidate_latest_lead_scoring(session, deal_id=deal.id)
             invalidate_latest_deal_prediction(session, deal_id=deal.id)
             invalidate_latest_next_best_action(session, deal_id=deal.id)
     try:
@@ -105,6 +114,15 @@ def process_gmail_inbound_message(session: Session, *, connection: IntegrationCo
 def _exact_client(session: Session, sender: str) -> Client | None:
     matches = list(session.scalars(select(Client).where(func.lower(func.trim(Client.email)) == sender.lower())))
     return matches[0] if len(matches) == 1 else None
+
+
+def _thread_client(session: Session, *, connection: IntegrationConnection, thread_id: str | None) -> Client | None:
+    if not thread_id:
+        return None
+    client_ids = set(session.scalars(select(ExternalMessage.client_id).where(ExternalMessage.integration_connection_id == connection.id, ExternalMessage.provider == IntegrationProvider.GMAIL, ExternalMessage.direction == "OUTGOING", ExternalMessage.status == ExternalMessageStatus.SENT, ExternalMessage.provider_thread_id == thread_id, ExternalMessage.client_id.is_not(None))))
+    if len(client_ids) != 1:
+        return None
+    return session.get(Client, next(iter(client_ids)))
 
 
 def _thread_deal(session: Session, *, connection: IntegrationConnection, client_id, thread_id: str | None) -> Deal | None:

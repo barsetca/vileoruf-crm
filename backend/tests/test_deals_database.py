@@ -1,6 +1,7 @@
 import asyncio
 import os
 from collections.abc import Iterator
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 
@@ -17,7 +18,7 @@ from backend.app.core.config import get_settings
 from backend.app.core.security import create_access_token, hash_password
 from backend.app.db.session import get_db
 from backend.app.main import app
-from backend.app.models import Client, ClientStatus, Deal, PipelineStage, User, UserRole
+from backend.app.models import AIAnalysis, AIAnalysisStatus, AIFunctionType, AIResultLanguage, Client, ClientStatus, Deal, PipelineStage, User, UserRole
 from backend.app.models.pipeline_stage import SYSTEM_PIPELINE
 from backend.app.services.deals import DealPersistenceError, transition_deal
 
@@ -147,6 +148,18 @@ def test_deals_api_and_ownership_on_postgresql(
             assigned_b = manager_created_response.json()
             assert assigned_b["responsible_user_id"] == str(manager_b_id)
 
+            now = datetime.now(timezone.utc)
+            with isolated_session_factory() as session:
+                session.add_all(
+                    [
+                        AIAnalysis(deal_id=UUID(assigned_a["id"]), function_type=AIFunctionType.LEAD_SCORING, status=AIAnalysisStatus.SUCCESS, language=AIResultLanguage.EN, prompt_version="test", started_at=now - timedelta(seconds=2), finished_at=now - timedelta(seconds=2), duration_ms=1, input_fingerprint="a" * 64, input_snapshot={}, result_payload={"overall_score": 40}, is_outdated=False, attempt_count=1),
+                        AIAnalysis(deal_id=UUID(assigned_a["id"]), function_type=AIFunctionType.LEAD_SCORING, status=AIAnalysisStatus.SUCCESS, language=AIResultLanguage.EN, prompt_version="test", started_at=now - timedelta(seconds=1), finished_at=now - timedelta(seconds=1), duration_ms=1, input_fingerprint="b" * 64, input_snapshot={}, result_payload={"overall_score": 82}, is_outdated=True, attempt_count=1),
+                        AIAnalysis(deal_id=UUID(assigned_a["id"]), function_type=AIFunctionType.DEAL_PREDICTION, status=AIAnalysisStatus.SUCCESS, language=AIResultLanguage.EN, prompt_version="test", started_at=now - timedelta(seconds=2), finished_at=now - timedelta(seconds=2), duration_ms=1, input_fingerprint="c" * 64, input_snapshot={}, result_payload={"probability_won": 41}, is_outdated=False, attempt_count=1),
+                        AIAnalysis(deal_id=UUID(assigned_a["id"]), function_type=AIFunctionType.DEAL_PREDICTION, status=AIAnalysisStatus.SUCCESS, language=AIResultLanguage.EN, prompt_version="test", started_at=now - timedelta(seconds=1), finished_at=now - timedelta(seconds=1), duration_ms=1, input_fingerprint="d" * 64, input_snapshot={}, result_payload={"probability_won": 74}, is_outdated=True, attempt_count=1),
+                    ]
+                )
+                session.commit()
+
             for forbidden_value in (None, str(manager_a_id), str(manager_b_id), str(admin_id)):
                 response = await client.post(
                     "/deals", headers=headers["a"], json={**base, "name": "Forbidden assignment", "responsible_user_id": forbidden_value}
@@ -169,6 +182,15 @@ def test_deals_api_and_ownership_on_postgresql(
                 assert {item["id"] for item in listing.json()} == expected_ids
                 for deal_id in expected_ids:
                     assert (await client.get(f"/deals/{deal_id}", headers=headers[actor])).status_code == 200
+
+            summaries = {item["id"]: item for item in (await client.get("/deals", headers=headers["admin"])).json()}
+            analyzed = summaries[assigned_a["id"]]
+            assert Decimal(analyzed["latest_lead_scoring_score"]) == Decimal("82")
+            assert analyzed["latest_deal_prediction_probability"] == 74
+            assert analyzed["latest_lead_scoring_is_outdated"] is True
+            assert analyzed["latest_deal_prediction_is_outdated"] is True
+            assert summaries[unassigned["id"]]["latest_lead_scoring_score"] is None
+            assert summaries[unassigned["id"]]["latest_deal_prediction_probability"] is None
 
             page = await client.get("/deals?limit=1&offset=1", headers=headers["a"])
             assert page.status_code == 200 and len(page.json()) == 1

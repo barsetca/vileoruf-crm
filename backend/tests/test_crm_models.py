@@ -54,6 +54,7 @@ def test_deal_model_has_required_foreign_keys_and_constraints() -> None:
         "name",
         "description",
         "estimated_budget",
+        "first_won_at",
         "deadline",
         "stage_id",
         "probability",

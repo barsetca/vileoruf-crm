@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -63,7 +63,10 @@ def list_tasks(
     deal_id: UUID | None,
     status: TaskStatus | None,
 ) -> list[Task]:
-    statement = select(Task)
+    statement = select(Task).outerjoin(Client, Task.client_id == Client.id).outerjoin(Deal, Task.deal_id == Deal.id).where(
+        or_(Task.client_id.is_(None), Client.archived_at.is_(None)),
+        or_(Task.deal_id.is_(None), Deal.archived_at.is_(None)),
+    )
     if responsible_user_id is not None:
         statement = statement.where(Task.responsible_user_id == responsible_user_id)
     if client_id is not None:

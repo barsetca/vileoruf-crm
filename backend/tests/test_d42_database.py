@@ -77,7 +77,8 @@ def test_d42_migration_business_configuration_freshness_and_authorization(isolat
 
         prepared = prepare_lead_scoring(session, deal_id=deal.id, language=AIResultLanguage.EN)
         assert prepared.commercial.score == Decimal("70.0")
-        assert set(prepared.provider_data) == {"service", "category", "deal_description", "desired_deadline"}
+        assert set(prepared.provider_data) == {"service", "category", "deal_description", "desired_deadline", "recent_communications", "context_truncated"}
+        assert prepared.provider_data["recent_communications"] == [] and prepared.provider_data["context_truncated"] is False
         assert all(key not in prepared.provider_data for key in ("client_name", "email", "phone", "company", "client_id", "user_id"))
         assert "Never calculate or return Commercial Value" in prepared.trusted_instructions
 

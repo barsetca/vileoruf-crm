@@ -35,6 +35,7 @@ class ClientResponse(BaseModel):
     preferred_communication_language: PreferredCommunicationLanguage
     created_at: datetime
     updated_at: datetime
+    archived_at: datetime | None
 
 
 class ClientCreate(BaseModel):

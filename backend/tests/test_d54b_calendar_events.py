@@ -4,8 +4,10 @@ from types import SimpleNamespace
 import pytest
 from sqlalchemy import select
 from backend.app.models import CalendarEvent, CalendarEventStatus, Client, Deal, IntegrationConnection, IntegrationConnectionStatus, IntegrationProvider, PipelineStage, Task, TaskStatus, User, UserRole
+from backend.app.schemas.calendar_events import CalendarEventCreate
 from backend.app.services import calendar_events
 from backend.app.services.calendar_events import CalendarEventForbiddenError, CalendarEventUnavailableError, CalendarEventValidationError, execute_calendar_event_create, request_calendar_event_create
+from backend.app.services import integrations_adapters
 from backend.app.services.integrations_adapters import GmailAdapterError, GoogleCalendarCreateResult, ProviderErrorCode, RetryClass
 from backend.tests.test_d52a_google_oauth import isolated_database
 
@@ -28,3 +30,50 @@ def test_context_authorization_and_unavailable(isolated_database,monkeypatch):
   with pytest.raises(CalendarEventValidationError): request_calendar_event_create(s,values=values(r,client_id=r.other.id),idempotency_key="bad",current_user=r.admin)
   r.connection.status=IntegrationConnectionStatus.DISCONNECTED
   with pytest.raises(CalendarEventUnavailableError): request_calendar_event_create(s,values=values(r),idempotency_key="off",current_user=r.admin)
+
+
+@pytest.mark.parametrize(
+    ("start_at", "end_at", "timezone_name", "expected_start", "expected_end"),
+    [
+        (datetime(2026, 9, 10, 10, tzinfo=timezone.utc), datetime(2026, 9, 10, 11, tzinfo=timezone.utc), "Europe/Madrid", "2026-09-10T12:00:00+02:00", "2026-09-10T13:00:00+02:00"),
+        (datetime(2026, 1, 10, 11, tzinfo=timezone.utc), datetime(2026, 1, 10, 12, tzinfo=timezone.utc), "Europe/Madrid", "2026-01-10T12:00:00+01:00", "2026-01-10T13:00:00+01:00"),
+        (datetime(2026, 9, 10, 12, tzinfo=timezone.utc), datetime(2026, 9, 10, 13, tzinfo=timezone.utc), "UTC", "2026-09-10T12:00:00+00:00", "2026-09-10T13:00:00+00:00"),
+    ],
+)
+def test_google_calendar_create_payload_normalizes_stored_instants_to_event_timezone(monkeypatch, start_at, end_at, timezone_name, expected_start, expected_end):
+    captured = {}
+
+    class Response:
+        status_code = 200
+
+        def json(self):
+            return {"id": "synthetic-provider-event"}
+
+    monkeypatch.setattr(integrations_adapters.httpx, "post", lambda url, **kwargs: captured.update(url=url, **kwargs) or Response())
+    integrations_adapters.create_google_calendar_event(
+        access_token="synthetic",
+        title="Synthetic event",
+        description=None,
+        start_at=start_at,
+        end_at=end_at,
+        timezone_name=timezone_name,
+    )
+
+    assert captured["json"]["start"] == {"dateTime": expected_start, "timeZone": timezone_name}
+    assert captured["json"]["end"] == {"dateTime": expected_end, "timeZone": timezone_name}
+
+
+def test_calendar_create_api_contract_keeps_utc_storage_and_existing_timezone_range_validation():
+    payload = CalendarEventCreate(
+        title="Synthetic event",
+        start_at=datetime(2026, 9, 10, 10, tzinfo=timezone.utc),
+        end_at=datetime(2026, 9, 10, 11, tzinfo=timezone.utc),
+        timezone="Europe/Madrid",
+    )
+
+    assert payload.start_at == datetime(2026, 9, 10, 10, tzinfo=timezone.utc)
+    assert payload.end_at == datetime(2026, 9, 10, 11, tzinfo=timezone.utc)
+    with pytest.raises(ValueError):
+        CalendarEventCreate(title="Invalid timezone", start_at=payload.start_at, end_at=payload.end_at, timezone="Not/AZone")
+    with pytest.raises(ValueError):
+        CalendarEventCreate(title="Invalid range", start_at=payload.start_at, end_at=payload.start_at, timezone="Europe/Madrid")

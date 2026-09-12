@@ -49,6 +49,8 @@ def test_clients_endpoints_require_authentication() -> None:
         ("GET", "/clients", None),
         ("GET", f"/clients/{client_id}", None),
         ("PATCH", f"/clients/{client_id}", {"name": "Updated"}),
+        ("POST", f"/clients/{client_id}/archive", None),
+        ("POST", f"/clients/{client_id}/restore", None),
     ]
 
     for method, path, payload in requests:
@@ -82,4 +84,6 @@ def test_openapi_contains_only_approved_client_operations() -> None:
 
     assert set(paths["/clients"]) == {"get", "post"}
     assert set(paths["/clients/{client_id}"]) == {"get", "patch"}
+    assert set(paths["/clients/{client_id}/archive"]) == {"post"}
+    assert set(paths["/clients/{client_id}/restore"]) == {"post"}
     assert "delete" not in paths["/clients/{client_id}"]
