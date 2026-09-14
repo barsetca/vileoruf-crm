@@ -76,7 +76,7 @@ def test_public_request_creates_atomic_crm_records_and_rejects_internal_fields(i
     with isolated_session_factory() as session:
         session.add_all([PipelineStage(name=name, position=position) for name, position in SYSTEM_PIPELINE])
         session.commit(); bootstrap_business_catalog(session)
-    payload = {"name": "Public Synthetic", "deal_name": "Public Synthetic Deal", "company": "Fictional Studio", "service_id": str(GENERAL_SERVICE_ID), "personal_data_consent": True}
+    payload = {"name": "Public Synthetic", "email": "public@example.test", "deal_name": "Public Synthetic Deal", "company": "Fictional Studio", "service_id": str(GENERAL_SERVICE_ID), "personal_data_consent": True}
     response = request("/public/requests", payload)
     assert response.status_code == 201
     with isolated_session_factory() as session:
@@ -117,11 +117,14 @@ def test_public_invalid_request_does_not_create_partial_records(isolated_session
     with isolated_session_factory() as session:
         session.add_all([PipelineStage(name=name, position=position) for name, position in SYSTEM_PIPELINE])
         session.commit()
-    payload = {"name": "Consent Synthetic", "deal_name": "Consent Synthetic Deal", "service_id": str(GENERAL_SERVICE_ID)}
+    payload = {"name": "Consent Synthetic", "email": "consent@example.test", "deal_name": "Consent Synthetic Deal", "service_id": str(GENERAL_SERVICE_ID)}
+    assert request("/public/requests", {key: value for key, value in payload.items() if key != "email"} | {"personal_data_consent": True}).status_code == 422
+    assert request("/public/requests", {**payload, "email": "   ", "personal_data_consent": True}).status_code == 422
+    assert request("/public/requests", {**payload, "email": "not-an-email", "personal_data_consent": True}).status_code == 422
     assert request("/public/requests", payload).status_code == 422
     assert request("/public/requests", {**payload, "personal_data_consent": False}).status_code == 422
     assert request("/public/requests", {**payload, "personal_data_consent": True, "personal_data_consent_version": "client-value"}).status_code == 422
-    assert request("/public/requests", {"name": "  ", "deal_name": "Invalid", "personal_data_consent": True}).status_code == 422
+    assert request("/public/requests", {"name": "  ", "email": "invalid@example.test", "deal_name": "Invalid", "personal_data_consent": True}).status_code == 422
     with isolated_session_factory() as session:
         assert session.scalar(select(func.count()).select_from(Client)) == 0
         assert session.scalar(select(func.count()).select_from(Deal)) == 0
@@ -188,6 +191,7 @@ def test_public_request_snapshot_failure_rolls_back_client_deal_and_snapshot(iso
                     session,
                     values={
                         "name": "Rollback Synthetic", "deal_name": "Rollback Deal",
+                        "email": "rollback@example.test",
                         "service_id": GENERAL_SERVICE_ID, "description": None,
                         "estimated_budget": None, "deadline": None,
                         "preferred_communication_language": "RU", "personal_data_consent": True,

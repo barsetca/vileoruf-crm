@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ExternalLink, Pencil, X } from "lucide-react";
 
 import { useAuth } from "../auth/AuthContext.jsx";
 import { CalendarEventApiError, cancelCalendarEvent, listCalendarEvents } from "../services/calendarEvents.js";
@@ -110,9 +111,11 @@ export default function CalendarEventsSection({ clientId, dealId, taskId, refres
       <p>{formatDateTime(event.start_at)} — {formatDateTime(event.end_at)} · {event.timezone}</p>
       <span className="status-note">{t(`calendar.status.${event.status}`)}</span>
       {event.description && <p>{event.description}</p>}
-      {event.status === "SYNCED" && event.external_url && <a href={event.external_url} target="_blank" rel="noreferrer">{t("calendar.open")}</a>}
-      {event.status === "SYNCED" && <button className="secondary-button" type="button" data-testid={`calendar-event-edit-${event.id}`} onClick={() => setUpdateEvent(event)}>{t("calendar.update.open")}</button>}
-      {event.status === "SYNCED" && <button className="secondary-button" type="button" data-testid={`calendar-event-cancel-${event.id}`} disabled={cancelState === "submitting"} onClick={() => beginCancel(event)}>{t("calendar.cancel.open")}</button>}
+      {event.status === "SYNCED" && <div className="calendar-event-actions">
+        {event.external_url && <a className="secondary-button" href={event.external_url} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" size={16} />{t("calendar.open")}</a>}
+        <button className="secondary-button" type="button" data-testid={`calendar-event-edit-${event.id}`} onClick={() => setUpdateEvent(event)}><Pencil aria-hidden="true" size={16} />{t("calendar.update.open")}</button>
+        <button className="secondary-button" type="button" data-testid={`calendar-event-cancel-${event.id}`} disabled={cancelState === "submitting"} onClick={() => beginCancel(event)}><X aria-hidden="true" size={16} />{t("calendar.cancel.open")}</button>
+      </div>}
       {cancelEvent?.id === event.id && <div className="form-grid" role="alertdialog" aria-live="polite" aria-label={t("calendar.cancel.title")} data-testid={`calendar-event-cancel-confirmation-${event.id}`}>
         <p className="field--full">{t("calendar.cancel.confirmation")}</p>
         {cancelError && <p className="form-error field--full" role="alert">{cancelError}</p>}

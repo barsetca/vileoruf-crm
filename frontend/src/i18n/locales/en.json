@@ -707,7 +707,7 @@
         },
         "update": {
             "title": "Edit calendar event",
-            "open": "Edit event",
+            "open": "Edit",
             "submit": "Save changes",
             "submitting": "Saving changes...",
             "error": "The calendar event could not be updated. Check the details and try again.",
@@ -715,7 +715,7 @@
         },
         "cancel": {
             "title": "Cancel calendar event",
-            "open": "Cancel event",
+            "open": "Cancel",
             "confirmation": "This event will be cancelled in Google Calendar. Confirm cancellation.",
             "confirm": "Confirm cancellation",
             "submitting": "Cancelling event...",
@@ -729,7 +729,8 @@
             "CANCELLED": "Cancelled"
         }
     },
-    "archive": {"active":"Active", "archived":"Archived", "archiveClient":"Archive client", "restoreClient":"Restore client", "archiveDeal":"Archive", "restoreDeal":"Restore", "confirm":"Archive", "restore":"Restore", "confirmClient":"The client will leave the active CRM flow. History is retained.", "restoreConfirmClient":"Restore this client to the active CRM flow?", "confirmDeal":"The deal will leave the active CRM flow. History is retained.", "restoreConfirmDeal":"Restore this deal to the active CRM flow?", "error":"The archive action could not be completed."},
+    "archive": {"active":"Active", "archived":"Archived", "archiveClient":"Archive", "restoreClient":"Restore", "archiveDeal":"Archive", "restoreDeal":"Restore", "confirm":"Archive", "restore":"Restore", "confirmClient":"The client will leave the active CRM flow. History is retained.", "restoreConfirmClient":"Restore this client to the active CRM flow?", "confirmDeal":"The deal will leave the active CRM flow. History is retained.", "restoreConfirmDeal":"Restore this deal to the active CRM flow?", "error":"The archive action could not be completed."},
+    "clientRelated": {"communications":"Communications", "email":"Email", "emailUnavailable":"Client email drafts are not available yet. EmailDraft and Gmail sending currently require a Deal."},
     "dealRelated": {"title":"Related data", "request":"Request data", "communications":"Communications", "email":"Email", "tasks":"Tasks", "calendar":"Calendar", "noRequest":"There is no original public request for this deal.", "fields":{"name":"Name", "contact_person":"Contact person", "company":"Company", "email":"Email", "phone":"Phone", "telegram":"Telegram", "whatsapp":"WhatsApp", "preferred_communication_language":"Communication language", "deal_name":"Deal", "description":"Description", "estimated_budget":"Budget", "deadline":"Deadline", "created_at":"Request date"}},
     "analytics": {
         "title": "Sales analytics",

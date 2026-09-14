@@ -707,7 +707,7 @@
         },
         "update": {
             "title": "Editar evento de calendario",
-            "open": "Editar evento",
+            "open": "Editar",
             "submit": "Guardar cambios",
             "submitting": "Guardando cambios...",
             "error": "No se pudo actualizar el evento de calendario. Revisa los datos e int\u00e9ntalo de nuevo.",
@@ -715,7 +715,7 @@
         },
         "cancel": {
             "title": "Cancelar evento del calendario",
-            "open": "Cancelar evento",
+            "open": "Cancelar",
             "confirmation": "Este evento se cancelar\u00e1 en Google Calendar. Confirma la cancelaci\u00f3n.",
             "confirm": "Confirmar cancelaci\u00f3n",
             "submitting": "Cancelando evento...",
@@ -729,7 +729,8 @@
             "CANCELLED": "Cancelado"
         }
     },
-    "archive": {"active":"Activos", "archived":"Archivados", "archiveClient":"Archivar cliente", "restoreClient":"Restaurar cliente", "archiveDeal":"Archivar", "restoreDeal":"Restaurar", "confirm":"Archivar", "restore":"Restaurar", "confirmClient":"El cliente saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmClient":"¿Restaurar este cliente al flujo CRM activo?", "confirmDeal":"La operación saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmDeal":"¿Restaurar esta operación al flujo CRM activo?", "error":"No se pudo completar el archivado."},
+    "archive": {"active":"Activos", "archived":"Archivados", "archiveClient":"Archivar", "restoreClient":"Restaurar", "archiveDeal":"Archivar", "restoreDeal":"Restaurar", "confirm":"Archivar", "restore":"Restaurar", "confirmClient":"El cliente saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmClient":"¿Restaurar este cliente al flujo CRM activo?", "confirmDeal":"La operación saldrá del flujo CRM activo. El historial se conserva.", "restoreConfirmDeal":"¿Restaurar esta operación al flujo CRM activo?", "error":"No se pudo completar el archivado."},
+    "clientRelated": {"communications":"Comunicaciones", "email":"Correos", "emailUnavailable":"Los borradores de correo del cliente todavía no están disponibles. EmailDraft y el envío por Gmail requieren actualmente una operación."},
     "dealRelated": {"title":"Datos relacionados", "request":"Datos de solicitud", "communications":"Comunicaciones", "email":"Correo", "tasks":"Tareas", "calendar":"Calendario", "noRequest":"No hay una solicitud pública original para esta operación.", "fields":{"name":"Nombre", "contact_person":"Persona de contacto", "company":"Empresa", "email":"Correo", "phone":"Teléfono", "telegram":"Telegram", "whatsapp":"WhatsApp", "preferred_communication_language":"Idioma de comunicación", "deal_name":"Operación", "description":"Descripción", "estimated_budget":"Presupuesto", "deadline":"Fecha límite", "created_at":"Fecha de solicitud"}},
     "analytics": {
         "title": "Analítica de ventas",

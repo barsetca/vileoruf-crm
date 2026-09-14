@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CalendarDays, Mail, MessageCircle } from "lucide-react";
 
 import { useAuth } from "../auth/AuthContext.jsx";
 import CommunicationTimeline from "./CommunicationTimeline.jsx";
-import CalendarEventsSection from "./CalendarEventsSection.jsx";
-import CreateCalendarEventForm from "./CreateCalendarEventForm.jsx";
+import CalendarEventsDialogContent from "./CalendarEventsDialogContent.jsx";
 import {
   archiveClient,
   createClient,
@@ -64,6 +64,7 @@ function ClientForm({
   submitting,
   onSubmit,
   submitLabel,
+  operationalActions,
 }) {
   const { t } = useTranslation();
   return (
@@ -117,10 +118,32 @@ function ClientForm({
           {error}
         </p>
       )}
-      <button className="primary-button" type="submit" disabled={submitting}>
-        {submitLabel}
-      </button>
+      <div className="client-actions">
+        <button className="primary-button" type="submit" disabled={submitting}>
+          {submitLabel}
+        </button>
+        {operationalActions}
+      </div>
     </form>
+  );
+}
+
+function ClientRelatedDialog({ view, client, refreshKey, showCalendarCreate, setShowCalendarCreate, onCalendarAccepted, onClose }) {
+  const { t } = useTranslation();
+  if (!view) return null;
+
+  return (
+    <div className="modal-backdrop client-related-backdrop" role="presentation">
+      <section className="client-modal client-related-modal" role="dialog" aria-modal="true" aria-labelledby="client-related-title">
+        <div className="modal-header">
+          <h2 id="client-related-title">{view === "events" ? t("dealRelated.calendar") : t(`clientRelated.${view}`)}</h2>
+          <button className="icon-button" type="button" onClick={onClose} aria-label={t("common.close")}>×</button>
+        </div>
+        {view === "communications" && <CommunicationTimeline clientId={client.id} />}
+        {view === "events" && <CalendarEventsDialogContent clientId={client.id} refreshKey={refreshKey} showCreate={showCalendarCreate} setShowCreate={setShowCalendarCreate} onAccepted={onCalendarAccepted} />}
+        {view === "email" && <div className="state-panel client-email-unavailable"><p>{t("clientRelated.emailUnavailable")}</p></div>}
+      </section>
+    </div>
   );
 }
 
@@ -136,6 +159,7 @@ function ClientsPage({ initialClientId = null }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCalendarCreate, setShowCalendarCreate] = useState(false);
   const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
+  const [relatedView, setRelatedView] = useState(null);
   const [archived, setArchived] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
 
@@ -173,6 +197,7 @@ function ClientsPage({ initialClientId = null }) {
   function openCreate() {
     setForm(EMPTY_FORM);
     setFormError("");
+    setRelatedView(null);
     setModal({ mode: "create" });
   }
   async function openEdit(clientId) {
@@ -184,6 +209,7 @@ function ClientsPage({ initialClientId = null }) {
         Object.fromEntries(FIELDS.map((field) => [field, client[field] ?? ""])),
       );
       setShowCalendarCreate(false);
+      setRelatedView(null);
       setModal({ mode: "edit", client });
     } catch {
       setModal(null);
@@ -234,6 +260,20 @@ function ClientsPage({ initialClientId = null }) {
     }
   }
   const locale = i18n.resolvedLanguage ?? "ru";
+
+  const archiveAction = modal?.mode === "edit" && user.role === "ADMIN" && (
+    confirmArchive ? (
+      <div className="warning-box" role="alert">
+        <p>{t(modal.client.archived_at ? "archive.restoreConfirmClient" : "archive.confirmClient")}</p>
+        <div className="client-actions">
+          <button className="primary-button" type="button" disabled={isSubmitting} onClick={changeArchive}>{t(modal.client.archived_at ? "archive.restore" : "archive.confirm")}</button>
+          <button className="secondary-button" type="button" disabled={isSubmitting} onClick={() => setConfirmArchive(false)}>{t("common.cancel")}</button>
+        </div>
+      </div>
+    ) : (
+      <button className="secondary-button" type="button" disabled={isSubmitting} onClick={() => setConfirmArchive(true)}>{t(modal.client.archived_at ? "archive.restoreClient" : "archive.archiveClient")}</button>
+    )
+  );
 
   return (
     <>
@@ -438,84 +478,21 @@ function ClientsPage({ initialClientId = null }) {
                   submitLabel={t(
                     isSubmitting ? "common.saving" : "common.save",
                   )}
+                  operationalActions={archiveAction}
                 />
                 {modal.mode === "edit" && (
-                  <CommunicationTimeline clientId={modal.client.id} />
-                )}
-                {modal.mode === "edit" && (
-                  <>
-                    {user.role === "ADMIN" &&
-                      (confirmArchive ? (
-                        <div className="warning-box" role="alert">
-                          <p>
-                            {t(
-                              modal.client.archived_at
-                                ? "archive.restoreConfirmClient"
-                                : "archive.confirmClient",
-                            )}
-                          </p>
-                          <button
-                            className="primary-button"
-                            type="button"
-                            disabled={isSubmitting}
-                            onClick={changeArchive}
-                          >
-                            {t(
-                              modal.client.archived_at
-                                ? "archive.restore"
-                                : "archive.confirm",
-                            )}
-                          </button>
-                          <button
-                            className="secondary-button"
-                            type="button"
-                            disabled={isSubmitting}
-                            onClick={() => setConfirmArchive(false)}
-                          >
-                            {t("common.cancel")}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          className="secondary-button"
-                          type="button"
-                          onClick={() => setConfirmArchive(true)}
-                        >
-                          {t(
-                            modal.client.archived_at
-                              ? "archive.restoreClient"
-                              : "archive.archiveClient",
-                          )}
-                        </button>
-                      ))}
-                    <CalendarEventsSection
-                      clientId={modal.client.id}
-                      refreshKey={calendarRefreshKey}
-                    />
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={() => setShowCalendarCreate(true)}
-                    >
-                      {t("calendar.create.open")}
-                    </button>
-                    {showCalendarCreate && (
-                      <CreateCalendarEventForm
-                        clientId={modal.client.id}
-                        onClose={() => setShowCalendarCreate(false)}
-                        onAccepted={() => {
-                          setShowCalendarCreate(false);
-                          setCalendarRefreshKey((value) => value + 1);
-                        }}
-                      />
-                    )}
-                  </>
+                  <div className="client-actions client-actions--related">
+                    <button className="secondary-button" type="button" onClick={() => setRelatedView("communications")}><MessageCircle aria-hidden="true" size={18} />{t("clientRelated.communications")}</button>
+                    <button className="secondary-button" type="button" onClick={() => setRelatedView("email")}><Mail aria-hidden="true" size={18} />{t("clientRelated.email")}</button>
+                    <button className="secondary-button" type="button" onClick={() => setRelatedView("events")}><CalendarDays aria-hidden="true" size={18} />{t("dealRelated.calendar")}</button>
+                  </div>
                 )}
               </>
             )}
           </section>
         </div>
       )}
+      {modal?.mode === "edit" && <ClientRelatedDialog view={relatedView} client={modal.client} refreshKey={calendarRefreshKey} showCalendarCreate={showCalendarCreate} setShowCalendarCreate={setShowCalendarCreate} onCalendarAccepted={() => { setShowCalendarCreate(false); setCalendarRefreshKey((value) => value + 1); }} onClose={() => { setRelatedView(null); setShowCalendarCreate(false); }} />}
       {user.role === "ADMIN" && (
         <p className="clients-permission-note">
           {t("clients.permissions.admin")}

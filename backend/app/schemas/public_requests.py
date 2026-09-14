@@ -9,6 +9,15 @@ from backend.app.models import PreferredCommunicationLanguage
 
 
 PublicName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
+PublicEmail = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=3,
+        max_length=320,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    ),
+]
 PublicBudget = Annotated[Decimal, Field(max_digits=14, decimal_places=2, ge=0)]
 
 
@@ -17,7 +26,7 @@ class PublicRequestCreate(BaseModel):
 
     name: PublicName
     contact_person: str | None = None
-    email: str | None = None
+    email: PublicEmail
     phone: str | None = None
     telegram: str | None = None
     whatsapp: str | None = None

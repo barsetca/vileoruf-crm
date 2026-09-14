@@ -1,24 +1,29 @@
-# VILEORUF CRM — Requirements
+# VILEORUF CRM — требования
 
-## 1. Product goal
-Create a full-stack CRM with AI automation throughout the sales process: scoring, prediction, recommendations, and automation.
+## 1. Цель продукта
 
-## 2. Business tasks
-The source specification requires:
-- sales-cycle automation;
-- revenue forecasting;
-- smart recommendations for managers;
-- integrations with communication channels.
+Полнофункциональная CRM с AI-автоматизацией процесса продаж: оценкой, прогнозированием, рекомендациями и автоматизацией.
 
-## 3. CRM web interface
+## 2. Бизнес-задачи
 
-### 3.1 Sales pipeline
-- Kanban-style sales funnel.
-- Drag & drop deals between stages.
-- Persist stage changes in the database.
-- Pipeline stages must be represented as data rather than hard-coded UI-only state.
+Исходная спецификация предусматривает:
 
-Initial proposed stages:
+- автоматизацию цикла продаж;
+- прогнозирование выручки;
+- умные рекомендации для менеджеров;
+- интеграции с каналами коммуникации.
+
+## 3. Веб-интерфейс CRM
+
+### 3.1 Воронка продаж
+
+- Воронка продаж в стиле Kanban.
+- Перетаскивание сделок между стадиями.
+- Сохранение изменений стадий в базе данных.
+- Стадии Pipeline представлены данными, а не жёстко заданным состоянием только UI.
+
+Используются стадии:
+
 1. New Lead
 2. Contact
 3. Qualification
@@ -27,39 +32,42 @@ Initial proposed stages:
 6. Won
 7. Lost
 
-Stage names/configuration may be refined during implementation.
+### 3.2 Клиенты
 
-### 3.2 Clients
-Client records should support the CRM workflow. Proposed MVP fields:
-- name / company name;
-- contact person;
+Записи Client поддерживают рабочий процесс CRM и содержат:
+
+- имя / название компании;
+- контактное лицо;
 - email;
-- phone;
-- Telegram identifier/username (optional);
-- WhatsApp identifier/phone/contact (optional);
-- company;
-- lead source;
-- notes;
-- created/updated timestamps.
+- телефон;
+- идентификатор/username Telegram (необязательно);
+- идентификатор/телефон/контакт WhatsApp (необязательно);
+- компанию;
+- источник лида;
+- заметки;
+- временные метки создания/обновления.
 
-Each Client has a business lifecycle status, distinct from authentication roles:
-- `CUSTOMER` (`Заказчик` in Russian UI): a person/company in the CRM with no successfully completed deal;
-- `CLIENT` (`Клиент` in Russian UI): a person/company with at least one deal completed as `Won`.
+Каждый Client имеет бизнес-статус жизненного цикла, отдельный от ролей аутентификации:
 
-The first successful `Won` transition changes `CUSTOMER` to `CLIENT`. Later lost deals do not automatically reverse `CLIENT` to `CUSTOMER`.
+- `CUSTOMER` (`Заказчик` в русском UI): человек/компания в CRM без успешно завершённой сделки;
+- `CLIENT` (`Клиент` в русском UI): человек/компания хотя бы с одной сделкой, завершённой как `Won`.
 
-### 3.3 Deals
-A deal belongs to a client. Proposed MVP fields:
-- project/deal name;
-- description;
-- estimated budget;
-- deadline;
-- pipeline stage;
-- probability;
-- responsible user;
-- timestamps.
+Первый успешный переход в `Won` меняет `CUSTOMER` на `CLIENT`. Последующие проигранные сделки не возвращают `CLIENT` в `CUSTOMER` автоматически.
 
-Estimated budget is CRM deal information and is NOT payment processing.
+### 3.3 Сделки
+
+Сделка принадлежит клиенту и содержит:
+
+- название проекта/сделки;
+- описание;
+- оценочный бюджет;
+- срок;
+- стадию Pipeline;
+- вероятность;
+- ответственного пользователя;
+- временные метки.
+
+Оценочный бюджет — информация CRM о сделке, а не обработка платежей.
 
 ### 3.4 Communication history — Day 3 contract
 `Communication` is an append-oriented CRM history record, not a live provider integration. It has `id`, required `client_id`, optional `deal_id`, `channel`, `direction`, `content`, actual communication timestamp, and `status`.
@@ -71,7 +79,7 @@ Estimated budget is CRM deal information and is NOT payment processing.
 - Day 3 provides create and get/list/read only. DELETE and arbitrary edits are excluded.
 - Both employee roles may read history. ADMIN may create for any Client/Deal. MANAGER may create client-level history for any existing Client and Deal-linked history only for Deals for which the manager is responsible.
 
-Provider delivery receipts, provider message IDs, `SENT`/`DELIVERED`/`READ`, retries, provider errors, synchronization state, and Gmail/Telegram/WhatsApp live integrations are out of scope until separately approved.
+Квитанции о доставке провайдера, идентификаторы сообщений провайдера, `SENT`/`DELIVERED`/`READ`, повторные попытки, ошибки провайдера, состояние синхронизации и реальные интеграции Gmail/Telegram/WhatsApp определяются финальным контрактом интеграций Day 5.
 
 ### 3.5 Tasks — Day 3 contract
 `Task` is an internal CRM task with `id`, `title`, optional `description`, `due_at`, persisted completion `status`, `responsible_user_id`, and optional `client_id` and `deal_id`.
@@ -80,115 +88,121 @@ Provider delivery receipts, provider message IDs, `SENT`/`DELIVERED`/`READ`, ret
 - The responsible employee must be an active existing User with role ADMIN or MANAGER.
 - General tasks without Client or Deal are allowed. If both relations are supplied, the Deal must belong to the Client. A task linked only to a Deal need not duplicate its Client; the backend enforces these relationship invariants.
 - ADMIN can view all Tasks, create for any active ADMIN/MANAGER, update any Task, and reassign responsibility. MANAGER can view all Tasks, create only for themself, and update/complete only Tasks assigned to themself; a MANAGER cannot reassign a Task.
-- Future implementation includes create, list/get, update, and completion through `status`; DELETE is excluded.
+- Доступны создание, list/get, обновление и завершение через `status`; DELETE исключён.
 
-## 4. AI requirements
+## 4. Требования к AI
 
 ### 4.1 Lead scoring
-Generate a lead score and useful explanation.
+Генерировать оценку лида и полезное пояснение.
 
 ### 4.2 Deal prediction
-Estimate the probability/outlook of a deal using available CRM context.
+Оценивать вероятность/перспективу сделки на основе доступного контекста CRM.
 
 ### 4.3 Next best action
-Recommend the next useful manager action based on client, deal and communication context.
+Рекомендовать следующее полезное действие менеджера на основе контекста клиента, сделки и коммуникаций.
 
 ### 4.4 Email generation
-Generate an email draft from CRM context.
-AI must not automatically send an AI-generated email without an explicit user action.
+Генерировать черновик email из контекста CRM. AI не должен автоматически отправлять созданное AI письмо без явного действия пользователя.
 
-## 5. Integrations
-Required by the source specification:
+## 5. Интеграции
+
+Исходная спецификация предусматривает:
 - Gmail API / email;
 - Telegram;
 - WhatsApp;
 - Calendar.
 
-Implementation priority for the 7-day MVP:
+Приоритет интеграций MVP:
 1. Gmail
 2. Telegram
 3. Calendar
 4. WhatsApp
 
-External API limitations, credentials, verification or provider access may constrain live integration. Do not fake a successful live integration. If blocked externally, implement the adapter/interface and document the limitation.
+Ограничения внешних API, учётные данные, верификация или доступ к провайдеру могут ограничивать работу реальной интеграции. Нельзя имитировать успешную реальную интеграцию. При внешней блокировке реализуется адаптер/интерфейс и документируется ограничение.
 
 ## 6. Analytics and reporting
 
-Day 6 MVP Analytics contract is [`DAY6_ANALYTICS_CONTRACT.md`](DAY6_ANALYTICS_CONTRACT.md). It approves protected CRM-wide `/crm/analytics`, deterministic read-time PostgreSQL aggregation, client/deal counts, persisted-stage breakdown, active Pipeline value, won-deal budget value, closed-deal conversion and two monthly Deal charts. AI weighted forecast, payment/accounting revenue, custom reporting and BI are excluded from this MVP.
+Контракт MVP Analytics для Day 6 — [`ANALYTICS_CONTRACT.md`](ANALYTICS_CONTRACT.md). Он утверждает защищённый `/crm/analytics` для всей CRM, детерминированную агрегацию PostgreSQL во время чтения, количества клиентов/сделок, разбивку по сохраняемым стадиям, стоимость активного Pipeline, бюджет выигранных сделок, конверсию закрытых сделок и два месячных графика Deal. В этот MVP не входят взвешенный прогноз AI, выручка платежей/бухгалтерии, настраиваемая отчётность и BI.
 
-## 7. Internationalization (mandatory)
-Languages:
-- Russian (`ru`) — default and fallback;
-- English (`en`);
-- Spanish (`es`).
+## 7. Интернационализация (обязательно)
 
-Requirements:
-- language switching from the UI;
-- selected language persists between sessions;
-- all user-facing navigation, buttons, forms, statuses, messages, errors, analytics labels and settings are translatable;
-- no hard-coded user-facing strings in React components where translation keys should be used;
-- translation architecture must allow additional languages later;
-- localize dates, times and numeric formatting.
+Языки:
 
-## 8. Privacy / data
-The source specification states:
-- test data;
-- database encryption;
-- GDPR compliance.
+- русский (`ru`) — по умолчанию и резервный;
+- английский (`en`);
+- испанский (`es`).
 
-Because the source specification does not define concrete encryption/GDPR acceptance criteria, implementation details must be documented rather than silently assumed.
+Требования:
 
-### 8.1 Authentication / authorization
+- переключение языка из UI;
+- выбранный язык сохраняется между сессиями;
+- все пользовательские навигация, кнопки, формы, статусы, сообщения, ошибки, метки аналитики и настройки переводимы;
+- в React-компонентах не должно быть жёстко заданных пользовательских строк там, где должны использоваться ключи перевода;
+- архитектура переводов допускает добавление языков;
+- локализуются даты, время и числовое форматирование.
 
-Authentication and authorization are required for the internal CRM interface. Backend/frontend authentication, ADMIN-only employee management, and Day 2 CRM role/ownership authorization are implemented. ADMIN can list/create/update employees, including role, name and active state; MANAGER is forbidden. Email/password changes and physical deletion are absent. Self-deactivation/self-downgrade and removal of the last active ADMIN are rejected.
+## 8. Приватность / данные
 
-#### Users and roles
+Исходная спецификация устанавливает:
 
-An authenticated `User` is only a VILEORUF Studio employee. MVP roles are:
+- тестовые данные;
+- шифрование базы данных;
+- соответствие GDPR.
+
+Поскольку исходная спецификация не задаёт конкретных критериев приёмки для шифрования/GDPR, детали реализации должны быть документированы, а не неявно предполагаемы.
+
+### 8.1 Аутентификация / авторизация
+
+Аутентификация и авторизация обязательны для внутреннего интерфейса CRM. Реализованы аутентификация бэкенда/фронтенда, управление сотрудниками только для ADMIN и авторизация CRM по ролям/владению. ADMIN может просматривать/создавать/обновлять сотрудников, включая роль, имя и состояние активности; MANAGER это запрещено. Изменение email/пароля и физическое удаление отсутствуют. Самодеактивация/самопонижение роли и удаление последнего активного ADMIN отклоняются.
+
+#### Пользователи и роли
+
+Аутентифицированный `User` — только сотрудник VILEORUF Studio. Роли MVP:
 - `ADMIN`;
 - `MANAGER`.
 
-External customers are `Client` records, not `User` accounts or authentication roles. They receive no CRM login or customer portal in the current scope.
+Внешние заказчики — записи `Client`, а не учётные записи `User` или роли аутентификации. Они не получают вход в CRM или клиентский портал.
 
-The minimum `User` model contains `id`, unique login `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at`, and `updated_at`. The implemented backend foundation uses a UUID primary key, a native PostgreSQL role enum, and timezone-aware timestamps. Employee offboarding uses `is_active = false`; physical deletion is not the primary mechanism because historical CRM records may reference the user.
+Минимальная модель `User` содержит `id`, уникальный логин `email`, `password_hash`, `display_name`, `role`, `is_active`, `created_at` и `updated_at`. Бэкенд использует UUID-первичный ключ, нативное PostgreSQL-перечисление ролей и временные метки с часовым поясом. Для увольнения сотрудника используется `is_active = false`; физическое удаление не является основным механизмом, поскольку на пользователя могут ссылаться исторические записи CRM.
 
-#### Authentication mechanism
+#### Механизм аутентификации
 
-Login uses email and password. Passwords must never be stored in plaintext and must be hashed with Argon2id. The MVP password policy is 12–128 characters, with no mandatory character-class combination and no periodic forced password change.
+Для входа используются email и пароль. Пароли никогда не хранятся в открытом виде и хешируются Argon2id. Политика паролей MVP: 12–128 символов, без обязательного сочетания классов символов и периодической принудительной смены.
 
-Authentication uses JWT without server-side session storage:
-- access JWT: approximately 30 minutes, stored only in React memory, never in `localStorage` or `sessionStorage`, and sent as `Authorization: Bearer <access-jwt>`;
-- refresh JWT: approximately 7 days, stored/transmitted through an `HttpOnly` cookie inaccessible to frontend JavaScript; `Secure=true` is required in production and cookie attributes must match the deployment environment securely;
-- refresh issues a new access JWT, which remains only in React memory.
+Аутентификация использует JWT без серверного хранения сессий:
+- access JWT: примерно 30 минут, хранится только в памяти React, никогда не в `localStorage` или `sessionStorage`, передаётся как `Authorization: Bearer <access-jwt>`;
+- refresh JWT: примерно 7 дней, хранится/передаётся через недоступную JavaScript фронтенда cookie `HttpOnly`; в production обязателен `Secure=true`, а атрибуты cookie должны безопасно соответствовать окружению развёртывания;
+- refresh выпускает новый access JWT, который остаётся только в памяти React.
 
-MVP refresh is stateless until token `exp`: no refresh-token table, blacklist, server-side refresh session store, or complex rotation/reuse-detection infrastructure. Refresh and authenticated API requests must validate the current user, including `is_active`; authenticated requests must also enforce the current role and ownership rules. Logout removes the in-memory access token and clears the refresh cookie. A previously issued stateless JWT cannot be centrally revoked without server-side state, so the access JWT remains short-lived.
+Refresh MVP не имеет состояния до истечения `exp`: нет таблицы refresh-токенов, чёрного списка, серверного хранилища refresh-сессий или сложной инфраструктуры ротации/обнаружения повторного использования. Refresh и аутентифицированные API-запросы валидируют текущего пользователя, включая `is_active`; аутентифицированные запросы также применяют текущие правила ролей и владения. Выход удаляет access-токен из памяти и очищает refresh-cookie. Ранее выданный JWT без состояния нельзя централизованно отозвать без серверного состояния, поэтому access JWT остаётся краткоживущим.
 
-The MVP does not include OAuth/Google login, SSO, LDAP, magic links, 2FA, email verification, or password reset by email without a separate requirements decision.
+MVP не включает вход OAuth/Google, SSO, LDAP, magic links, 2FA, верификацию email или сброс пароля по email без отдельного изменения требований.
 
-#### First ADMIN bootstrap
+#### Первоначальный bootstrap ADMIN
 
-There is no public employee registration. The implemented secure CLI/bootstrap mechanism creates the first `ADMIN` from email, display name, and an interactively supplied/confirmed password that is hashed. It is creation-only and refuses repeated bootstrap when any active or inactive ADMIN exists. Hard-coded/default/master credentials, credentials in Git or `.env.example`, and development seed data as a production ADMIN bootstrap are forbidden.
+Публичной регистрации сотрудников нет. Защищённый CLI/bootstrap-механизм создаёт первого `ADMIN` из email, отображаемого имени и интерактивно введённого/подтверждённого хешируемого пароля. Он предназначен только для создания и отказывает в повторном bootstrap при существовании любого активного или неактивного ADMIN. Жёстко заданные/стандартные/master-учётные данные, учётные данные в Git или `.env.example` и development seed-данные как production-bootstrap ADMIN запрещены.
 
-#### Authorization
+#### Авторизация
 
-Backend authorization is authoritative; frontend hiding/disabling controls is only a UX measure.
+Авторизация бэкенда является источником истины; скрытие/отключение элементов на фронтенде — только UX-мера.
 
 `ADMIN` may view, create, and edit all Clients and Deals; change the pipeline stage of any Deal; assign/change the responsible user; and has full CRM Core access within the approved MVP scope.
 
 `MANAGER` may view all Clients and Deals, create Clients and Deals, and edit the common card of any Client. A manager may edit or move only their own Deals and may not modify other managers' Deals. Deal ownership is determined by `Deal.responsible_user_id` or an equivalent foreign-key relationship to `User`.
 
-#### Public requests
+#### Публичные заявки
 
-Public visitors do not authenticate and may submit a public request without an employee login. The internal CRM remains protected for `ADMIN`/`MANAGER`. External customers remain `Client` records, never `User` accounts: the public area is not a customer portal and provides no password, personal cabinet, order-history login, customer JWT, or customer role.
+Публичные посетители не аутентифицируются и могут отправить публичную заявку без входа сотрудника. Внутренняя CRM остаётся защищённой для `ADMIN`/`MANAGER`. Внешние заказчики остаются записями `Client`, а не учётными записями `User`: публичная зона не является клиентским порталом и не предоставляет пароль, личный кабинет, вход для истории заказов, клиентский JWT или роль клиента.
 
-The implemented public request maps atomically to `Client(status=CUSTOMER)` plus an unassigned Deal in the system `New Lead` stage. No new `Lead`, `Inquiry`, or `Request` entity is created by this flow.
+Публичная заявка атомарно создаёт `Client(status=CUSTOMER)` и неназначенный Deal в системной стадии `New Lead`. Этот поток не создаёт новых сущностей `Lead`, `Inquiry` или `Request`.
 
-#### Authentication internationalization
+#### Интернационализация аутентификации
 
-Future login, authentication errors, logout, access-denied messages, user-management and role labels, and Client lifecycle status labels must follow the mandatory `ru` default/fallback plus `en` and `es` i18n rules.
+Строки входа, ошибок аутентификации, выхода, отказа в доступе, управления пользователями и ролей, а также метки статуса жизненного цикла Client соответствуют обязательным правилам i18n: `ru` по умолчанию/резервный, `en` и `es`.
 
-## 9. Explicitly out of current scope
-Unless requirements are changed explicitly:
+## 9. Явно вне текущего объёма
+
+Если требования не изменены явно:
 - payment processing;
 - payment gateways;
 - invoices/accounting;
@@ -202,12 +216,14 @@ Unless requirements are changed explicitly:
 - custom dynamic roles or an enterprise permission matrix;
 - OAuth/SSO, 2FA, or Redis-backed authentication state.
 
-## 10. Delivery artifacts
-Required:
+## 10. Артефакты поставки
+
+Состав поставки:
 - technical specification document (`.docx`);
 - public GitHub repository;
 - `README.md` explaining setup and operation;
 - screenshots and screencasts demonstrating functionality.
 
-## 11. Acceptance principle
-A feature is considered complete only when it works through the relevant frontend/backend/database flow, can be reproduced, and does not knowingly break existing completed functionality.
+## 11. Принцип приёмки
+
+Функция считается завершённой только когда работает через релевантный поток фронтенд/бэкенд/база данных, воспроизводима и заведомо не нарушает существующую завершённую функциональность.

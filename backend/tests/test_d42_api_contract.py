@@ -75,9 +75,14 @@ def test_d42_input_validation_and_past_date_rules():
     with pytest.raises(ValidationError): DealCreate(client_id=uuid4(), stage_id=uuid4(), name="Deal", deadline=yesterday)
     with pytest.raises(ValidationError): DealUpdate(deadline=yesterday)
     with pytest.raises(ValidationError): DealUpdate(manager_effort_estimate=0)
-    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4(), deadline=yesterday, personal_data_consent=True)
+    public_request = {"name":"Lead", "email":"lead@example.test", "deal_name":"Deal", "service_id":uuid4(), "personal_data_consent":True}
+    assert PublicRequestCreate(**public_request).email == "lead@example.test"
+    with pytest.raises(ValidationError): PublicRequestCreate(**{**public_request, "deadline":yesterday})
+    with pytest.raises(ValidationError): PublicRequestCreate(**{key:value for key, value in public_request.items() if key != "email"})
+    with pytest.raises(ValidationError): PublicRequestCreate(**{**public_request, "email":"   "})
+    with pytest.raises(ValidationError): PublicRequestCreate(**{**public_request, "email":"not-an-email"})
     with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4())
-    with pytest.raises(ValidationError): PublicRequestCreate(name="Lead", deal_name="Deal", service_id=uuid4(), personal_data_consent=1)
+    with pytest.raises(ValidationError): PublicRequestCreate(**{**public_request, "personal_data_consent":1})
 
 
 def test_weight_and_scale_validation_is_backend_authoritative():

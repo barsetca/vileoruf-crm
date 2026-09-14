@@ -12,8 +12,7 @@ import {
 
 import { useAuth } from "../auth/AuthContext.jsx";
 import CommunicationTimeline from "./CommunicationTimeline.jsx";
-import CalendarEventsSection from "./CalendarEventsSection.jsx";
-import CreateCalendarEventForm from "./CreateCalendarEventForm.jsx";
+import CalendarEventsDialogContent from "./CalendarEventsDialogContent.jsx";
 import LeadScoringSection from "./LeadScoringSection.jsx";
 import DealPredictionSection from "./DealPredictionSection.jsx";
 import NextBestActionSection from "./NextBestActionSection.jsx";
@@ -319,7 +318,7 @@ function RelatedDealDialog({ view, onClose, request, deal, client, canRun, refre
   if (!view) return null;
   return <div className="modal-backdrop"><section className="client-modal" role="dialog" aria-modal="true"><div className="modal-header"><h2>{t(`dealRelated.${view}`)}</h2><button className="icon-button" type="button" onClick={onClose} aria-label={t("common.close")}>×</button></div>
     {view === "request" && (request === undefined ? <div className="state-panel">{t("common.loading")}</div> : request === null ? <div className="state-panel">{t("dealRelated.noRequest")}</div> : <dl className="deal-details">{["name","contact_person","company","email","phone","telegram","whatsapp","preferred_communication_language","deal_name","description","estimated_budget","deadline","created_at"].map((key)=><div key={key}><dt>{t(`dealRelated.fields.${key}`)}</dt><dd>{request[key] ?? "—"}</dd></div>)}</dl>)}
-    {view === "communications" && <CommunicationTimeline clientId={deal.client_id} dealId={deal.id} canCreate={canRun}/>} {view === "email" && <EmailDraftSection deal={deal} client={client} canRun={canRun}/>} {view === "calendar" && <><CalendarEventsSection dealId={deal.id} refreshKey={refreshKey}/>{canRun && <button className="secondary-button" type="button" onClick={() => setShowCalendarCreate(true)}>{t("calendar.create.open")}</button>}{showCalendarCreate && <CreateCalendarEventForm dealId={deal.id} onClose={() => setShowCalendarCreate(false)} onAccepted={onCalendarAccepted}/>}</>}</section></div>;
+    {view === "communications" && <CommunicationTimeline clientId={deal.client_id} dealId={deal.id} canCreate={canRun}/>} {view === "email" && <EmailDraftSection deal={deal} client={client} canRun={canRun}/>} {view === "calendar" && <CalendarEventsDialogContent dealId={deal.id} canCreate={canRun} refreshKey={refreshKey} showCreate={showCalendarCreate} setShowCreate={setShowCalendarCreate} onAccepted={onCalendarAccepted}/>}</section></div>;
 }
 
 function DealsPage({ initialDealId }) {

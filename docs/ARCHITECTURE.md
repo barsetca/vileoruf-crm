@@ -11,11 +11,11 @@ Reasons:
 
 ## 2. High-level architecture
 
-The diagram below is the target MVP architecture. Day 1–4 functionality is implemented, including Lead Scoring, Deal Prediction, advisory Next Best Action, initial new-Deal AI orchestration, employee-controlled AI Email Drafts, unified AI history, runtime AI settings, manual-launch hardening, final public/authenticated browser verification, and safe local smoke credential handling. Day 4 is complete. D5.1–D5.4 are implemented, with Gmail, Telegram and Google Calendar live verified. D5.5 WhatsApp Business Cloud API is **ОТЛОЖЕНО / ТЕХНИЧЕСКИЙ ДОЛГ** until after the current MVP because the original 7-day schedule has been exceeded; its approved architecture remains governed by `docs/DAY5_INTEGRATIONS_CONTRACT.md`. D5.6 is DONE / VERIFIED: D5.6a adds a protected provider-neutral unmatched inbound queue at `/crm/inbox`, D5.6b reconciles safe integration Settings status/error UX and ADMIN-only route UX, and D5.6c confirms existing Gmail/Telegram/Calendar retry and exactly-once semantics through focused PostgreSQL regression. D5.7 final verification is complete.
+Диаграмма ниже описывает целевую архитектуру MVP. Функции Day 1–4 реализованы и проверены. D5.1–D5.4 реализованы; Gmail, Telegram и Google Calendar проверены с реальными провайдерами. D5.5 WhatsApp Business Cloud API **ОТЛОЖЕН / ЯВЛЯЕТСЯ ТЕХНИЧЕСКИМ ДОЛГОМ** до завершения MVP; утверждённая архитектура описана в `docs/INTEGRATIONS_CONTRACT.md`. D5.6 добавляет защищённую нейтральную к провайдеру очередь несопоставленных входящих `/crm/inbox`, согласованные безопасные состояния интеграций и проверку повторных попыток/семантики exactly-once. Финальная проверка D5.7 завершена.
 
 Day 5 — Integrations is **COMPLETE WITH DEFERRED TECHNICAL DEBT**: D5.1–D5.4 and D5.6 are verified, while D5.5 WhatsApp remains an intentional post-MVP technical debt under the unchanged approved contract. Day 6 and Day 7 QA / Delivery are complete; MVP is **TECHNICALLY READY FOR DELIVERY**.
 
-D6.0 — Analytics Architecture / Product Contract is **APPROVED / CLOSED** in `docs/DAY6_ANALYTICS_CONTRACT.md`. Implemented Analytics is a protected `/crm/analytics` read-time PostgreSQL aggregation boundary, distinct from the operational `/crm` Dashboard; no analytics persistence, warehouse, snapshot, AI forecast or asynchronous worker was added to the MVP.
+D6.0 — контракт архитектуры/продукта Analytics **УТВЕРЖДЁН / ЗАКРЫТ** и находится в `docs/ANALYTICS_CONTRACT.md`. Реализованная Analytics — это защищённая граница агрегации PostgreSQL при чтении в `/crm/analytics`, отдельная от операционного Dashboard `/crm`; в MVP не добавлялись хранение аналитики, хранилище данных, снимки, прогноз AI или асинхронный воркер.
 
 D6.1 implements the backend foundation only: nullable immutable-once `Deal.first_won_at`, a minimal no-backfill Alembic migration, and synchronous protected `GET /analytics/summary` PostgreSQL aggregation for ADMIN and MANAGER. The UI route/navigation/charts remain D6.2; AI, Celery/Redis and integration/provider data remain outside Analytics.
 
@@ -166,7 +166,7 @@ vileoruf-crm/
 └── README.md
 ```
 
-Codex must not substantially reorganize this architecture without explicit approval.
+Архитектуру нельзя существенно реорганизовывать без явного утверждения.
 
 Future feature directories are created only with their corresponding implementation; empty directories are not required. The implemented repository also contains CRM API modules, models, schemas, services, scripts, tests, frontend pages/services, and the VILEORUF logo asset for Day 2.
 
@@ -383,7 +383,7 @@ Any change that introduces a new major dependency, new infrastructure component,
 - Data persists in the `vileoruf_postgres_data` volume and the service has a healthcheck.
 - Application and Alembic read the same `DATABASE_URL`; credentials are not stored in `alembic.ini`.
 - `.env.example` contains public placeholders; the local `.env` is ignored.
-- Development seed rules are defined in `docs/DEVELOPMENT_SEED_STRATEGY.md`; the implemented explicit demo seed is deterministic, idempotent, development/test-only, and never creates users or credentials.
+- Реализованный явный демонстрационный seed является детерминированным, идемпотентным, предназначен только для development/test и никогда не создаёт пользователей или учётные данные.
 - Development Compose includes PostgreSQL, FastAPI backend, and React/Vite frontend services. `docker compose up --build` starts the complete verified foundation.
 - Backend waits for healthy PostgreSQL, uses `postgres:5432` through the Compose network, applies `alembic upgrade head`, and runs Uvicorn on `0.0.0.0:8000` with reload.
 - Frontend uses Node.js 24, installs from `package-lock.json` with `npm ci`, and runs Vite on `0.0.0.0:5173`. A separate container volume preserves `node_modules` beneath the source bind mount.
